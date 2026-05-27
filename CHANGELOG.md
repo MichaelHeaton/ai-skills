@@ -4,6 +4,14 @@
 
 ### Added
 
+- `Makefile`, `scripts/` — `unlink-legacy`, `import-from-legacy`, `bootstrap-version`, `manifest-update`
+- `.deploy/repo-manifest.json` — MD5 hashes for `principles/` (expands after import)
+- `scripts/hooks/legacy-pre-commit` — reference until pre-commit framework lands
+
+## [0.3.0] — 2026-05-27
+
+### Added
+
 - `docs/guides/` — branching, formatting, skill-conventions
 - `docs/multi-ai.md`, `docs/README.md`, runbook stubs (`deployment-contexts`, `cross-ai-review`, `self-improvement-loop`, `mcps/`)
 

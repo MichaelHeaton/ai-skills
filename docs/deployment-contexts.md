@@ -7,6 +7,6 @@ updated_by: human
 
 # Deployment contexts
 
-> **Planned.** Document install targets (`install-system`, `install-repo`), MD5 manifests, and per-machine paths.
+> **Planned.** Document install targets (`install-system`, `install-repo`) and per-machine paths.
 
-See [principles/deployment.md](../principles/deployment.md) for copy-only deploy rules today.
+Today: [principles/deployment.md](../principles/deployment.md), `make manifest-update` → `.deploy/repo-manifest.json` (principles-only until import).

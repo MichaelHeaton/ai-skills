@@ -16,7 +16,7 @@ A public, versioned home for **multi-AI** skills and conventions. The repo is gr
 | `docs/` | Guides, multi-AI setup, runbook stubs — see [docs/README.md](docs/README.md) |
 | `ai/claude/skills/` | Claude Code skills (planned) |
 | `ai/cursor/rules/` | Cursor rules (planned) |
-| `scripts/` | Install, sync, manifests (planned) |
+| `scripts/` | Phase 0, import, manifests — `make help` |
 
 ## Where skills live today
 
