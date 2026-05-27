@@ -1,7 +1,7 @@
 ---
 
 name: comms-write
-description: Write internal communications for work-primary or client-contract domains. Covers status updates, 3P updates (Progress/Plans/Problems), incident reports, customer notifications, leadership updates, Slack messages, and general internal messaging. Use when asked to write any internal comms, team update, status report, incident summary, stakeholder message, or Slack post. Triggers on "write a 3P", "status update", "incident report", "customer notification", "team update", "leadership update", "weekly update", "write comms for", "draft a message to", "slack message", "slack update", "post to slack", "message for the team", "update the team".
+description: Write internal communications for work-primary or client-contract domains. Covers status updates, 3P updates, incident reports, customer notifications, leadership updates, PR review Slack posts, and general internal messaging. Use for team updates, status reports, incident summaries, stakeholder messages, or Slack posts (including after opening a PR). Triggers on "write a 3P", "status update", "incident report", "PR ready for review", "slack message for PR", "/pr-slack", "draft PR notification", "send to vault admins", "slack message", "post to slack", "message for the team", "write comms for", "draft a message to".
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
@@ -41,7 +41,10 @@ If private examples exist, prefer them over stubs. Do not commit private example
 | Incident report or post-mortem | work-primary | `work-primary-incident.md` |
 | Customer notification | work-primary | `work-primary-customer-notify.md` |
 | Leadership or stakeholder update | work-primary | `work-primary-leadership.md` |
+| PR review request (Slack, after `gh pr create`) | work-primary | `work-primary-pr-review.md` |
 | Any internal comms | client-contract | `client-contract-general.md` |
+
+For PR review messages: run `gh pr view --json number,title,url,body,headRefName` when no PR URL was given. Prefer this skill over a separate PR-only skill — one comms entry point.
 
 If the type is unclear, ask: "What type of communication is this — status update, incident report, customer notification, or something else?"
 

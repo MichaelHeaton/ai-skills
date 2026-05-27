@@ -35,6 +35,7 @@ Add a short `{context}-` prefix only when the skill is useless outside one scope
 | Platform-only helper | `gh-` or `gl-` only when the other platform cannot run it |
 | One product or program | Product or program slug, e.g. `terraform-`, `k8s-` — not employer name |
 | Legacy imports | Older skills may keep historical prefixes; rename when you touch them |
+| PR + Slack | Use **`comms-write`** with `work-primary-pr-review` example — not `{channel}` in the skill name (e.g. avoid `pr-slack`) |
 
 Use **`skill-create`** when adding a skill — it walks through naming without requiring a global prefix registry.
 
@@ -108,7 +109,7 @@ Commits, pushes, and PRs/MRs follow the **`git-ops`** skill. Branching by repo t
 ## Workflow for adding a new skill
 
 1. Run **`skill-create`** (guided interview)
-2. Add the skill under `ai/claude/skills/<name>/` in this repo (or `claude-skills/skills/` until import lands)
-3. Deploy with `make install-system` (target) or `make install` in claude-skills (today)
+2. Add the skill under `ai/claude/skills/<name>/` in this repo
+3. Deploy with `make install-system` (see [ROADMAP.md](../ROADMAP.md) if not merged yet)
 4. Branch + PR in the skills repo; merge to main before relying on it on other machines
 5. On other machines: pull and re-run install
