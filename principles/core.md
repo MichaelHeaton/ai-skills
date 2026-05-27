@@ -16,8 +16,8 @@ updated_by: human
 | Layer | Path | Status |
 |-------|------|--------|
 | Universal | `principles/` | In repo |
-| Config / tags | `config/`, `categories/` | Planned |
-| Docs | `docs/` | Partial (`docs/ROADMAP.md`) |
+| Config / tags | `config/`, `categories/` | In repo |
+| Docs | `docs/` | Partial (`ROADMAP.md`, `guides/local-config.md`) |
 | Claude skills | `ai/claude/skills/` | Planned |
 | Private values | `~/.config/ai-skills/local.json` | On machine only; never committed |
 

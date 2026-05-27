@@ -1,0 +1,24 @@
+# Private leak patterns (optional)
+
+The public repo cannot list your employer's Jira project key, Slack channels, or
+other tokens — that would defeat scrubbing.
+
+Instead, maintain a **private** file on each machine:
+
+```
+~/.config/ai-skills/leak-patterns
+```
+
+Format: one extended regex per line. Lines starting with `#` are ignored.
+
+Example (fill in with **your** values — do not commit this file):
+
+```
+# YOUR-PROJECT-[0-9]+
+# #your-internal-channel
+```
+
+When pre-commit hooks exist in this repo, they load this file when present.
+
+Generic patterns (corp Jira hosts, SharePoint personal URLs, `XXXX-1234`-shaped
+keys) still run from the public hook without naming your organization.

@@ -1,0 +1,38 @@
+{
+  "$schema": "ai-skills-sanitize-v1",
+  "comment": "Rules only — no real values. Used by pre-commit sanitize scan when hooks land.",
+  "replacements": [
+    {
+      "label": "company_name",
+      "patterns": [],
+      "replace_with": "[company_name]",
+      "note": "Add employer-specific patterns to private leak-patterns, not here"
+    },
+    {
+      "label": "person_name",
+      "replace_with": "[person_name]",
+      "note": "Block coworker names via private leak-patterns"
+    },
+    {
+      "label": "internal_url",
+      "patterns": [
+        "jira\\.corp\\.[a-z0-9.-]+",
+        "sharepoint\\.com.*/personal/"
+      ],
+      "replace_with": "[internal_url]"
+    },
+    {
+      "label": "jira_key",
+      "patterns": [
+        "[A-Z]{4,10}-[1-9][0-9]{3,}"
+      ],
+      "replace_with": "[jira_project_key]-NNNN",
+      "exclude_paths": [
+        "categories/tags.yaml",
+        "config/local.template.json",
+        "docs/guides/"
+      ]
+    }
+  ],
+  "secrets_patterns_ref": "scripts/hooks/legacy-pre-commit"
+}
