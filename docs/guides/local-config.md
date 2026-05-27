@@ -64,10 +64,10 @@ Optional block for `comms-write` example resolution:
 | Key | Purpose |
 |-----|---------|
 | `comms_write.examples_root` | Absolute path to `.../examples/` (overrides everything) |
-| `comms_write.memex_repo_path` | Personal KB repo on disk |
+| `comms_write.memex_repo_path` | Path to the **maintainer’s Memex** vault on disk (example default — use your own PKM repo) |
 | `comms_write.examples_relative` | Path under that repo (default: `ai/claude/skills/comms-write-context/examples`) |
 
-Public skill repos ship **stubs only**; full templates live in your private KB (see Memex `ai/claude/skills/comms-write-context/`).
+Public skill repos ship **stubs only**; full templates live in a **private** vault. The author keeps theirs in [Memex](https://github.com/MichaelHeaton/memex) — see [memex-and-related-repos.md](memex-and-related-repos.md).
 
 ## Weekly reports
 

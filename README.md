@@ -15,6 +15,12 @@ make unlink-legacy-dry-run # preview Phase 0 (if still on symlinks)
 
 Private values: copy [`config/local.template.json`](config/local.template.json) to `~/.config/ai-skills/local.json` ([guide](docs/guides/local-config.md)).
 
+**[Memex](https://github.com/MichaelHeaton/memex)** is the maintainer’s personal second-brain vault — a project name, not something every user must run. See [docs/guides/memex-and-related-repos.md](docs/guides/memex-and-related-repos.md).
+
+## Install (author’s workstations)
+
+Use **[workstation-devops](https://gitlab.com/Michael-Heaton/workstation-devops)** (`make apply`) to clone this repo, memex, and claude-skills and run skill install. Manual fallback: `make install` in claude-skills until `make install-system` exists here.
+
 ## Skills today
 
 **Runtime skills** still come from [claude-skills](https://github.com/MichaelHeaton/claude-skills):

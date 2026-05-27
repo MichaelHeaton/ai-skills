@@ -55,4 +55,6 @@ See [principles/deployment.md](../principles/deployment.md) — no symlinks.
 
 ## Workstation bootstrap
 
-[workstation-devops](https://gitlab.com/Michael-Heaton/workstation-devops) will clone this repo and run install targets. It does **not** store your filled `local.json` (that file stays on the machine only).
+On the maintainer’s Macs, **[workstation-devops](https://gitlab.com/Michael-Heaton/workstation-devops)** (`make apply`) clones **ai-skills**, **claude-skills**, and **[Memex](https://github.com/MichaelHeaton/memex)** (personal PKM vault — see [guides/memex-and-related-repos.md](guides/memex-and-related-repos.md)) and runs **`make install`** in claude-skills today. It does **not** store filled `local.json` (templates only).
+
+Target: `make install-system` in this repo after `ai/claude/` import.

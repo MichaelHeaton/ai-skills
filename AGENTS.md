@@ -32,6 +32,16 @@ When `ai/claude/skills/` exists here:
 ai/claude/skills/<name>/SKILL.md  →  ~/.claude/skills/<name>/  (via make install-system)
 ```
 
+## Related repositories
+
+| Repo | Role |
+|------|------|
+| [claude-skills](https://github.com/MichaelHeaton/claude-skills) | Legacy skill runtime until `ai/claude/` import + `install-system` |
+| [Memex](https://github.com/MichaelHeaton/memex) | Maintainer’s **personal second brain** (PKM vault) — project name, not a generic product |
+| [workstation-devops](https://gitlab.com/Michael-Heaton/workstation-devops) | Ansible install on author’s Macs (`make apply`) |
+
+See [docs/guides/memex-and-related-repos.md](docs/guides/memex-and-related-repos.md).
+
 ## Private configuration
 
 Employer-specific values belong in **`~/.config/ai-skills/local.json`**. Copy from [`config/local.template.json`](config/local.template.json). See [`docs/guides/local-config.md`](docs/guides/local-config.md). Never commit filled copies.
@@ -44,6 +54,7 @@ Employer-specific values belong in **`~/.config/ai-skills/local.json`**. Copy fr
 | [docs/guides/skill-conventions.md](docs/guides/skill-conventions.md) | Skill naming and `SKILL.md` structure |
 | [docs/guides/branching.md](docs/guides/branching.md) | Branch + PR rules by repo type |
 | [docs/guides/local-config.md](docs/guides/local-config.md) | Private `local.json` |
+| [docs/guides/memex-and-related-repos.md](docs/guides/memex-and-related-repos.md) | Memex naming, workstation install |
 
 ## Principles (read order)
 
