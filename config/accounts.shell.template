@@ -1,0 +1,26 @@
+# Shell exports for scripts (setup-account.sh, direnv helpers)
+# Copy to ~/.config/claude-skills/accounts.shell — NEVER commit the filled file.
+# NOT named *.env — Claude's block-env-read hook blocks .env paths.
+#
+# Source from ~/.zshrc:
+#   [ -f ~/.config/claude-skills/accounts.shell ] && source ~/.config/claude-skills/accounts.shell
+
+# --- Personal ---
+export GITHUB_PERSONAL_USER=""
+export SKILLS_PERSONAL_GIT_NAME=""
+export SKILLS_PERSONAL_EMAIL=""
+export SKILLS_PERSONAL_GH_HOST="github.com-personal"
+
+# --- Adobe / work ---
+export SKILLS_ADOBE_GIT_NAME=""
+export SKILLS_ADOBE_GIT_EMAIL=""
+export SKILLS_ADOBE_GH_USER=""
+export SKILLS_WORK_ORGS=""
+export SKILLS_JIRA_BASE_URL=""
+export SKILLS_JIRA_PROJECT_KEY=""
+export SKILLS_JIRA_EPIC_LINK_FIELD=""
+export SKILLS_WORK_DOCS_REPO=""
+
+# --- UV (optional third git identity) ---
+export SKILLS_UV_GIT_NAME=""
+export SKILLS_UV_GIT_EMAIL=""

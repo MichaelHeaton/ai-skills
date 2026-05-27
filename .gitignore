@@ -1,0 +1,16 @@
+# Local private config (template is committed)
+config/local.json
+config/local.yaml
+
+# Deploy manifests — system-side only
+.deploy/system-manifest.json
+.deploy/last-sync.json
+
+# Audit trail
+.audit.log
+
+# Tooling
+.pre-commit-config.yaml.bak
+__pycache__/
+*.pyc
+.DS_Store
