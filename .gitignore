@@ -1,0 +1,15 @@
+# Private local config (templates added in PR-B)
+config/local.json
+config/local.yaml
+
+# Deploy manifests — system-side only (PR-D+)
+.deploy/system-manifest.json
+.deploy/last-sync.json
+
+# Session audit trail (PR-H)
+.audit.log
+
+# Tooling
+.DS_Store
+__pycache__/
+*.pyc
