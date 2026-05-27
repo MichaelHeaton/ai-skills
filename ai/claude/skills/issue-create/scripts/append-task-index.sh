@@ -2,7 +2,7 @@
 # Append one record to the Memex task index with a worktree safety check.
 #
 # Usage:
-#   append-task-index.sh --system <github|gitlab|jira-adobe> \
+#   append-task-index.sh --system <github|gitlab|jira-work> \
 #     --id <NUMBER|KEY> --url <url> --title <title> --domain <domain> \
 #     [--repo <owner/repo>] [--instance <str>] [--project <name>] \
 #     [--status <open|closed>] [--created <YYYY-MM-DD>]

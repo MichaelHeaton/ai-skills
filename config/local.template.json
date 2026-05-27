@@ -44,6 +44,16 @@
     "work_github_orgs": []
   },
 
+  "github_projects": {
+    "work-primary": { "owner": "YOUR_USER", "number": 0 },
+    "client-contract": { "owner": "YOUR_USER", "number": 0 },
+    "homelab": { "owner": "YOUR_USER", "number": 0 },
+    "learning": { "owner": "YOUR_USER", "number": 0 },
+    "personal": { "owner": "YOUR_USER", "number": 0 },
+    "mtb": { "owner": "YOUR_USER", "number": 0 },
+    "iot": { "owner": "YOUR_USER", "number": 0 }
+  },
+
   "slack": {
     "vault_support_channel": ""
   },

@@ -1,68 +1,69 @@
-# Issue Routing Rules
+# Issue routing rules
 
-Run `scripts/detect-context.sh` from the current working directory to get the routing target. All four issue-* skills use this same logic.
+Run `scripts/detect-context.sh` from the current working directory. All four `issue-*` skills use this logic.
 
 ## Routing targets
 
 | Output | Meaning | Where issues go |
 |---|---|---|
-| `jira-cesss` | Repo in any org listed in `$SKILLS_WORK_ORGS` | Jira, project CESSS, type Story |
-| `github-current:<owner/repo>` | Personal GitHub repo | GitHub Issues in that repo |
-| `memex` | No remote / unrecognized | GitHub Issues in `${GITHUB_PERSONAL_USER}/memex` |
+| `jira-work` | Remote matches an org in `routing.work_github_orgs` (or `SKILLS_WORK_ORGS`) | Jira — project from `jira.project_key` in local.json |
+| `github-current:<owner/repo>` | Personal or non-work GitHub remote | GitHub Issues in that repo |
+| `memex` | No remote / unrecognized | GitHub Issues in `routing.personal_kb_github` |
 
-## Jira CESSS rules
+## Jira (work context)
 
-- **Project key**: `CESSS`
-- **Default type**: `Story` — always use Story; the team does not want Tasks created by AI
-- **Never create Epics** — managers only (Damon Gentry, Drew Wright)
-- **Epic linking**: `customfield_11800` with epic key (e.g. `CESSS-12345`)
-- **Required fields**: `project.key`, `summary`, `issuetype.name`, `description`
-- **Updates go in comments**, not body edits — Jira body is the definition of done
+Read `~/.config/ai-skills/local.json`:
 
-If no existing CESSS ticket fits the work, create a Memex issue tagged `needs-jira-triage` so it can be linked or converted later.
+- **Project key**: `jira.project_key` (e.g. `PROJ-12345` in the template — use your real key privately)
+- **Default type**: `jira.default_issue_type` (usually `Story`)
+- **Never create Epics** unless your org allows it — see `jira.epic_owners_note`
+- **Epic linking**: `jira.epic_link_field` when the user names an epic
+- **Updates go in comments**, not body edits — treat the description as definition of done
 
-## GitHub Issues (Memex or current repo)
+If no existing work ticket fits, create a personal-kb issue tagged `needs-jira-triage` for later linking.
 
-- **Memex repo**: `${GITHUB_PERSONAL_USER}/memex` (local: `~/Projects/personal/memex/`)
-- **Task index**: `~/Projects/personal/memex/Raw/_task-index.jsonl`
-- **Issues log**: `~/Projects/personal/memex/Raw/_GitHub-Issues-log.jsonl`
-- **Template**: user story format — see issue-create SKILL.md §2
+## GitHub Issues (personal KB or current repo)
 
-### Domain → GitHub Project routing
+- **Personal KB repo**: `routing.personal_kb_github` (clone path: `comms_write.memex_repo_path` or your usual Projects path)
+- **Task index / issues log**: paths under that vault — see the vault’s `AGENTS.md` (e.g. `Raw/_task-index.jsonl`)
+- **Template**: user story format — see `issue-create` SKILL.md
 
-| Domain | Project name | Project number |
-|---|---|---|
-| adobe | Adobe | 8 |
-| uv-cyber | UV Cyber | 10 |
-| homelab | HomeLab | 7 |
-| learning | Learning | 11 |
-| personal | Personal | 13 |
-| mtb | MTB | 9 |
-| iot | IoT | 12 |
+### Domain → GitHub Project (optional)
 
-Issues created in non-Memex repos don't get added to these projects (they live in that repo's own project board, if any).
+If you use GitHub Projects for domain labels, define mapping in private `local.json` (example shape):
+
+```json
+"github_projects": {
+  "work-primary": { "name": "Work", "number": 0 },
+  "client-contract": { "name": "Client", "number": 0 },
+  "homelab": { "name": "HomeLab", "number": 0 },
+  "personal": { "name": "Personal", "number": 0 }
+}
+```
+
+Use `categories/tags.yaml` domain tokens (`work-primary`, `client-contract`, `personal`, …) — not employer names in the public repo.
+
+Issues in other repos use that repo’s own project board, if any.
 
 ## GitHub account management
 
-When two `gh` accounts are active (e.g. a work EMU and a personal account), the work account is typically the default. It cannot access personal repos — operations fail with a 404 or auth error.
+When multiple `gh` accounts are active, the work account is often the default and cannot access personal repos.
 
-**Required env vars** — set these in `~/.zshrc` or `~/.bashrc`:
+**Required env vars** (shell profile):
 
 ```bash
-export GITHUB_PERSONAL_USER=<your-personal-github-username>
-export SKILLS_WORK_ORGS=<org1>,<org2>   # comma-separated; any match routes to jira-cesss
+export GITHUB_PERSONAL_USER=<personal-github-username>
+export SKILLS_WORK_ORGS=<org1>,<org2>   # comma-separated; match → jira-work
 ```
 
-**Before any `gh` command targeting Memex or a `github-current:*` personal repo**, export the personal token:
+**Before `gh` commands targeting the personal KB or `github-current:*` personal repos:**
 
 ```bash
 export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")
 ```
 
-This avoids changing the globally active account — `GH_TOKEN` is session-scoped, `gh auth switch` is global.
+Prefer `--repo <owner/repo>` explicitly when SSH remotes use a multi-account host alias.
 
-**SSH alias note:** If the Memex git remote uses a multi-account SSH alias (e.g. `github.com-personal:${GITHUB_PERSONAL_USER}/memex.git`), the `gh` CLI may fail to resolve the repo from the remote even after setting `GH_TOKEN`. Always pass `--repo <owner/repo>` explicitly rather than relying on remote detection.
+## Task index
 
-## Task index notes
-
-The task index at `~/Projects/personal/memex/Raw/_task-index.jsonl` is a cross-system locator — append a record for every issue created, regardless of system (GitHub or Jira). Update `status` in place when tasks close.
+Append a record for every issue created (GitHub or Jira). Update `status` when tasks close. Paths live in your personal KB repo — not in this public skills repo.

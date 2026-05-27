@@ -22,7 +22,7 @@ Writes a finalized decision to the Memex wiki as a persistent, searchable docume
 Gather from context (don't ask for things already in the conversation):
 
 - **Title** — short, noun-phrase description of what was decided (e.g., "AI Account Architecture Across Work and Personal Domains")
-- **Domain** — one of: `personal`, `adobe`, `uv-cyber`, `homelab`, `learning`, `mtb`, `iot`
+- **Domain** — one of: `personal`, `work-primary`, `client-contract`, `homelab`, `learning`, `mtb`, `iot`
 - **Decision** — 1–3 sentence summary of what was decided
 - **Context** — why this decision was needed
 - **Rationale** — why this option was chosen over alternatives
@@ -130,19 +130,19 @@ If there is an open Memex GitHub Issue related to this decision (user mentions a
 3. Close the issue
 
 ```bash
-export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER:-MichaelHeaton}")
+export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER:-YOUR_USER}")
 
 # Add comment
 gh issue comment {NUMBER} \
-  --repo MichaelHeaton/memex \
+  --repo ${routing.personal_kb_github} \
   --body "Decision logged: [Wiki/Concepts/{filename}](../blob/main/Wiki/Concepts/{filename})"
 
 # Add label (seed first)
-gh label create "decision-logged" --repo MichaelHeaton/memex --color "0075ca" --description "Decision captured in wiki" 2>/dev/null || true
+gh label create "decision-logged" --repo ${routing.personal_kb_github} --color "0075ca" --description "Decision captured in wiki" 2>/dev/null || true
 
 # Close with label
-gh issue edit {NUMBER} --repo MichaelHeaton/memex --add-label "decision-logged"
-gh issue close {NUMBER} --repo MichaelHeaton/memex
+gh issue edit {NUMBER} --repo ${routing.personal_kb_github} --add-label "decision-logged"
+gh issue close {NUMBER} --repo ${routing.personal_kb_github}
 ```
 
 If no related ticket exists, skip this step silently.

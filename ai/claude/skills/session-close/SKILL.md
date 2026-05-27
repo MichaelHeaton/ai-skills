@@ -43,7 +43,7 @@ Ask: "Which of these repos were you working in this session?" If the user says "
 
 ---
 
-Before Steps 2–4, invoke the `git-ops` skill _(personal — claude-skills repo)_ — it covers branching rules, commit format, PR format, and pre-commit checks. The short version: Adobe and GitLab repos always get a branch + PR; Memex is treated like Adobe. Full rules in `~/.claude/references/branching.md`.
+Before Steps 2–4, invoke the `git-ops` skill _(personal — ai-skills repo)_ — it covers branching rules, commit format, PR format, and pre-commit checks. The short version: work GitHub and GitLab repos always get a branch + PR; personal KB uses branch + PR like work repos. Full rules in `~/.claude/references/branching.md`.
 
 ### SSH port-22 fallback (GitHub + GitLab)
 
@@ -128,15 +128,15 @@ Confirm before running. After pruning, verify: `git -C <repo> worktree list` sho
 
 ## Step 6 — Skill hygiene review
 
-Invoke `skill-review` _(personal — claude-skills repo)_ in session-audit mode. It will reflect on the current conversation to find skill friction, missed triggers, and ungapped workflows worth turning into new skills. Findings always become tickets before being worked or deferred.
+Invoke `skill-review` _(personal — ai-skills repo)_ in session-audit mode. It will reflect on the current conversation to find skill friction, missed triggers, and ungapped workflows worth turning into new skills. Findings always become tickets before being worked or deferred.
 
-**Reminder**: claude-skills is a public repo. Ticket content must be scrubbed of Adobe-internal hostnames, internal ticket keys used as examples, security details, and anything sensitive. skill-review enforces this — but flag it here so it's visible without reading that skill.
+**Reminder**: ai-skills is a public repo. Ticket content must be scrubbed of Employer-internal hostnames, internal ticket keys used as examples, security details, and anything sensitive. skill-review enforces this — but flag it here so it's visible without reading that skill.
 
 **Before invoking skill-review**, annotate each skill that fired with its source so skill-review routes edits to the correct repo:
 
 ```bash
 # For each skill name, check global install first, then project repos
-ls ~/.claude/skills/<name>/          # present → global: claude-skills
+ls ~/.claude/skills/<name>/          # present → global: ai-skills
 find ~/Projects -maxdepth 4 -path "*/.claude/skills/<name>" -type d 2>/dev/null
 # present → project: <repo-name>
 ```
@@ -144,8 +144,8 @@ find ~/Projects -maxdepth 4 -path "*/.claude/skills/<name>" -type d 2>/dev/null
 Build a source-annotated list, e.g.:
 ```
 Skills active this session:
-- session-close (global: claude-skills)
-- skill-review (global: claude-skills)
+- session-close (global: ai-skills)
+- skill-review (global: ai-skills)
 - quest-sync (project: minecraft-modpack-cp-verdant)
 ```
 
@@ -207,7 +207,7 @@ For each repo worked in this session, scan recent commit messages, branch names,
 git -C <repo> log --oneline --since="12 hours ago"
 ```
 
-Look for patterns like `CESSS-12345`, `PROJ-###`, `#94`, or ticket keywords matching index titles.
+Look for patterns like `PROJ-12345`, `PROJ-###`, `#94`, or ticket keywords matching index titles.
 
 **Step 9c — Act on matches**
 

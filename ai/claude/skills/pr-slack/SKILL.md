@@ -1,7 +1,7 @@
 ---
 
 name: pr-slack
-description: "Generate a TLDR-first Slack message for a Vault team PR review request. Invoke after creating a GitHub PR in any Adobe vault repo. Triggers on: /pr-slack, 'slack message for PR', 'draft PR notification', 'send to vault admins'."
+description: "Generate a TLDR-first Slack message for a team PR review request. Invoke after creating a GitHub PR in a work vault or platform repo. Triggers on: /pr-slack, slack message for PR, draft PR notification, send to vault admins."
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
@@ -29,7 +29,7 @@ Read the PR:
 - **Title** — the PR title
 - **URL** — full GitHub URL
 - **Body** — PR description (look for Summary bullets and any noted impact)
-- **Branch name** — extract the Jira ticket key if present (e.g. `feat/CESSS-13821-...` → `CESSS-13821`)
+- **Branch name** — extract the Jira ticket key if present (e.g. `feat/PROJ-12345-...` → `PROJ-12345`)
 
 ### 2 — Extract the TLDR
 
@@ -42,13 +42,13 @@ From the PR body, derive a single sentence TLDR. Rules:
 ### 3 — Build the Jira URL
 
 If a ticket key was found in the branch name or PR body, construct the full URL:
-`https://jira.corp.adobe.com/browse/{TICKET_KEY}`
+`https://jira.example.com/browse/{TICKET_KEY}`
 
 If no ticket key is found, omit the Jira line entirely — do not guess or leave a placeholder.
 
 ### 4 — Format the Slack message
 
-Output the message inside a code block so Michael can copy it cleanly.
+Output the message inside a code block so the user can copy it cleanly.
 
 Format:
 
@@ -68,7 +68,7 @@ Rules:
 - TLDR line comes before the Jira line
 - Repo name should be the short name (e.g. `vault_infra`, not the full org path)
 - Keep the whole message under 6 lines
-- Do not add emoji unless Michael asks
+- Do not add emoji unless the user asks
 
 ### 5 — Output
 

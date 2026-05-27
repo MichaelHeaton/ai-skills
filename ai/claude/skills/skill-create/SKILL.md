@@ -2,7 +2,7 @@
 
 name: skill-create
 description: Create a new Claude Code skill from scratch using a guided interview. Handles the full lifecycle — capturing intent, naming, writing SKILL.md, testing, iterating, and saving the skill to the repo. Use this whenever the user wants to build a new skill, capture a workflow as a skill, or says "make a skill for X", "turn this into a skill", or "new skill".
-compatibility: Requires git. Skills must be installed via `make install` so ~/.claude/skills/ symlinks exist.
+compatibility: Requires git. Deploy skills with `make install-system` in ai-skills (copy-only; see principles/deployment.md).
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
@@ -116,30 +116,22 @@ If the skill produces complex structured output (reports, audits, multi-section 
 
 Once the user approves the draft:
 
-1. Resolve the skills repo root from an existing installed symlink, then create the directory:
+1. Create the directory under the ai-skills repo:
    ```bash
-   SKILLS_ROOT=$(readlink ~/.claude/skills/git-ops | sed 's|/skills/git-ops||')
-   mkdir -p "$SKILLS_ROOT/skills/{name}"
+   mkdir -p ai/claude/skills/{name}
    ```
 
-2. Write `SKILL.md` to that directory.
+2. Write `SKILL.md` there (and `references/conventions.md` copy if this is a meta skill).
 
-3. Create any needed subdirectories (`scripts/`, `references/`, `assets/`) only if the skill actually uses them.
+3. Create `scripts/`, `references/`, or `assets/` only if needed.
 
-4. Verify the symlink is in place:
-   ```bash
-   ls -la ~/.claude/skills/{name}
-   ```
-   If the symlink is missing (e.g. this is a brand new skill not yet linked), create it:
-   ```bash
-   ln -s "$SKILLS_ROOT/skills/{name}" ~/.claude/skills/{name}
-   ```
+4. Run `make bootstrap-version` and `make manifest-update` from the ai-skills repo root.
 
-5. Update `README.md`: add a row for the new skill to the Skills table, and check whether it has dependencies on other skills that belong in the dependencies table.
+5. Deploy: `make install-system` (or interim path in docs/ROADMAP.md).
 
-6. Skim `AGENT.md` — if the new skill warrants mention in the Key files table or Common tasks section, add it. If it introduces a dependency or changes a documented workflow, update that section.
+6. Update `README.md` / `AGENTS.md` if the skill changes documented workflows.
 
-7. Tell the user the skill is live and remind them to `git commit && git push` to sync it to other workstations.
+7. Branch + PR in ai-skills — do not commit to `main` directly. Remind the user to reload Claude Code after deploy.
 
 ---
 

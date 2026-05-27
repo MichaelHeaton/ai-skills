@@ -9,6 +9,6 @@ metadata:
 
 Wait for explicit "commit" instruction before running git commit.
 
-**Why:** VS Code shows uncommitted changes in green in the Explorer panel. Michael uses this as a visual review mechanism — committing too early removes the signal before he's had a chance to review.
+**Why:** VS Code shows uncommitted changes in green in the Explorer panel. The user uses this as a visual review mechanism — committing too early removes the signal before review.
 
 **How to apply:** Make changes, confirm what was done, then stop. Do not commit unless the user says to.

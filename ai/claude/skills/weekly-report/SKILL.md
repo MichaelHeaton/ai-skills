@@ -1,8 +1,8 @@
 ---
 
 name: weekly-report
-description: Generate paste-ready weekly status files for two standing rhythms defined in local.json — typically a client-contract deck update and an employer team wiki (PPP). Routes by user intent and weekly_reports.* keys in ~/.config/claude-skills/local.json. Triggers on weekly report, client deck update, slides 8-10, dedicated defense update, team wiki weekly, PPP, Thursday meeting prep, weekly repost, or when the user names either rhythm from their private config labels.
-compatibility: Vault paths in Memex; Jira MCP when work_team path needs it; requires ~/.config/claude-skills/local.json.
+description: Generate paste-ready weekly status files for two standing rhythms defined in local.json — typically a client-contract deck update and an employer team wiki (PPP). Routes by user intent and weekly_reports.* keys in ~/.config/ai-skills/local.json. Triggers on weekly report, client deck update, slides 8-10, dedicated defense update, team wiki weekly, PPP, Thursday meeting prep, weekly repost, or when the user names either rhythm from their private config labels.
+compatibility: Vault paths in Memex; Jira MCP when work_team path needs it; requires ~/.config/ai-skills/local.json.
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
@@ -16,7 +16,7 @@ Two formats, configured in **`local.json`** under `weekly_reports` — keys are 
 
 ## Step 0 — Load local config
 
-Read `~/.config/claude-skills/local.json` ([references/local-config.md](../../../references/local-config.md)):
+Read `~/.config/ai-skills/local.json` ([references/local-config.md](../../../references/local-config.md)):
 
 - `weekly_reports.client_contract` — deck / client-facing rhythm
 - `weekly_reports.work_team` — employer team wiki rhythm

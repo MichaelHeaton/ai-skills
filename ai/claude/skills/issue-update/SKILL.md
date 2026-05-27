@@ -1,7 +1,7 @@
 ---
 
 name: issue-update
-description: Update a task or ticket — change status, add a comment, edit labels, close it, or sync the task index. Works across GitHub Issues, GitLab Issues, and Jira. Use when the user says "close issue #X", "mark CESSS-XXXX done", "add a comment to #X", "update the priority on", or any similar task update request.
+description: Update a task or ticket — change status, add a comment, edit labels, close it, or sync the task index. Works across GitHub Issues, GitLab Issues, and Jira. Use when the user says "close issue #X", "mark PROJ-12345XXXX done", "add a comment to #X", "update the priority on", or any similar task update request.
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
@@ -41,7 +41,7 @@ Look up the task in `~/Projects/personal/memex/Raw/_task-index.jsonl` by ID. Get
 
 If not in the index, infer system from ID format:
 - `#NNN` or integer → run `scripts/detect-context.sh` (see issue-create) to find the repo; default `${GITHUB_PERSONAL_USER}/memex`
-- `CESSS-XXXXX` → Jira (`jira-adobe`)
+- `PROJ-12345` → Jira (`jira-work`)
 
 ### 2. Perform the requested update
 
@@ -101,7 +101,7 @@ Use the Atlassian MCP tools:
 - `jira_transition_issue` — to change Jira workflow status
 - `jira_update_issue` — for field changes (priority, due date) and description rewrites (apply description edit policy)
 
-See [[Agents/23-jira-rules|23-jira-rules]] for CES conventions.
+See [[Agents/23-jira-rules|23-jira-rules]] for work Jira conventions (private vault rules).
 
 ### 3. Sync task index
 
@@ -116,5 +116,5 @@ To update: read the file, find the matching line by `id`, rewrite it with the up
 
 Report what changed:
 - "Closed [#94](url) — task index updated."
-- "Added comment to CESSS-12544."
+- "Added comment to PROJ-12345."
 - "Updated priority on [#95](url) to high."

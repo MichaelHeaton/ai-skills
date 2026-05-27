@@ -1,119 +1,97 @@
 #!/usr/bin/env bash
-# Detects the git account for a repo based on its remote URL and configures:
-#   - git config --local user.email / user.name
-#   - .envrc with the right GH_TOKEN (for gh CLI)
-#   - direnv allow
-#
-# Usage: bash scripts/setup-account.sh [repo-path]
-# Defaults to current directory.
+# Configure git identity and direnv GH_TOKEN from ~/.config/ai-skills/local.json
+# Usage: setup-account.sh [repo-path]
 
 set -euo pipefail
 
 REPO="${1:-.}"
+LOCAL_JSON="${AI_SKILLS_LOCAL:-$HOME/.config/ai-skills/local.json}"
+
 cd "$REPO"
 
-# ── Account definitions ────────────────────────────────────────────────────────
+if [[ ! -f "$LOCAL_JSON" ]]; then
+  echo "error: missing $LOCAL_JSON — copy from ai-skills config/local.template.json" >&2
+  exit 1
+fi
 
-declare -A ADOBE=(
-  [name]="Michael Heaton"
-  [email]="ult35127@adobe.com"
-  [gh_user]="ult35127_adobe"
-  [label]="Adobe (ult35127_adobe)"
-)
-
-declare -A PERSONAL=(
-  [name]="Michael Heaton"
-  [email]="michael@heatons.me"
-  [gh_user]="MichaelHeaton"
-  [label]="Personal (MichaelHeaton)"
-)
-
-# ── Detect account from remote URL ─────────────────────────────────────────────
+if ! command -v jq &>/dev/null; then
+  echo "error: jq required" >&2
+  exit 1
+fi
 
 REMOTE_URL=$(git remote get-url origin 2>/dev/null || echo "")
-
 if [[ -z "$REMOTE_URL" ]]; then
-  echo "⚠️  No 'origin' remote found. Set one with: git remote add origin <url>"
+  echo "error: no origin remote" >&2
   exit 1
 fi
 
 echo "Remote: $REMOTE_URL"
 
-if [[ "$REMOTE_URL" == *"github.com-personal"* ]] || \
-   [[ "$REMOTE_URL" == *"github.com/MichaelHeaton"* ]] || \
-   [[ "$REMOTE_URL" == *"github.com:MichaelHeaton"* ]]; then
-  ACCOUNT_LABEL="${PERSONAL[label]}"
-  GIT_NAME="${PERSONAL[name]}"
-  GIT_EMAIL="${PERSONAL[email]}"
-  GH_USER="${PERSONAL[gh_user]}"
+match_account() {
+  local key="$1"
+  local patterns
+  patterns=$(jq -r --arg k "$key" '.accounts[$k].remote_match[]? // empty' "$LOCAL_JSON" 2>/dev/null) || true
+  while IFS= read -r pat; do
+    [[ -z "$pat" ]] && continue
+    if [[ "$REMOTE_URL" == *"$pat"* ]]; then
+      echo "$key"
+      return 0
+    fi
+  done <<< "$patterns"
+  return 1
+}
 
-else
-  # Default: Adobe (covers git@github.com:ult35127_adobe/..., git.corp.adobe.com, etc.)
-  ACCOUNT_LABEL="${ADOBE[label]}"
-  GIT_NAME="${ADOBE[name]}"
-  GIT_EMAIL="${ADOBE[email]}"
-  GH_USER="${ADOBE[gh_user]}"
+ACCOUNT_KEY=""
+for key in personal work client_contract; do
+  if match_account "$key"; then
+    ACCOUNT_KEY="$key"
+    break
+  fi
+done
+
+if [[ -z "$ACCOUNT_KEY" ]]; then
+  ACCOUNT_KEY="work"
+  echo "warning: no remote_match hit — defaulting to accounts.work"
 fi
 
-echo "Detected account: $ACCOUNT_LABEL"
+GIT_NAME=$(jq -r --arg k "$ACCOUNT_KEY" '.accounts[$k].git_name // empty' "$LOCAL_JSON")
+GIT_EMAIL=$(jq -r --arg k "$ACCOUNT_KEY" '.accounts[$k].git_email // empty' "$LOCAL_JSON")
+GH_USER=$(jq -r --arg k "$ACCOUNT_KEY" '.accounts[$k].github_user // empty' "$LOCAL_JSON")
+LABEL=$(jq -r --arg k "$ACCOUNT_KEY" '.accounts[$k].label // $k' "$LOCAL_JSON")
+
+if [[ -z "$GIT_EMAIL" || -z "$GH_USER" ]]; then
+  echo "error: fill accounts.$ACCOUNT_KEY in $LOCAL_JSON" >&2
+  exit 1
+fi
+
+echo "Detected account: $LABEL ($ACCOUNT_KEY)"
 echo ""
 
-# ── Git local identity ─────────────────────────────────────────────────────────
-
-CURRENT_EMAIL=$(git config --local user.email 2>/dev/null || echo "")
-CURRENT_NAME=$(git config --local user.name 2>/dev/null || echo "")
-
-if [[ "$CURRENT_EMAIL" == "$GIT_EMAIL" ]] && [[ "$CURRENT_NAME" == "$GIT_NAME" ]]; then
-  echo "✓ git identity already set ($GIT_EMAIL)"
-else
-  git config --local user.name  "$GIT_NAME"
-  git config --local user.email "$GIT_EMAIL"
-  echo "✓ git identity set: $GIT_NAME <$GIT_EMAIL>"
-fi
-
-# ── .envrc (direnv) ────────────────────────────────────────────────────────────
+git config --local user.name  "$GIT_NAME"
+git config --local user.email "$GIT_EMAIL"
+echo "✓ git identity: $GIT_NAME <$GIT_EMAIL>"
 
 ENVRC=".envrc"
-
 ENVRC_CONTENT="export GH_TOKEN=\$(gh auth token --user $GH_USER 2>/dev/null)"
 
-if [[ -f "$ENVRC" ]]; then
-  if grep -qF "$ENVRC_CONTENT" "$ENVRC"; then
-    echo "✓ .envrc already configured for $ACCOUNT_LABEL"
-  else
-    echo "⚠️  .envrc exists but doesn't match expected content."
-    echo "   Current:"
-    cat "$ENVRC"
-    echo "   Expected line: $ENVRC_CONTENT"
-    echo "   Edit .envrc manually if needed."
-  fi
+if [[ -f "$ENVRC" ]] && grep -qF "$ENVRC_CONTENT" "$ENVRC"; then
+  echo "✓ .envrc already configured"
 else
   echo "$ENVRC_CONTENT" > "$ENVRC"
-  echo "✓ .envrc created"
+  echo "✓ .envrc written"
 fi
 
-# Ensure .envrc is gitignored
-GITIGNORE=".gitignore"
-if [[ -f "$GITIGNORE" ]]; then
-  if ! grep -qx ".envrc" "$GITIGNORE" 2>/dev/null; then
-    echo ".envrc" >> "$GITIGNORE"
-    echo "✓ .envrc added to .gitignore"
-  else
-    echo "✓ .envrc already in .gitignore"
-  fi
+if [[ -f .gitignore ]]; then
+  grep -qx ".envrc" .gitignore 2>/dev/null || echo ".envrc" >> .gitignore
 else
-  echo ".envrc" > "$GITIGNORE"
-  echo "✓ .gitignore created with .envrc"
+  echo ".envrc" > .gitignore
 fi
-
-# ── direnv allow ──────────────────────────────────────────────────────────────
 
 if command -v direnv &>/dev/null; then
   direnv allow . 2>/dev/null && echo "✓ direnv allow"
 else
-  echo "⚠️  direnv not found — install with: brew install direnv"
-  echo "   Then run: direnv allow $(pwd)"
+  echo "⚠️  install direnv: brew install direnv"
 fi
 
 echo ""
-echo "Done. Account configured: $ACCOUNT_LABEL"
+echo "Done."

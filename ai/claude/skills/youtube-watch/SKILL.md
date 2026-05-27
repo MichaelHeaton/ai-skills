@@ -40,14 +40,14 @@ curl -s "https://www.youtube.com/oembed?url={URL}&format=json" | python3 -c "imp
 ### 2. Determine domain and priority
 
 Ask the user if not obvious from context:
-- **domain**: one of `homelab`, `learning`, `adobe`, `uv-cyber`, `personal`, `mtb`, `iot`
+- **domain**: one of `homelab`, `learning`, `work-primary`, `client-contract`, `personal`, `mtb`, `iot`
 - **priority**: almost always `low` for watch-later items unless the user signals urgency
 
 Infer from the title/description if confident:
 - Proxmox, Docker, Ansible, networking, self-hosting → `homelab`
 - DevOps, CI/CD, cloud, platform engineering, certs → `learning`
 - AI, machine learning, neural networks, LLMs → `learning`
-- Secrets, Vault, enterprise security → `adobe`
+- Secrets, Vault, enterprise security → `work-primary`
 - MTB, cycling, coaching → `mtb`
 - Communication, leadership, personal dev → `personal`
 
@@ -72,14 +72,14 @@ As a [role], I want to watch "[title]" by [channel], so that [benefit inferred f
 **Role guidance by domain:**
 - `homelab` → "a homelab operator"
 - `learning` → "an engineer upskilling in [topic]"
-- `adobe` → "a Vault team lead" or "an SRE"
+- `work-primary` → "a Vault team lead" or "an SRE"
 - `personal` → "a [parent/director/coach] developing [skill]"
 
 ### 4. Create the GitHub Issue
 
 ```bash
 gh issue create \
-  --repo ${GITHUB_PERSONAL_USER}/memex \
+  --repo <routing.personal_kb_github> \
   --title "Watch: {title}" \
   --label "domain/{domain},priority/{priority}" \
   --body "{rendered body}"
@@ -89,19 +89,13 @@ Capture the returned URL and issue number.
 
 ### 5. Add to the correct GitHub Project
 
-| Domain | Project | Number |
-|---|---|---|
-| adobe | Adobe | 8 |
-| uv-cyber | UV Cyber | 10 |
-| homelab | HomeLab | 7 |
-| learning | Learning | 11 |
-| personal | Personal | 13 |
-| mtb | MTB | 9 |
-| iot | IoT | 12 |
+If `github_projects.<domain>` is set in `~/.config/ai-skills/local.json`, add the issue to that project:
 
 ```bash
-gh project item-add {PROJECT_NUMBER} --owner ${GITHUB_PERSONAL_USER} --url {ISSUE_URL}
+gh project item-add {PROJECT_NUMBER} --owner {OWNER} --url {ISSUE_URL}
 ```
+
+Otherwise skip project assignment.
 
 ### 6. Append to `~/Projects/personal/memex/Raw/_GitHub-Issues-log.jsonl`
 

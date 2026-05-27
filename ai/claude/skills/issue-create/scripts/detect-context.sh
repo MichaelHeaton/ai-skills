@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Detect where to route a new issue based on the current git remote.
 # Outputs one of:
-#   jira-cesss
+#   jira-work
 #   github-current:<owner/repo>
+#   gitlab-current:<owner/repo>
 #   memex
 #
 # Configure work GitHub orgs (comma-separated):
 #   export SKILLS_WORK_ORGS=org1,org2
-# Remotes matching any listed org route to jira-cesss.
+# Remotes matching any listed org route to jira-work.
 
 remote=$(git remote get-url origin 2>/dev/null || true)
 IFS=',' read -ra work_orgs <<< "${SKILLS_WORK_ORGS:-}"
@@ -18,10 +19,10 @@ if [[ -z "$remote" ]]; then
 fi
 
 for org in "${work_orgs[@]}"; do
-  org="${org// /}"  # trim whitespace
+  org="${org// /}"
   [[ -z "$org" ]] && continue
   if [[ "$remote" == *"github.com:$org/"* ]] || [[ "$remote" == *"github.com/$org/"* ]]; then
-    echo "jira-cesss"
+    echo "jira-work"
     exit 0
   fi
 done

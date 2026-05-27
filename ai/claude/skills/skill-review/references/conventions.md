@@ -51,8 +51,6 @@ ai/claude/skills/
     └── assets/           # Templates, icons, static files
 ```
 
-**Legacy runtime (until import):** same structure under `claude-skills/skills/`.
-
 Only create `scripts/`, `references/`, or `assets/` when the skill actually needs them.
 
 ## SKILL.md structure
@@ -108,7 +106,7 @@ Commits, pushes, and PRs/MRs follow the **`git-ops`** skill. Branching by repo t
 ## Workflow for adding a new skill
 
 1. Run **`skill-create`** (guided interview)
-2. Add the skill under `ai/claude/skills/<name>/` in this repo (or `claude-skills/skills/` until import lands)
-3. Deploy with `make install-system` (target) or `make install` in claude-skills (today)
+2. Add the skill under `ai/claude/skills/<name>/` in this repo
+3. Deploy with `make install-system` (see docs/ROADMAP.md if not merged yet)
 4. Branch + PR in the skills repo; merge to main before relying on it on other machines
 5. On other machines: pull and re-run install

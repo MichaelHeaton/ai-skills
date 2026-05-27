@@ -2,7 +2,7 @@
 
 name: skill-review
 description: Review and improve skills — either a single skill or all skills used in the current session. Single-skill mode: audits a SKILL.md against conventions, incorporates session learnings, and tunes triggering. Session-audit mode: reflects on the current conversation to find skill friction, missed triggers, and workflow gaps worth turning into new skills — meant to be called at the end of every session to make skills a little better each time. Also invoked programmatically by a parent session passing pre-collected session context (sub-agent mode: SA1 done by parent, SA2–SA4 run in sub-agent with fresh skill files). Triggers on: "review this skill", "improve skill X", "this skill isn't working well", "update skill based on what we learned", "skill feels off", "tune skill description", "review skills from this session", "what skills need updating", "session skill review", "audit skills", or when session-close reaches its skill hygiene step.
-compatibility: Requires git. Skills must be installed via `make install` so ~/.claude/skills/ and ~/.claude/references/ symlinks exist.
+compatibility: Requires git. Skills deployed via `make install-system` (copy-only).
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
@@ -56,9 +56,9 @@ Look for any multi-step work that ran without a skill — no skill fired, but th
 
 Produce two lists:
 
-**Existing skills to improve** — name the skill, describe the specific fix (quote the friction if possible). Offer to run single-skill mode on it now or create a ticket in claude-skills.
+**Existing skills to improve** — name the skill, describe the specific fix (quote the friction if possible). Offer to run single-skill mode on it now or create a ticket in ai-skills.
 
-**New skill ideas** — proposed name + one sentence on what it does. Offer to invoke `skill-create` now or create a ticket in claude-skills.
+**New skill ideas** — proposed name + one sentence on what it does. Offer to invoke `skill-create` now or create a ticket in ai-skills.
 
 If there's nothing to improve: say "no skill changes identified this session" — don't manufacture findings.
 
@@ -68,14 +68,14 @@ If there's nothing to improve: say "no skill changes identified this session" �
 
 **Default: always create a ticket first**, even if you're about to work the finding immediately. The ticket preserves context and history regardless of whether it gets closed in the same session.
 
-Use `issue-create` Path B targeting `${GITHUB_PERSONAL_USER}/claude-skills`.
+Use `issue-create` Path B targeting `${GITHUB_PERSONAL_USER}/ai-skills`.
 
-**Security check before creating any ticket** — claude-skills is a **public GitHub repo**. Before writing ticket content, strip or generalize:
-- Adobe-internal hostnames, URLs, or system names
-- Internal ticket keys used as examples (CESSS-XXXXX etc.)
+**Security check before creating any ticket** — ai-skills is a **public GitHub repo**. Before writing ticket content, strip or generalize:
+- Employer-internal hostnames, URLs, or system names
+- Internal ticket keys used as examples (PROJ-12345 etc.)
 - Security findings, vulnerability details, or exploit patterns
 - Credentials, tokens, or secrets of any kind
-- Any detail that would only make sense to someone inside Adobe or UV Cyber
+- Any detail that would only make sense inside a specific employer or client org
 
 Describe the skill improvement in generic terms. "The skill failed to detect the repo name from voice input" is fine. "The skill couldn't find the internal secrets management repo at git.corp.example.com" is not.
 
@@ -103,7 +103,7 @@ Run SA2–SA4 inside a sub-agent when you want fresh skill file reads mid-sessio
 
 Session focus: [one sentence]
 Skills active this session:
-- <skill-name> (global: claude-skills)
+- <skill-name> (global: ai-skills)
 - <skill-name> (project: <repo-name>)
 Friction observed: [bullet list — what went wrong or felt off]
 
@@ -130,7 +130,7 @@ Do NOT run SA5. Do NOT create tickets.
 [1–2 sentences]
 ```
 
-**Security note**: SA5's security scrub (strip Adobe-internal details before public tickets) applies to the **parent session** when it acts on the sub-agent's findings — not to the sub-agent itself. The sub-agent returns findings; the parent creates tickets and must run the scrub.
+**Security note**: SA5's security scrub (strip Employer-internal details before public tickets) applies to the **parent session** when it acts on the sub-agent's findings — not to the sub-agent itself. The sub-agent returns findings; the parent creates tickets and must run the scrub.
 
 ---
 
@@ -204,7 +204,7 @@ If the skill produces complex structured output, it may reference `references/fo
 - Is anything redundant or not pulling its weight?
 - Is it under 500 lines? If not, what could move to `references/`?
 - Are there rigid ALWAYS/NEVER rules that should be replaced with explained reasoning?
-- Does every skill invocation/reference include a source label? (`_(personal — claude-skills repo)_`, `_(built-in — Claude Code)_`, or `_(repo — <name>)_`)
+- Does every skill invocation/reference include a source label? (`_(personal — ai-skills repo)_`, `_(built-in — Claude Code)_`, or `_(repo — <name>)_`)
 
 ### Freshness
 - Does the skill reference tools, APIs, or patterns that have changed?
@@ -228,7 +228,7 @@ Get the user to agree on the changes before applying them.
 Once the user approves:
 
 1. **Determine the skill's source** — global or project — then edit the repo source file, never `~/.claude/skills/` (the installed copy is a deployment artifact overwritten by the next install):
-   - **Global skill** → `~/Projects/personal/claude-skills/skills/{name}/SKILL.md`
+   - **Global skill** → `~/Projects/personal/ai/claude/skills/{name}/SKILL.md`
      ```bash
      ls ~/.claude/skills/{name}/   # confirms global
      ```
@@ -237,7 +237,7 @@ Once the user approves:
      find ~/Projects -maxdepth 4 -path "*/.claude/skills/{name}" -type d 2>/dev/null
      # use the repo path returned here
      ```
-   If session-close passed a source annotation (`global: claude-skills` or `project: <repo>`), use that directly instead of running the lookup.
+   If session-close passed a source annotation (`global: ai-skills` or `project: <repo>`), use that directly instead of running the lookup.
 2. Read it back and confirm it looks right
 3. **Global skills only** — verify the skill has a row in `README.md` and skim `AGENT.md` for stale references; update both if needed
 4. Remind them to `git commit && git push` in the correct repo, then `make install` (global) or the project's equivalent deploy step

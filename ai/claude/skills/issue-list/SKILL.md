@@ -99,9 +99,9 @@ gh issue list \
   --limit 200
 ```
 
-**Adobe Jira (via Atlassian MCP):**
+**Work Jira (via Atlassian MCP):**
 Use JQL: `assignee = currentUser() AND resolution = Unresolved ORDER BY updated DESC`
-See [[Agents/23-jira-rules|23-jira-rules]] for ticket type conventions and CES-specific context.
+See [[Agents/23-jira-rules|23-jira-rules]] for ticket type conventions and work Jira context (private vault rules).
 
 ### 3. Catch unindexed issues
 
@@ -116,11 +116,11 @@ Group by domain. For each open task show:
 
 **Example output format:**
 ```
-## Adobe
+## Work (Jira)
 - [#130](url) Investigate cross-mount secrets access [priority/medium]
-- CESSS-12352 — Document security ticket timeline delays
+- PROJ-12345 — Document security ticket timeline delays
 
-## UV Cyber
+## client contract
 - [#144](url) Verify CPUID exploit tools not present [priority/high]
 
 ## HomeLab
@@ -132,9 +132,9 @@ Group by domain. For each open task show:
 If the user specifies a domain, project, system, or label, filter before presenting:
 
 **By domain/system:**
-- "show me my Adobe tasks" → `domain: adobe`
+- "show me my work tasks" → `domain: work-primary`
 - "what's open in HomeLab" → `project: HomeLab`
-- "my Jira tickets" → `system: jira-adobe`
+- "my Jira tickets" → `system: jira-work`
 
 **By label (pass to `--label` in the `gh` call, or filter post-fetch for Jira):**
 - "show me the bugs" / "type/bug issues" → `--label type/bug`

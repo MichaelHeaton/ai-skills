@@ -27,7 +27,7 @@ git checkout <other-feature-branch> && git checkout -b <new-branch>
 
 **Why:** If the source branch was squash-merged to main, its commits are rewritten as a single squash commit. A new branch from that source carries the original commits — which are already represented in main — making the net diff of any new PR resolve to zero. The result is a no-op PR that looks like changes but applies nothing.
 
-For per-repo-type conventions (Adobe, GitLab, Memex, personal), see `~/.claude/references/branching.md`.
+For per-repo-type conventions (work GitHub, GitLab, personal KB, personal), see `docs/guides/branching.md` in ai-skills.
 
 ---
 

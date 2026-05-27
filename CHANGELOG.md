@@ -4,7 +4,8 @@
 
 ### Added
 
-- `ai/claude/` — 27 skills, hooks, memory, overlay `CLAUDE.md` imported from claude-skills
+- `ai/claude/` — 26 skills (retired `uv-weekly` removed), hooks, memory, overlay `CLAUDE.md` imported from claude-skills
+- Public scrub — employer names, emails, and hardcoded paths replaced with `local.json` keys and generic labels
 - Version frontmatter on all imported `SKILL.md` files (`make bootstrap-version`)
 - `.deploy/repo-manifest.json` expanded to 65 paths (`principles/` + `ai/claude/`)
 - `docs/guides/memex-and-related-repos.md` — Memex as maintainer PKM name; workstation-devops install path

@@ -1,7 +1,7 @@
 ---
 
 name: issue-get
-description: Fetch the full details of a specific task or ticket by ID. Works across GitHub Issues and Jira. Use when the user references a specific issue number or ticket key (e.g. "#94", "CESSS-12544", "issue 94"), or when another skill needs full context for a task before acting on it.
+description: Fetch the full details of a specific task or ticket by ID. Works across GitHub Issues and Jira. Use when the user references a specific issue number or ticket key (e.g. "#94", "PROJ-12345", "issue 94"), or when another skill needs full context for a task before acting on it.
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
@@ -19,7 +19,7 @@ Check `~/Projects/personal/memex/Raw/_task-index.jsonl` first — find the recor
 - If found: use `system` and `repo` fields to know which API to call.
 - If not found: infer from the ID format:
   - `#NNN` or plain integer → run detect-context to determine which repo (see §2 below)
-  - `CESSS-XXXXX` or `PROJECT-XXXXX` → Adobe Jira (`jira-adobe`)
+  - `PROJ-12345` or `PROJECT-XXXXX` → Work Jira (`jira-work`)
 
 ### 2. Fetch from source system
 
@@ -44,9 +44,9 @@ gh issue view {NUMBER} \
   --json number,title,body,labels,state,url,createdAt,comments
 ```
 
-**Adobe Jira:**
+**Work Jira:**
 Use the Atlassian MCP `jira_get_issue` tool with the ticket key.
-See [[Agents/23-jira-rules|23-jira-rules]] for CES context (Epic ownership, ticket types, Sherlock/FastPass notes).
+See [[Agents/23-jira-rules|23-jira-rules]] for work Jira context (see personal KB Agents/ if present) (Epic ownership, ticket types, Sherlock/FastPass notes).
 
 ### 3. Present the result
 

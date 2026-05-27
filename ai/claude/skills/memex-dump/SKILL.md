@@ -1,7 +1,7 @@
 ---
 
 name: memex-dump
-description: Quickly capture raw, unstructured ideas, thoughts, and to-dos before they're lost — brain dump mode. For unresolved, untriaged captures only; if a decision is already made and needs a permanent home, use memex-decide instead. Creates a ticket instantly, always tagged for triage and grooming, so nothing falls through the cracks. Defaults to Memex (personal GitHub Issues). Workstation/dotfiles/browser ideas route to workstation-devops; skill/AI-workflow ideas route to claude-skills. Work Jira is suppressed unless a named CESSS epic was mentioned earlier in this session — rough thoughts don't belong in work systems. Use when the user says "brain dump", "capture this idea", "remember this", "quick note", "log this thought", "don't let me forget", "jot this down", "dump this", "dump this to memex", "quick capture", "brain dump to memex", "here are a few things to capture", "brain dump, multiple items", or any fast-capture variation — including lists of multiple ideas at once.
+description: Quickly capture raw, unstructured ideas, thoughts, and to-dos before they're lost — brain dump mode. For unresolved, untriaged captures only; if a decision is already made and needs a permanent home, use memex-decide instead. Creates a ticket instantly, always tagged for triage and grooming, so nothing falls through the cracks. Defaults to Memex (personal GitHub Issues). Workstation/dotfiles/browser ideas route to workstation-devops; skill/AI-workflow ideas route to ai-skills. Work Jira is suppressed unless a named PROJ epic was mentioned earlier in this session — rough thoughts don't belong in work systems. Use when the user says "brain dump", "capture this idea", "remember this", "quick note", "log this thought", "don't let me forget", "jot this down", "dump this", "dump this to memex", "quick capture", "brain dump to memex", "here are a few things to capture", "brain dump, multiple items", or any fast-capture variation — including lists of multiple ideas at once.
 compatibility: Requires gh CLI. Shares scripts with issue-create.
 version: 1.0.0
 principles_version: 1.0.0
@@ -26,8 +26,8 @@ If the idea is clearly about one of these topics, route to the named repo regard
 
 | Topic | Repo | System |
 |---|---|---|
-| Workstation setup, dotfiles, browser config (Brave/Chrome), dev environment, Homebrew, system tools, dashboard/homepage tools | `MichaelHeaton/workstation-devops` | GitHub |
-| Skill improvements, install scripts, AI workflow, Claude skill authoring | `MichaelHeaton/claude-skills` | GitHub |
+| Workstation setup, dotfiles, browser config (Brave/Chrome), dev environment, Homebrew, system tools, dashboard/homepage tools | `YOUR_USER/workstation-devops` | GitHub |
+| Skill improvements, install scripts, AI workflow, Claude skill authoring | `YOUR_USER/ai-skills` | GitHub |
 
 **2. Context-based routing (fallback)**
 
@@ -39,7 +39,7 @@ bash ~/.claude/skills/issue-create/scripts/detect-context.sh
 
 | Detected | Brain dump routes to |
 |---|---|
-| `jira-cesss` | Memex **unless** a named CESSS epic was mentioned in this session |
+| `jira-work` | Memex **unless** a named PROJ epic was mentioned in this session |
 | `github-current:<personal>` | That repo **if** the idea is clearly scoped to it; otherwise Memex |
 | `memex` | Memex |
 
@@ -73,7 +73,7 @@ For each idea (batch or single):
 
 - **Title**: imperative verb + short description — infer from what the user said
 - **Domain**: infer from context; ask only if completely ambiguous
-  - GitHub/Memex domains: `adobe`, `uv-cyber`, `homelab`, `learning`, `personal`, `mtb`, `iot`
+  - GitHub/Memex domains: `work-primary`, `client-contract`, `homelab`, `learning`, `personal`, `mtb`, `iot`
   - Workstation-devops: use `workstation` in the task index — no GitHub Project assignment applies
 - **Priority**: default to `medium`; adjust only if user signals urgency
 - **Route**: apply topic-based routing first, then context-based fallback
@@ -155,18 +155,18 @@ bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
 
 ---
 
-**Path J — Jira (active CESSS epic only)**
+**Path J — Jira (active PROJ epic only)**
 
 Create as Story with labels `brain-dump` and `needs-grooming` (Jira free-text labels). Link to the active epic via `customfield_11800`. See `issue-create` Path A for full Jira steps.
 
 ```bash
 bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
-  --system jira-adobe \
+  --system jira-work \
   --id "<KEY>" \
   --url "<url>" \
   --title "<title>" \
-  --domain adobe \
-  --project CESSS
+  --domain work-primary \
+  --project PROJ
 ```
 
 ### 3. Confirm
