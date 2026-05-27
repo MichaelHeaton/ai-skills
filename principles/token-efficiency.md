@@ -1,5 +1,5 @@
 ---
-version: 1.0.0
+version: 1.0.1
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
@@ -17,7 +17,7 @@ Token cost is a first-class design constraint.
 
 ## Logs and command output
 
-- Filter before pasting large logs (`grep`, `awk`; dedicated scripts in later PRs)
+- Filter before pasting large logs (`grep`, `awk`, or dedicated scripts when available)
 - Prefer parsers for log types you hit repeatedly
 
 ## Scripts over prose
@@ -25,6 +25,6 @@ Token cost is a first-class design constraint.
 - Repeatable steps belong in `scripts/` with a one-line skill invocation
 - Link to `principles/` instead of copying rules into every skill
 
-## Deploy manifests (PR-D+)
+## Deploy manifests
 
-MD5 manifests under `.deploy/` help install and sync scripts diff only changed paths (see `principles/deployment.md`).
+MD5 manifests under `.deploy/` (when present) let install and sync scripts diff only changed paths — see [deployment.md](deployment.md).

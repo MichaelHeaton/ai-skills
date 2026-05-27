@@ -4,5 +4,5 @@
 
 ### Added
 
-- **PR-A:** `principles/` (five files), `AGENTS.md`, `CLAUDE.md`, project README, `.gitignore`, MIT `LICENSE`
-- Phased rollout documented — no `ai/claude/` tree in this PR
+- `principles/` (five files), `AGENTS.md`, `CLAUDE.md`, `README.md`, `.gitignore`, MIT `LICENSE`
+- `docs/ROADMAP.md` — migration checklist (not duplicated in principles)

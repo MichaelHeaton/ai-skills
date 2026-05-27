@@ -1,5 +1,5 @@
 ---
-version: 1.0.0
+version: 1.0.1
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
@@ -18,10 +18,10 @@ This repository is **public**. Treat every commit as publishable.
 
 ## Use instead
 
-- Placeholder tokens from `categories/tags.yaml` (PR-B)
+- Placeholder tokens from `categories/tags.yaml` (when present)
 - Values in `~/.config/ai-skills/local.json`
 - Optional private regex: `~/.config/ai-skills/leak-patterns`
 
-## Before every PR
+## Before every pull request
 
-Review the diff for accidental PII or internal URLs. Automated scans arrive in PR-H (pre-commit).
+Review the diff for accidental PII or internal URLs. Automated scans will be added with pre-commit hooks later.

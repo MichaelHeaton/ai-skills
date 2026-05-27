@@ -5,47 +5,49 @@
 
 ## What this is
 
-A public, versioned home for **multi-AI** skills and conventions. This repo is being built in **small PRs**; not everything is present yet.
+A public, versioned home for **multi-AI** skills and conventions. The repo is growing incrementally; see [docs/ROADMAP.md](docs/ROADMAP.md) for what exists vs planned.
 
-| Milestone | Status |
-|-----------|--------|
-| PR-A (this) | `principles/`, `AGENTS.md`, entry docs |
-| PR-B | `config/`, `categories/` |
-| PR-C | `docs/guides/` |
-| PR-D | Scripts (`unlink-legacy`, import tooling) |
-| PR-F | `ai/claude/skills/` import from claude-skills |
-| PR-G | `install-system`, `sync-from-system` |
+## Repository layout (target)
+
+| Path | Role |
+|------|------|
+| `principles/` | Universal rules (present) |
+| `config/`, `categories/` | Templates and placeholder tags (planned) |
+| `docs/` | Guides and runbooks (planned) |
+| `ai/claude/skills/` | Claude Code skills (planned) |
+| `ai/cursor/rules/` | Cursor rules (planned) |
+| `scripts/` | Install, sync, manifests (planned) |
 
 ## Where skills live today
 
-Until **PR-F**, skills remain in [claude-skills](https://github.com/MichaelHeaton/claude-skills):
+Skills are **not in this repository yet**. Use [claude-skills](https://github.com/MichaelHeaton/claude-skills):
 
 ```
 claude-skills/skills/<name>/SKILL.md  →  ~/.claude/skills/<name>/
 ```
 
-After PR-F:
+When `ai/claude/skills/` exists here:
 
 ```
-ai-skills/ai/claude/skills/<name>/SKILL.md  →  ~/.claude/skills/<name>/  (via install-system)
+ai/claude/skills/<name>/SKILL.md  →  ~/.claude/skills/<name>/  (via make install-system)
 ```
 
 ## Private configuration
 
-Employer-specific values belong in **`~/.config/ai-skills/local.json`** (created from template in PR-B). Never commit filled copies.
+Employer-specific values belong in **`~/.config/ai-skills/local.json`**. A public template will live under `config/` when added. Never commit filled copies.
 
 ## Principles (read order)
 
-1. [principles/core.md](principles/core.md) — purpose and phased layout
-2. [principles/security.md](principles/security.md) — public-repo rules
-3. [principles/deployment.md](principles/deployment.md) — copy-only install (upcoming)
-4. [principles/versioning.md](principles/versioning.md) — semver and tiers
-5. [principles/token-efficiency.md](principles/token-efficiency.md) — token discipline
+1. [principles/core.md](principles/core.md)
+2. [principles/security.md](principles/security.md)
+3. [principles/deployment.md](principles/deployment.md)
+4. [principles/versioning.md](principles/versioning.md)
+5. [principles/token-efficiency.md](principles/token-efficiency.md)
 
 ## Security
 
-See [principles/security.md](principles/security.md). No internal URLs, project keys, or coworker names in git.
+See [principles/security.md](principles/security.md).
 
-## Legacy
+## Legacy source
 
-Content is imported from **claude-skills** in PR-F. That repo stays the runtime source until **install-system** (PR-G) deploys from here.
+Skill bodies will be imported from **claude-skills**. That repo remains the runtime source until copy-only install from here is implemented.

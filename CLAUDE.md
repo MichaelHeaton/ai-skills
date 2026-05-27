@@ -12,14 +12,12 @@
 
 ## Content caution
 
-Public repo. No employer names, Jira keys, or internal URLs in commits. Placeholders arrive in PR-B (`categories/tags.yaml`).
+Public repo. No employer names, Jira keys, or internal URLs in commits. Placeholder definitions will live under `categories/` when added.
 
 ## Skills (current)
 
-Skills are **not in this repo yet** (PR-F). Use [claude-skills](https://github.com/MichaelHeaton/claude-skills) until import lands.
-
-When `ai/claude/skills/` exists, skills live only under that path.
+Skills are **not in this repo yet**. Use [claude-skills](https://github.com/MichaelHeaton/claude-skills) until `ai/claude/skills/` is imported.
 
 ## Private config
 
-`~/.config/ai-skills/local.json` — template and schema in PR-B.
+`~/.config/ai-skills/local.json` on your machine. Schema will be documented under `docs/guides/` when the template lands in `config/`.

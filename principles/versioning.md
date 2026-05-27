@@ -1,5 +1,5 @@
 ---
-version: 1.0.0
+version: 1.0.1
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
@@ -7,7 +7,7 @@ updated_by: human
 
 # Versioning principles
 
-## Metadata (Tier A — required once skills are imported)
+## Metadata (required on versioned files)
 
 ```yaml
 version: MAJOR.MINOR.PATCH
@@ -28,9 +28,9 @@ When you edit a versioned file, bump the appropriate component and update `last_
 
 ## Tiers
 
-| Tier | Paths | When enforced |
-|------|-------|----------------|
-| **A** | `ai/**/SKILL.md`, `ai/cursor/rules/**`, `principles/**` | PR-F import + PR-H hooks |
+| Tier | Paths | Enforcement |
+|------|-------|-------------|
+| **A** | `ai/**/SKILL.md`, `ai/cursor/rules/**`, `principles/**` | Required once paths exist |
 | **B** | `docs/**`, `scripts/**` | Recommended |
 | **C** | Templates, `CHANGELOG.md` | Optional |
 

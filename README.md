@@ -6,26 +6,17 @@ Public, versioned **multi-AI workspace** for assistant skills, principles, and c
 
 ## Status
 
-This repository is under **incremental construction**. [PR #1](https://github.com/MichaelHeaton/ai-skills/pull/1) was superseded by smaller reviews starting with **PR-A** (core skeleton only).
-
-| PR | Focus |
-|----|--------|
-| **A** | Principles + `AGENTS.md` (you are here) |
-| B | Config templates, tags, sanitize rules |
-| C | Documentation guides |
-| D | Phase 0 / import scripts (no skill import yet) |
-| E | Comms-write scrub (claude-skills + Memex) |
-| F | Import `ai/claude/skills/` (26 skills) |
-| G | Copy-only `install-system` + sync-back |
+The repository is **under construction**. This branch has the core skeleton (`principles/`, entry docs). Skills, config templates, and install tooling are not here yet — see [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Skills today
 
-**Runtime skills** still come from [claude-skills](https://github.com/MichaelHeaton/claude-skills) until PR-F and PR-G land.
+**Runtime skills** still come from [claude-skills](https://github.com/MichaelHeaton/claude-skills):
 
 ```bash
-# Existing workflow (unchanged for now)
 cd ~/Projects/personal/claude-skills && make install
 ```
+
+After `ai/claude/skills/` exists in this repo, deployment will move to `make install-system` here (documented in [principles/deployment.md](principles/deployment.md)).
 
 ## Clone
 
