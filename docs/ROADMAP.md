@@ -14,13 +14,15 @@ Migration from [claude-skills](https://github.com/MichaelHeaton/claude-skills) t
 - [x] `principles/` — universal rules
 - [x] `AGENTS.md`, `CLAUDE.md`, `README.md`
 - [x] `.gitignore`, `LICENSE`, `CHANGELOG.md`
+- [x] `config/` — templates, `sanitize.json`, leak-patterns README
+- [x] `categories/tags.yaml` — placeholder tag registry
+- [x] `docs/guides/local-config.md`
 
 ## Planned (not yet in tree)
 
 | Area | Path | Notes |
 |------|------|--------|
-| Config | `config/`, `categories/` | Templates, `sanitize.json`, tags |
-| Docs | `docs/guides/` | Branching, local config, conventions |
+| Docs | `docs/guides/` (more) | Branching, conventions, multi-AI |
 | Tooling | `scripts/`, `Makefile` | `unlink-legacy`, import, manifests |
 | Claude skills | `ai/claude/skills/` | Import from claude-skills |
 | Deploy | `install-system`, `sync-from-system` | Copy-only; no symlinks |

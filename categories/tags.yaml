@@ -1,0 +1,56 @@
+# Placeholder tokens for public skills. Values live in ~/.config/ai-skills/local.json
+---
+version: 1.0.0
+principles_version: 1.0.0
+last_updated: 2026-05-27
+updated_by: human
+
+tags:
+  - name: jira_project_key
+    description: Default Jira project key for work context
+    expected_format: string
+    example: "PROJ-12345"
+    local_json_path: jira.project_key
+
+  - name: jira_base_url
+    description: Jira instance base URL
+    expected_format: url
+    example: "https://jira.example.com"
+    local_json_path: jira.base_url
+
+  - name: github_account
+    description: GitHub account key from local.json accounts map
+    expected_format: string
+    example: "personal"
+    local_json_path: accounts.<key>.github_user
+
+  - name: domain
+    description: Organizational context for routing
+    expected_format: string
+    example: "personal | work-primary | work-secondary | volunteer"
+
+  - name: company_name
+    description: Organization label (private value only)
+    expected_format: string
+    example: "Acme Corp"
+
+  - name: internal_url
+    description: Internal wiki, SharePoint, or corp URL placeholder
+    expected_format: url
+    example: "https://wiki.example.com/team/page"
+
+  - name: person_name
+    description: Individual name placeholder for scrubbed content
+    expected_format: string
+    example: "Jane Doe"
+
+  - name: project_name
+    description: Internal project or program name
+    expected_format: string
+    example: "Platform Alpha"
+
+  - name: personal_kb_github
+    description: GitHub owner/repo for personal knowledge base (second brain)
+    expected_format: string
+    example: "YOUR_USER/your-repo"
+    local_json_path: routing.personal_kb_github

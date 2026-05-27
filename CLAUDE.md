@@ -12,7 +12,7 @@
 
 ## Content caution
 
-Public repo. No employer names, Jira keys, or internal URLs in commits. Placeholder definitions will live under `categories/` when added.
+Public repo. No employer names, Jira keys, or internal URLs in commits. Placeholder definitions: [categories/tags.yaml](categories/tags.yaml).
 
 ## Skills (current)
 
@@ -20,4 +20,4 @@ Skills are **not in this repo yet**. Use [claude-skills](https://github.com/Mich
 
 ## Private config
 
-`~/.config/ai-skills/local.json` on your machine. Schema will be documented under `docs/guides/` when the template lands in `config/`.
+`~/.config/ai-skills/local.json` on your machine — copy from [config/local.template.json](config/local.template.json). See [docs/guides/local-config.md](docs/guides/local-config.md).

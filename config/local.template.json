@@ -1,0 +1,74 @@
+{
+  "$schema": "ai-skills-local-v1",
+  "comment": "Copy to ~/.config/ai-skills/local.json and fill in. NEVER commit the filled file. Use any labels you want in your private copy — this template stays employer-agnostic.",
+
+  "accounts": {
+    "personal": {
+      "label": "Personal GitHub",
+      "git_name": "",
+      "git_email": "",
+      "github_user": "",
+      "ssh_host": "github.com-personal",
+      "remote_match": ["github.com-personal", "github.com/YOUR_USER"]
+    },
+    "work": {
+      "label": "Employer (primary job)",
+      "git_name": "",
+      "git_email": "",
+      "github_user": "",
+      "ssh_host": "github.com",
+      "remote_match": ["github.com:YOUR_EMU_USER", "git.corp."],
+      "github_orgs": []
+    },
+    "client_contract": {
+      "label": "Client / contract (e.g. GitLab)",
+      "git_name": "",
+      "git_email": "",
+      "remote_match": ["gitlab.com"],
+      "gitlab_host": "gitlab.com"
+    }
+  },
+
+  "jira": {
+    "account": "work",
+    "base_url": "",
+    "project_key": "",
+    "default_issue_type": "Story",
+    "epic_link_field": "",
+    "epic_owners_note": "Epics: managers only — do not create via AI",
+    "example_ticket_key": "PROJ-12345"
+  },
+
+  "routing": {
+    "personal_kb_github": "YOUR_USER/your-repo",
+    "work_github_orgs": []
+  },
+
+  "slack": {
+    "vault_support_channel": ""
+  },
+
+  "repos": {
+    "work_docs": "",
+    "work_skills": ""
+  },
+
+  "weekly_reports": {
+    "client_contract": {
+      "display_name": "Client account name for deck rows",
+      "sharepoint_deck_url": "",
+      "recurring_github_issue": "",
+      "quote_attribution_note": "Attribute quotes by name and role",
+      "deadline_note": "",
+      "vault_format_ref": "Raw/Resources/<your-client-folder>/Weekly-Deck.md",
+      "output_file": "Outputs/Weekly/Client-Contract-Weekly-YYYY-MM-DD.md"
+    },
+    "work_team": {
+      "display_name": "Your name as shown on the team wiki",
+      "wiki_section": "",
+      "meeting_note": "",
+      "vault_agent_ref": "Agents/<your-weekly-report-rules>.md",
+      "output_file": "Outputs/Weekly/Work-Team-Weekly-YYYY-MM-DD.md"
+    }
+  }
+}

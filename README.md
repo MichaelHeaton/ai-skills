@@ -6,7 +6,9 @@ Public, versioned **multi-AI workspace** for assistant skills, principles, and c
 
 ## Status
 
-The repository is **under construction**. This branch has the core skeleton (`principles/`, entry docs). Skills, config templates, and install tooling are not here yet — see [docs/ROADMAP.md](docs/ROADMAP.md).
+The repository is **under construction**. Present: `principles/`, `config/` templates, `categories/tags.yaml`, entry docs. Skills and install tooling are not here yet — see [docs/ROADMAP.md](docs/ROADMAP.md).
+
+Private values: copy [`config/local.template.json`](config/local.template.json) to `~/.config/ai-skills/local.json` ([guide](docs/guides/local-config.md)).
 
 ## Skills today
 
