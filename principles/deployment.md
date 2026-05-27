@@ -1,5 +1,5 @@
 ---
-version: 1.0.1
+version: 1.0.2
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
@@ -11,7 +11,8 @@ updated_by: human
 
 | Context | Mechanism | Status |
 |---------|-----------|--------|
-| **System** | `make install-system` → `~/.claude/` | Planned (after `ai/claude/` import) |
+| **System** | `make install-system` → `~/.claude/` | **Present** |
+| **Sync back** | `make sync-from-system` → repo | **Present** (dry-run default) |
 | **Repo** | `make install-repo` → project `.cursor/rules` | Planned |
 | **Manifest** | `.deploy/repo-manifest.json` | Present — `make manifest-update` |
 | **Web UI** | Pasted instructions; no filesystem `local.json` | To be documented |
@@ -20,13 +21,39 @@ updated_by: human
 
 The git repo is source of truth. `~/.claude/` holds **copies**, never symlinks.
 
-1. **Preferred:** Edit in repo, then install
-2. **Alternative:** Edit under `~/.claude/`, then `make sync-from-system` before commit (when available)
+1. **Preferred:** Edit in repo → `make install-system`
+2. **Alternative:** Edit under `~/.claude/` → `make sync-from-system` (dry-run, then `--apply`) → review → PR
+
+## install-system
+
+Deploys from `ai/claude/`:
+
+- `skills/` → `~/.claude/skills/`
+- `hooks/*.py` → `~/.claude/hooks/`
+- `CLAUDE.md` → `~/.claude/CLAUDE.md` (formatting overlay)
+- `memory/` → `~/.claude/projects/<encoded-repo-path>/memory` (copy)
+- `log-clip` → `~/.local/bin/clog`
+- `config/local.template.json` → `~/.config/ai-skills/local.json` (create-if-missing only)
+
+Removes retired skills (`uv-weekly`, `pr-slack`) from the system install.
+
+**Does not overwrite:** `settings.json`, `CLAUDE.local.md`, filled `local.json`.
+
+**Safety:** Aborts if a system skill looks newer than repo (unsynced edits). Use `make sync-from-system` first, or `make install-system --force`.
+
+## sync-from-system
+
+Whitelist only — never pulls secrets or private config.
+
+| System | Repo |
+|--------|------|
+| `~/.claude/skills/<name>/` | `ai/claude/skills/<name>/` |
+| `~/.claude/hooks/*.py` | `ai/claude/hooks/` |
+| `~/.claude/CLAUDE.md` | `ai/claude/CLAUDE.md` |
+| `~/.claude/projects/.../memory/` | `ai/claude/memory/` |
+
+After `--apply`: bump `version` on edited files, `make manifest-update`, open PR via `git-ops`.
 
 ## One-time migration from symlink installs
 
-`make unlink-legacy` materializes `~/.claude/skills` as copies and can migrate config to `~/.config/ai-skills/`. Safe to run once when moving off symlink-based claude-skills installs.
-
-## Before skills live here
-
-Skills are developed in **claude-skills** and copied to `~/.claude/skills/` via that repo. This repository does not contain `ai/claude/` until import is complete.
+`make unlink-legacy` materializes `~/.claude/skills` as copies and can migrate config to `~/.config/ai-skills/`. Run once when moving off claude-skills symlink installs, then use `make install-system` from this repo.

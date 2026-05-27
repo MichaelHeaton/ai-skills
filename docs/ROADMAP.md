@@ -19,7 +19,7 @@ Migration from [claude-skills](https://github.com/MichaelHeaton/claude-skills) t
 - [x] `docs/guides/` — local-config, branching, formatting, skill-conventions
 - [x] `docs/multi-ai.md`, `docs/README.md`
 - [x] Doc stubs — deployment-contexts, cross-ai-review, self-improvement-loop, `mcps/`
-- [x] `scripts/`, `Makefile` — Phase 0, import, manifest
+- [x] `scripts/`, `Makefile` — Phase 0, import, manifest, `install-system`, `sync-from-system`
 - [x] `ai/claude/` — skills, hooks, memory, `CLAUDE.md` (import from claude-skills)
 - [x] `.deploy/repo-manifest.json` — `principles/` + `ai/claude/` (65 paths)
 
@@ -28,20 +28,18 @@ Migration from [claude-skills](https://github.com/MichaelHeaton/claude-skills) t
 | Area | Path | Notes |
 |------|------|--------|
 | Docs | stub bodies | Fill deployment-contexts, cross-ai-review, MCP runbooks |
-| Deploy | `install-system`, `sync-from-system` | Copy-only; no symlinks |
+| Deploy | `install-repo`, manifest diff | Cursor rules deploy; drift tooling |
 | Cursor | `ai/cursor/rules/` | Thin rules → `AGENTS.md` |
 | Hooks | `.pre-commit-config.yaml` | Sanitize, version bump, secrets |
 
 ## Runtime today
 
-Until `install-system` exists:
-
-- **Source of truth** for skill bodies: `ai/claude/skills/` in this repo
-- **Deploy** still uses `make install` in claude-skills → `~/.claude/skills/` (or edit here and re-import until cutover)
-- **Private config** at `~/.config/ai-skills/local.json` (Phase 0 migration may already exist on your machine)
+- **Source of truth:** `ai/claude/skills/` in this repo
+- **Deploy:** `make install-system` → `~/.claude/` (copy-only). Sync back: `make sync-from-system`
+- **Private config:** `~/.config/ai-skills/local.json` (create-if-missing on install)
 
 ## Related work outside this repo
 
 - [x] **Memex** — private comms-write examples at `ai/claude/skills/comms-write-context/examples/` ([guide](guides/memex-and-related-repos.md))
 - [x] **claude-skills** — public `comms-write` stubs merged
-- **workstation-devops** — clones all three repos; runs `make install` in claude-skills until `install-system` here
+- **workstation-devops** — switch `install_cmd` to `make install-system` in ai-skills (companion MR)

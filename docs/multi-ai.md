@@ -15,30 +15,25 @@ One repo, multiple tools — each reads what it understands natively. Nothing fo
 |-------|------|----------------|
 | **Universal** | [principles/](../principles/) + [AGENTS.md](../AGENTS.md) | All agents |
 | **Claude overlay** | [CLAUDE.md](../CLAUDE.md) | Claude Code |
-| **Claude deploy** | `ai/claude/` (present) | Copied to `~/.claude/` via `make install-system` (planned) |
+| **Claude deploy** | `ai/claude/` (present) | Copied to `~/.claude/` via `make install-system` |
 | **Cursor overlay** | `ai/cursor/rules/` (planned) | Cursor |
 | **Private config** | `~/.config/ai-skills/local.json` | All agents on your machine |
 
-## Claude Code (today)
+## Claude Code
 
-Skill bodies are in **`ai/claude/skills/`** here. Deploy still runs from [claude-skills](https://github.com/MichaelHeaton/claude-skills) until `install-system` exists:
+Skill bodies: **`ai/claude/skills/`** in this repo.
 
 ```bash
-cd ~/Projects/personal/claude-skills && make install
+cd ~/Projects/personal/ai-skills
+make install-system    # copy-only deploy repo → ~/.claude/
+make sync-from-system  # dry-run: pull allowed ~/.claude/ edits back into repo
 ```
 
-- Skills: `~/.claude/skills/<name>/` from legacy repo `skills/<name>/` (sync via `make import-legacy` when editing in claude-skills)
+- Skills: `~/.claude/skills/<name>/` (copies, never symlinks)
 - Reload: new conversation (or ⌘R in desktop/iTerm)
 - Machine-specific: `~/.claude/CLAUDE.local.md` (never committed)
 
-## Claude Code (target)
-
-```bash
-make install-system    # copy-only deploy repo → ~/.claude/
-make sync-from-system  # pull allowed ~/.claude edits back into repo
-```
-
-See [principles/deployment.md](../principles/deployment.md) — no symlinks.
+See [principles/deployment.md](../principles/deployment.md).
 
 ## Cursor
 
@@ -55,6 +50,4 @@ See [principles/deployment.md](../principles/deployment.md) — no symlinks.
 
 ## Workstation bootstrap
 
-On the maintainer’s Macs, **[workstation-devops](https://gitlab.com/Michael-Heaton/workstation-devops)** (`make apply`) clones **ai-skills**, **claude-skills**, and **[Memex](https://github.com/MichaelHeaton/memex)** (personal PKM vault — see [guides/memex-and-related-repos.md](guides/memex-and-related-repos.md)) and runs **`make install`** in claude-skills today. It does **not** store filled `local.json` (templates only).
-
-Target: `make install-system` in this repo (next migration step).
+On the maintainer’s Macs, **[workstation-devops](https://gitlab.com/Michael-Heaton/workstation-devops)** (`make apply`) clones **ai-skills**, **claude-skills**, and **[Memex](https://github.com/MichaelHeaton/memex)** and runs **`make install-system`** in ai-skills. It does **not** store filled `local.json` (templates only).

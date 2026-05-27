@@ -4,6 +4,10 @@
 
 ### Added
 
+- `make install-system` / `make sync-from-system` — copy-only deploy `ai/claude/` → `~/.claude/`; whitelist sync back; retired skill cleanup
+- `scripts/install-system.sh`, `scripts/sync-from-system.sh`, `scripts/lib/deploy-paths.sh`
+- `make install-system-dry-run`, `sync-from-system-apply`; `make install` aliases `install-system`
+
 - `ai/claude/` — 26 skills (retired `uv-weekly` removed), hooks, memory, overlay `CLAUDE.md` imported from claude-skills
 - Public scrub — employer names, emails, and hardcoded paths replaced with `local.json` keys and generic labels
 - Version frontmatter on all imported `SKILL.md` files (`make bootstrap-version`)
