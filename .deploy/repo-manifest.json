@@ -1,0 +1,12 @@
+{
+  "generated_at": "2026-05-27T22:17:09Z",
+  "algorithm": "md5",
+  "scope": "principles-only",
+  "paths": {
+    "principles/core.md": "cd5b1fd72fccc81ac1705ee80798a265",
+    "principles/deployment.md": "27dbcf45b0195fadb5206849fadf74a4",
+    "principles/security.md": "c8328c65de16d8f433627b9fc711371b",
+    "principles/token-efficiency.md": "6e4d6c695e8b4c702a0a363445219a4e",
+    "principles/versioning.md": "51ef6de731c323bf2c9b94721a3aecad"
+  }
+}

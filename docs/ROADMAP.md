@@ -19,13 +19,14 @@ Migration from [claude-skills](https://github.com/MichaelHeaton/claude-skills) t
 - [x] `docs/guides/` — local-config, branching, formatting, skill-conventions
 - [x] `docs/multi-ai.md`, `docs/README.md`
 - [x] Doc stubs — deployment-contexts, cross-ai-review, self-improvement-loop, `mcps/`
+- [x] `scripts/`, `Makefile` — Phase 0, import, manifest (import not run yet)
+- [x] `.deploy/repo-manifest.json` — principles-only until `ai/claude/` import
 
 ## Planned (not yet in tree)
 
 | Area | Path | Notes |
 |------|------|--------|
 | Docs | stub bodies | Fill deployment-contexts, cross-ai-review, MCP runbooks |
-| Tooling | `scripts/`, `Makefile` | `unlink-legacy`, import, manifests |
 | Claude skills | `ai/claude/skills/` | Import from claude-skills |
 | Deploy | `install-system`, `sync-from-system` | Copy-only; no symlinks |
 | Cursor | `ai/cursor/rules/` | Thin rules → `AGENTS.md` |

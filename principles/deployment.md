@@ -11,8 +11,9 @@ updated_by: human
 
 | Context | Mechanism | Status |
 |---------|-----------|--------|
-| **System** | `make install-system` → `~/.claude/` | Planned |
+| **System** | `make install-system` → `~/.claude/` | Planned (after `ai/claude/` import) |
 | **Repo** | `make install-repo` → project `.cursor/rules` | Planned |
+| **Manifest** | `.deploy/repo-manifest.json` | Present — `make manifest-update` |
 | **Web UI** | Pasted instructions; no filesystem `local.json` | To be documented |
 
 ## Copy only — no symlinks
@@ -24,7 +25,7 @@ The git repo is source of truth. `~/.claude/` holds **copies**, never symlinks.
 
 ## One-time migration from symlink installs
 
-`make unlink-legacy` (when added under `scripts/`) materializes `~/.claude/skills` as copies and can migrate config to `~/.config/ai-skills/`. Safe to run once when moving off symlink-based claude-skills installs.
+`make unlink-legacy` materializes `~/.claude/skills` as copies and can migrate config to `~/.config/ai-skills/`. Safe to run once when moving off symlink-based claude-skills installs.
 
 ## Before skills live here
 

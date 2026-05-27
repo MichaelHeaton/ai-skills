@@ -19,4 +19,4 @@ updated_by: human
 | [self-improvement-loop.md](self-improvement-loop.md) | Stub — session feedback |
 | [mcps/README.md](mcps/README.md) | Stub — MCP runbooks |
 
-Universal rules live in [principles/](../principles/). Migration status: [ROADMAP.md](ROADMAP.md).
+Universal rules live in [principles/](../principles/). Tooling: `make help` from repo root. Migration status: [ROADMAP.md](ROADMAP.md).
