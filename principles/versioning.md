@@ -31,7 +31,7 @@ When you edit a versioned file, bump the appropriate component and update `last_
 | Tier | Paths | Enforcement |
 |------|-------|-------------|
 | **A** | `ai/**/SKILL.md`, `ai/cursor/rules/**`, `principles/**` | Required once paths exist |
-| **B** | `docs/**`, `scripts/**` | Recommended |
+| **B** | `docs/**`, `scripts/**`, `ai/claude/skills/**/references/*.md`, `ai/claude/skills/**/examples/*.md` | Recommended (version block via `make bootstrap-version`) |
 | **C** | Templates, `CHANGELOG.md` | Optional |
 
 ## Size limits (skills)

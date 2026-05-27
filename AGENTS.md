@@ -14,22 +14,19 @@ A public, versioned home for **multi-AI** skills and conventions. The repo is gr
 | `principles/` | Universal rules (present) |
 | `config/`, `categories/` | Templates, `sanitize.json`, placeholder tags |
 | `docs/` | Guides, multi-AI setup, runbook stubs — see [docs/README.md](docs/README.md) |
-| `ai/claude/skills/` | Claude Code skills (planned) |
+| `ai/claude/skills/` | Claude Code skills (present — 27 skills) |
 | `ai/cursor/rules/` | Cursor rules (planned) |
 | `scripts/` | Phase 0, import, manifests — `make help` |
 
 ## Where skills live today
 
-Skills are **not in this repository yet**. Use [claude-skills](https://github.com/MichaelHeaton/claude-skills):
+**Canonical tree:** `ai/claude/skills/<name>/SKILL.md` in this repo.
+
+**Runtime deploy** still uses [claude-skills](https://github.com/MichaelHeaton/claude-skills) until `make install-system` exists:
 
 ```
-claude-skills/skills/<name>/SKILL.md  →  ~/.claude/skills/<name>/
-```
-
-When `ai/claude/skills/` exists here:
-
-```
-ai/claude/skills/<name>/SKILL.md  →  ~/.claude/skills/<name>/  (via make install-system)
+claude-skills/skills/<name>/SKILL.md  →  ~/.claude/skills/<name>/   (today)
+ai/claude/skills/<name>/SKILL.md      →  ~/.claude/skills/<name>/   (target: make install-system)
 ```
 
 ## Related repositories
@@ -70,4 +67,4 @@ See [principles/security.md](principles/security.md).
 
 ## Legacy source
 
-Skill bodies will be imported from **claude-skills**. That repo remains the runtime source until copy-only install from here is implemented.
+Skill bodies were imported from **claude-skills**. That repo remains the **deploy** source until copy-only `make install-system` from here is implemented. Re-run `make import-legacy` after editing skills in the legacy repo.

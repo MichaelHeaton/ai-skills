@@ -19,25 +19,25 @@ Migration from [claude-skills](https://github.com/MichaelHeaton/claude-skills) t
 - [x] `docs/guides/` — local-config, branching, formatting, skill-conventions
 - [x] `docs/multi-ai.md`, `docs/README.md`
 - [x] Doc stubs — deployment-contexts, cross-ai-review, self-improvement-loop, `mcps/`
-- [x] `scripts/`, `Makefile` — Phase 0, import, manifest (import not run yet)
-- [x] `.deploy/repo-manifest.json` — principles-only until `ai/claude/` import
+- [x] `scripts/`, `Makefile` — Phase 0, import, manifest
+- [x] `ai/claude/` — skills, hooks, memory, `CLAUDE.md` (import from claude-skills)
+- [x] `.deploy/repo-manifest.json` — `principles/` + `ai/claude/` (65 paths)
 
 ## Planned (not yet in tree)
 
 | Area | Path | Notes |
 |------|------|--------|
 | Docs | stub bodies | Fill deployment-contexts, cross-ai-review, MCP runbooks |
-| Claude skills | `ai/claude/skills/` | Import from claude-skills |
 | Deploy | `install-system`, `sync-from-system` | Copy-only; no symlinks |
 | Cursor | `ai/cursor/rules/` | Thin rules → `AGENTS.md` |
 | Hooks | `.pre-commit-config.yaml` | Sanitize, version bump, secrets |
 
 ## Runtime today
 
-Until `ai/claude/skills/` and `install-system` exist:
+Until `install-system` exists:
 
-- **Develop skills** in claude-skills
-- **Deploy** with `make install` in that repo → `~/.claude/skills/`
+- **Source of truth** for skill bodies: `ai/claude/skills/` in this repo
+- **Deploy** still uses `make install` in claude-skills → `~/.claude/skills/` (or edit here and re-import until cutover)
 - **Private config** at `~/.config/ai-skills/local.json` (Phase 0 migration may already exist on your machine)
 
 ## Related work outside this repo

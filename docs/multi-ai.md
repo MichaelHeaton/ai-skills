@@ -15,19 +15,19 @@ One repo, multiple tools — each reads what it understands natively. Nothing fo
 |-------|------|----------------|
 | **Universal** | [principles/](../principles/) + [AGENTS.md](../AGENTS.md) | All agents |
 | **Claude overlay** | [CLAUDE.md](../CLAUDE.md) | Claude Code |
-| **Claude deploy** | `ai/claude/` (planned) | Copied to `~/.claude/` via `make install-system` |
+| **Claude deploy** | `ai/claude/` (present) | Copied to `~/.claude/` via `make install-system` (planned) |
 | **Cursor overlay** | `ai/cursor/rules/` (planned) | Cursor |
 | **Private config** | `~/.config/ai-skills/local.json` | All agents on your machine |
 
 ## Claude Code (today)
 
-Until `ai/claude/skills/` exists in this repo, develop and deploy from [claude-skills](https://github.com/MichaelHeaton/claude-skills):
+Skill bodies are in **`ai/claude/skills/`** here. Deploy still runs from [claude-skills](https://github.com/MichaelHeaton/claude-skills) until `install-system` exists:
 
 ```bash
 cd ~/Projects/personal/claude-skills && make install
 ```
 
-- Skills: `~/.claude/skills/<name>/` from legacy repo `skills/<name>/`
+- Skills: `~/.claude/skills/<name>/` from legacy repo `skills/<name>/` (sync via `make import-legacy` when editing in claude-skills)
 - Reload: new conversation (or ⌘R in desktop/iTerm)
 - Machine-specific: `~/.claude/CLAUDE.local.md` (never committed)
 
@@ -57,4 +57,4 @@ See [principles/deployment.md](../principles/deployment.md) — no symlinks.
 
 On the maintainer’s Macs, **[workstation-devops](https://gitlab.com/Michael-Heaton/workstation-devops)** (`make apply`) clones **ai-skills**, **claude-skills**, and **[Memex](https://github.com/MichaelHeaton/memex)** (personal PKM vault — see [guides/memex-and-related-repos.md](guides/memex-and-related-repos.md)) and runs **`make install`** in claude-skills today. It does **not** store filled `local.json` (templates only).
 
-Target: `make install-system` in this repo after `ai/claude/` import.
+Target: `make install-system` in this repo (next migration step).

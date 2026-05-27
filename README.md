@@ -6,7 +6,7 @@ Public, versioned **multi-AI workspace** for assistant skills, principles, and c
 
 ## Status
 
-The repository is **under construction**. Present: `principles/`, `config/` templates, `categories/tags.yaml`, [docs/](docs/README.md), `Makefile` + `scripts/`. Skills (`ai/claude/`) not imported yet — see [docs/ROADMAP.md](docs/ROADMAP.md).
+The repository is **under construction**. Present: `principles/`, `config/` templates, `categories/tags.yaml`, [docs/](docs/README.md), `Makefile` + `scripts/`, and **`ai/claude/`** (27 skills + hooks + memory). Deploy from this repo lands in a follow-up (`install-system`) — see [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ```bash
 make help                  # scripts overview
@@ -29,7 +29,7 @@ Use **[workstation-devops](https://gitlab.com/Michael-Heaton/workstation-devops)
 cd ~/Projects/personal/claude-skills && make install
 ```
 
-After `ai/claude/skills/` exists in this repo, deployment will move to `make install-system` here (documented in [principles/deployment.md](principles/deployment.md)).
+Skill bodies live in `ai/claude/skills/`. Deployment will move to `make install-system` here (documented in [principles/deployment.md](principles/deployment.md)).
 
 ## Clone
 
