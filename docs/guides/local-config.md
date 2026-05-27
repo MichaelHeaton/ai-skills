@@ -57,6 +57,18 @@ Paths under `weekly_reports.*.vault_format_ref` and `vault_agent_ref` are **rela
 
 Tag definitions: [categories/tags.yaml](../../categories/tags.yaml).
 
+## Comms-write private examples
+
+Optional block for `comms-write` example resolution:
+
+| Key | Purpose |
+|-----|---------|
+| `comms_write.examples_root` | Absolute path to `.../examples/` (overrides everything) |
+| `comms_write.memex_repo_path` | Personal KB repo on disk |
+| `comms_write.examples_relative` | Path under that repo (default: `ai/claude/skills/comms-write-context/examples`) |
+
+Public skill repos ship **stubs only**; full templates live in your private KB (see Memex `ai/claude/skills/comms-write-context/`).
+
 ## Weekly reports
 
 Single skill: **`weekly-report`** — routes via `weekly_reports.client_contract` (deck) and `weekly_reports.work_team` (wiki PPP) in your private `local.json`. Use `vault_format_ref` / `vault_agent_ref` for paths inside your personal KB repo.

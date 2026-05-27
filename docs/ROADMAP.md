@@ -42,6 +42,6 @@ Until `ai/claude/skills/` and `install-system` exist:
 
 ## Related work outside this repo
 
-- **Memex** — private comms-write example templates (`ai/claude/skills/comms-write-context/`)
-- **claude-skills** — scrub employer-named example filenames before import
+- **Memex** — private comms-write examples at `ai/claude/skills/comms-write-context/examples/` (PR-E)
+- **claude-skills** — public `comms-write` stubs; employer-named files removed (PR-E)
 - **workstation-devops** — clone path cutover when install moves here
