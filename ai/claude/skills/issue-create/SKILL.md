@@ -10,6 +10,7 @@ compatibility: Requires gh CLI, Atlassian MCP (for Jira).
 
 
 
+
 Create a new task in the right system based on where you're working. See `references/routing.md` for the full routing rules.
 
 Once created, the description is the definition of done — treat it as frozen. All subsequent updates go in comments. If a description needs correcting after creation, see the description edit policy in `issue-update`.

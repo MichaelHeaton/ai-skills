@@ -10,6 +10,7 @@ compatibility: Requires git, direnv (brew install direnv), jq, and ~/.config/ai-
 
 
 
+
 # Repo setup
 
 Check that repos needed for AI-assisted workflows exist and are configured. Covers: repos present, correct git identity, correct `gh` account (via direnv).

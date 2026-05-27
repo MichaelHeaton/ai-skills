@@ -1,3 +1,10 @@
+---
+version: 1.0.0
+principles_version: 1.0.0
+last_updated: 2026-05-27
+updated_by: human
+---
+
 # Comms-write examples (public stubs)
 
 These files are **generic templates** safe for the public repo. They define structure only.

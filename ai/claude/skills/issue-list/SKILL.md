@@ -9,6 +9,7 @@ description: Get a list of open tasks/tickets — across all systems (GitHub, Ji
 
 
 
+
 Fetch open tasks from all active systems, sync any status changes back to the task index, then present results.
 
 ## Steps

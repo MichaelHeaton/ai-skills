@@ -56,6 +56,8 @@ ai/claude/skills/
 
 Only create `scripts/`, `references/`, or `assets/` when the skill actually needs them.
 
+**`references/` and `examples/`** markdown files use the same **version block** as `principles/` (four fields at the top — no `name` / `description`). Run `make bootstrap-version` after adding or editing them.
+
 ## SKILL.md structure
 
 ```markdown

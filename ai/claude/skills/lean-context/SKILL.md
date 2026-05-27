@@ -10,6 +10,7 @@ compatibility: Any repo or workspace.
 
 
 
+
 # Lean Context Mode
 
 You are now operating in **lean context mode**. Treat every token as a deliberate choice.

@@ -10,6 +10,7 @@ compatibility: Requires Python 3. Install via `make install-system` in ai-skills
 
 
 
+
 # Log Clip
 
 Noisy tool output is one of the biggest context wasters. A full `terraform apply` or `ansible-playbook` run can be 500–2000 lines; the signal is usually under 20.

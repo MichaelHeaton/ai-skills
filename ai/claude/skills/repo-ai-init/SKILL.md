@@ -10,6 +10,7 @@ compatibility: Requires git.
 
 
 
+
 # Repo AI Init
 
 Transform any git repository — including legacy codebases built before AI tooling existed — into one that any AI agent can understand and work with confidently.

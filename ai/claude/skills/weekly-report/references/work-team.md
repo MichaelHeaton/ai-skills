@@ -1,3 +1,10 @@
+---
+version: 1.0.0
+principles_version: 1.0.0
+last_updated: 2026-05-27
+updated_by: human
+---
+
 # Work-team weekly (wiki PPP)
 
 Config: `weekly_reports.work_team` in `local.json`.

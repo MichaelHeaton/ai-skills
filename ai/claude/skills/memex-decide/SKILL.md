@@ -9,6 +9,7 @@ description: Log a finalized decision into the Memex wiki as a persistent ADR-st
 
 
 
+
 # memex-decide
 
 Writes a finalized decision to the Memex wiki as a persistent, searchable document. Decisions are not tasks — they have no completion state and should never live in a ticket that will close and disappear.

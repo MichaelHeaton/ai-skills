@@ -1,3 +1,10 @@
+---
+version: 1.0.0
+principles_version: 1.0.0
+last_updated: 2026-05-27
+updated_by: human
+---
+
 # [work-primary] — 3P update (public stub)
 
 3P = Progress, Plans, Problems. Weekly team status for a **work-primary** domain context.

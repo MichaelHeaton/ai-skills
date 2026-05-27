@@ -9,6 +9,7 @@ description: Run any decision, plan, or tradeoff through 5 AI advisors with dist
 
 
 
+
 # Decision Council
 
 Runs your question through 5 parallel advisors, a blind peer review round, and a chairman synthesis. Best for decisions where being wrong is expensive.

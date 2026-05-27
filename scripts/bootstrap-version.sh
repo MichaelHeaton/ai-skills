@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Normalize Tier A version frontmatter on ai/claude/skills/**/SKILL.md.
-# Version block first (matches principles/), then skill fields (name, description, …).
+# Normalize version frontmatter on skill files:
+#   - ai/claude/skills/**/SKILL.md (version block + name, description, …)
+#   - ai/claude/skills/**/references/*.md and **/examples/*.md (version block only)
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -66,34 +67,51 @@ def parse_frontmatter(text: str) -> tuple[dict[str, str], str, bool]:
     return data, body, True
 
 
-def render_frontmatter(data: dict[str, str]) -> str:
-  lines: list[str] = []
-  for key in VERSION_ORDER:
-    if key in data:
-      lines.append(f"{key}: {data[key]}")
-  for key in SKILL_ORDER:
-    if key in data:
-      lines.append(f"{key}: {data[key]}")
-  for key in sorted(data.keys()):
-    if key not in VERSION_ORDER and key not in SKILL_ORDER:
-      lines.append(f"{key}: {data[key]}")
-  return "---\n" + "\n".join(lines) + "\n---\n\n"
+def render_frontmatter(data: dict[str, str], *, skill: bool) -> str:
+    lines: list[str] = []
+    for key in VERSION_ORDER:
+        if key in data:
+            lines.append(f"{key}: {data[key]}")
+    if skill:
+        for key in SKILL_ORDER:
+            if key in data:
+                lines.append(f"{key}: {data[key]}")
+    for key in sorted(data.keys()):
+        if key not in VERSION_ORDER and key not in SKILL_ORDER:
+            lines.append(f"{key}: {data[key]}")
+    return "---\n" + "\n".join(lines) + "\n---\n\n"
+
+
+def merge_version_defaults(data: dict[str, str]) -> dict[str, str]:
+    merged = {**data}
+    for k, v in VERSION_DEFAULTS.items():
+        merged.setdefault(k, v)
+    return merged
 
 
 def normalize_skill(text: str) -> tuple[str, bool]:
     data, body, had_fm = parse_frontmatter(text)
     if not had_fm:
         data = {}
-    merged = {**data}
-    for k, v in VERSION_DEFAULTS.items():
-        merged.setdefault(k, v)
+    merged = merge_version_defaults(data)
     if "name" not in merged:
         return text, False
-    new_text = render_frontmatter(merged) + body
+    new_text = render_frontmatter(merged, skill=True) + body
+    return new_text, new_text != text
+
+
+def normalize_support(text: str) -> tuple[str, bool]:
+    data, body, had_fm = parse_frontmatter(text)
+    if not had_fm:
+        data = {}
+    # Keep only version keys + any extra keys after body merge
+    merged = merge_version_defaults({k: v for k, v in data.items() if k in VERSION_ORDER})
+    new_text = render_frontmatter(merged, skill=False) + body
     return new_text, new_text != text
 
 
 count = 0
+print("SKILL.md:")
 for skill_md in sorted(skills_root.glob("*/SKILL.md")):
     raw = skill_md.read_text(encoding="utf-8")
     new, changed = normalize_skill(raw)
@@ -103,6 +121,18 @@ for skill_md in sorted(skills_root.glob("*/SKILL.md")):
         count += 1
     else:
         print(f"  skip (ok): {skill_md.relative_to(repo)}")
+
+print("\nreferences/ and examples/:")
+for pattern in ("*/references/*.md", "*/examples/*.md"):
+    for path in sorted(skills_root.glob(pattern)):
+        raw = path.read_text(encoding="utf-8")
+        new, changed = normalize_support(raw)
+        if changed:
+            path.write_text(new, encoding="utf-8")
+            print(f"  updated: {path.relative_to(repo)}")
+            count += 1
+        else:
+            print(f"  skip (ok): {path.relative_to(repo)}")
 
 print(f"\nDone. {count} file(s) updated.")
 PY

@@ -10,6 +10,7 @@ compatibility: Any context. Applies to Agent tool calls and model selection guid
 
 
 
+
 # Model Routing
 
 Use the cheapest model that can reliably complete the task. Escalation is a last resort, not a default.
