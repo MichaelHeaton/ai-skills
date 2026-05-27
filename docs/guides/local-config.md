@@ -47,6 +47,22 @@ Legacy `${VAR}` style is being migrated to `[tag_name]` per [categories/tags.yam
 | `${WORK_DOCS_REPO}` | `repos.work_docs` |
 | `${GITHUB_PERSONAL_USER}` | `accounts.personal.github_user` |
 
+## Comms-write private examples
+
+Public `comms-write` ships **generic stubs** only. Full templates live in **Memex**:
+
+`memex/.claude/skills/comms-write-context/examples/`
+
+```json
+"comms_write": {
+  "examples_root": "",
+  "memex_repo_path": "~/Projects/personal/memex",
+  "examples_relative": ".claude/skills/comms-write-context/examples"
+}
+```
+
+Set `examples_root` to an absolute path, or rely on `memex_repo_path` + `examples_relative`. When the Memex repo is the project, `comms-write` also checks `.claude/skills/comms-write-context/examples/`.
+
 ## Weekly reports
 
 Skill **`weekly-report`** — routes via `weekly_reports` in your private `local.json`.

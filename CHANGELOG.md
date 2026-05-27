@@ -4,6 +4,10 @@ All notable changes to [ai-skills](https://github.com/MichaelHeaton/ai-skills) a
 
 ## [Unreleased]
 
+### Changed
+
+- `comms-write`: removed employer-named example files; public generic stubs; routing via `local.json` / Memex repo skills
+
 ### Added
 
 - Greenfield repo layout: `principles/`, `ai/claude/`, `docs/`, `categories/`, `config/`

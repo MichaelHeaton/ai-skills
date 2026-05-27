@@ -1,48 +1,57 @@
 ---
-
 name: comms-write
-description: Write internal communications for Adobe/CES or Ultraviolet Cyber (UV). Covers status updates, 3P updates (Progress/Plans/Problems), incident reports, customer notifications, leadership updates, Slack messages, and general internal messaging. Use when asked to write any internal comms, team update, status report, incident summary, stakeholder message, or Slack post. Triggers on: "write a 3P", "status update", "incident report", "customer notification", "team update", "leadership update", "weekly update", "write comms for", "draft a message to", "slack message", "slack update", "make a slack message", "post to slack", "message for the team", "update the team".
-version: 1.0.0
+description: Write internal communications for work-primary or client-contract domains. Covers status updates, 3P updates (Progress/Plans/Problems), incident reports, customer notifications, leadership updates, Slack messages, and general internal messaging. Use when asked to write any internal comms, team update, status report, incident summary, stakeholder message, or Slack post. Triggers on "write a 3P", "status update", "incident report", "customer notification", "team update", "leadership update", "weekly update", "write comms for", "draft a message to", "slack message", "slack update", "post to slack", "message for the team", "update the team".
+version: 1.1.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
 ---
 
-
 # Comms Write
 
-Write polished internal communications for Adobe/CES or UV. Before writing, identify:
+Write polished internal communications. Before writing, identify:
 
-1. **Company context** — Adobe/CES or UV?
+1. **Domain context** — `work-primary` or `client-contract` (from conversation or `local.json`)
 2. **Communication type** — see routing table below
 
-Then load the appropriate example file and follow its instructions.
+Load the example file from the **resolved examples directory** (see below), then follow its instructions.
+
+---
+
+## Resolve examples directory
+
+Use the **first path that exists**:
+
+1. `comms_write.examples_root` in `~/.config/ai-skills/local.json` (absolute path to `.../examples/`)
+2. `comms_write.memex_repo_path` + `comms_write.examples_relative` from `local.json` (default Memex layout)
+3. Project repo: `.claude/skills/comms-write-context/examples/` (Memex vault when opened as project)
+4. Fallback: `examples/` in this skill directory (public stubs only)
+
+If private examples exist, prefer them over stubs. Do not commit private example content into the public repo.
 
 ---
 
 ## Routing
 
-| Type | Company | File |
-|---|---|---|
-| 3P update (Progress / Plans / Problems) | Adobe / CES | `examples/adobe-3p.md` |
-| Incident report or post-mortem | Adobe / CES | `examples/adobe-incident.md` |
-| Customer notification | Adobe / CES | `examples/adobe-customer-notify.md` |
-| Leadership or stakeholder update | Adobe / CES | `examples/adobe-leadership.md` |
-| Any internal comms | UV | `examples/uv-general.md` |
+| Type | Domain | File (under resolved examples dir) |
+|------|--------|-------------------------------------|
+| 3P update (Progress / Plans / Problems) | work-primary | `work-primary-3p.md` |
+| Incident report or post-mortem | work-primary | `work-primary-incident.md` |
+| Customer notification | work-primary | `work-primary-customer-notify.md` |
+| Leadership or stakeholder update | work-primary | `work-primary-leadership.md` |
+| Any internal comms | client-contract | `client-contract-general.md` |
 
-If the type isn't clear, ask one question: "What type of communication is this — a status update, incident report, customer notification, or something else?"
+If the type is unclear, ask: "What type of communication is this — status update, incident report, customer notification, or something else?"
 
-If the company context isn't clear from the conversation, ask.
+If domain context is unclear, ask or infer from `local.json` / current repo.
 
 ---
 
-## General Principles
-
-These apply regardless of template:
+## General principles
 
 - Lead with the most important information — readers skim
 - Active voice, concrete details, no filler
-- Match the tone to the audience: leadership updates are crisp and outcome-focused; customer notifications are empathetic and action-oriented
-- If pulling from Jira, Slack, or other tools, do so — concrete data beats summaries
+- Match tone to audience: leadership = outcome-focused; customer = empathetic and actionable
+- Pull from Jira, Slack, or other tools when available
 - When in doubt, shorter is better
-- **Deliver the draft in a fenced code block** — use ` ```plain ` so the user can copy and paste directly into Slack without reformatting artifacts
+- **Deliver the draft in a fenced code block** — use ` ```plain ` so the user can copy into Slack without reformatting

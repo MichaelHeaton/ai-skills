@@ -53,6 +53,12 @@
     "work_skills": ""
   },
 
+  "comms_write": {
+    "examples_root": "",
+    "memex_repo_path": "~/Projects/personal/memex",
+    "examples_relative": ".claude/skills/comms-write-context/examples"
+  },
+
   "weekly_reports": {
     "client_contract": {
       "display_name": "Client account name for deck rows",
