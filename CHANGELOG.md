@@ -4,6 +4,13 @@
 
 ### Added
 
+- `docs/guides/` — branching, formatting, skill-conventions
+- `docs/multi-ai.md`, `docs/README.md`, runbook stubs (`deployment-contexts`, `cross-ai-review`, `self-improvement-loop`, `mcps/`)
+
+## [0.2.0] — 2026-05-27
+
+### Added
+
 - `config/` — `local.template.json`, `accounts.shell.template`, `sanitize.json`, leak-patterns README
 - `categories/tags.yaml` — placeholder tag registry
 - `docs/guides/local-config.md`
