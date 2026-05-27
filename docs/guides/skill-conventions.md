@@ -20,21 +20,23 @@ updated_by: human
 | Pattern | Examples |
 |---|---|
 | `{domain}-{verb}` | `issue-create`, `issue-list`, `skill-create` |
-| `{domain}-{noun}` | `vault-support`, `pr-slack` |
-| Intentional exceptions | `grill-me` (conversational, self-referential) |
+| `{domain}-{noun}` | `weekly-report`, `repo-setup` |
+| No domain prefix | `git-ops`, `grill-me` (cross-cutting or conversational) |
 
-## Domain prefixes
+## Domain prefixes (optional)
 
-| Domain | Prefix | Notes |
-|---|---|---|
-| HashiCorp Vault (work) | `vault-` | Vault-specific skills |
-| Work org (broader employer scope) | `ces-`, `adobe-` | Team-specific; pick what matches your org |
-| Client / contract work | `uv-` | Example: dedicated client account |
-| Personal knowledge base | `memex-` | Historical prefix for PKM capture skills (name kept for compatibility) |
-| GitHub-specific | `gh-` | Platform-only helpers |
-| GitLab-specific | `gl-` | Platform-only helpers |
-| Cross-platform VCS | `issue-`, `pr-`, `git-` | GitHub and GitLab — no platform prefix |
-| Skill management | `skill-` | Creating, reviewing, managing skills |
+**Default: no prefix** when the skill works across employers, clients, and tools. Prefer `issue-create`, `git-ops`, `skill-review` over baking org names into public skill names.
+
+Add a short `{context}-` prefix only when the skill is useless outside one scope (a specific product, employer team, client account, or personal PKM repo). Pick a slug you control; keep it stable. **Do not maintain a master prefix table in this public repo** — that list is personal/team metadata and belongs in private notes, `~/.config/ai-skills/local.json` comments, or your org’s internal docs.
+
+| Situation | Guidance |
+|---|---|
+| GitHub + GitLab issues/PRs | `issue-`, `pr-`, `git-` — no platform prefix unless the skill is platform-only |
+| Platform-only helper | `gh-` or `gl-` only when the other platform cannot run it |
+| One product or program | Product or program slug, e.g. `terraform-`, `k8s-` — not employer name |
+| Legacy imports | Older skills may keep historical prefixes; rename when you touch them |
+
+Use **`skill-create`** when adding a skill — it walks through naming without requiring a global prefix registry.
 
 ## Directory layout
 
