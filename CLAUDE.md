@@ -16,7 +16,7 @@ Public repo. No employer names, Jira keys, or internal URLs in commits. Placehol
 
 ## Skills (current)
 
-Skills are **not in this repo yet**. Use [claude-skills](https://github.com/MichaelHeaton/claude-skills) until `ai/claude/skills/` is imported. Conventions: [docs/guides/skill-conventions.md](docs/guides/skill-conventions.md). Multi-AI layout: [docs/multi-ai.md](docs/multi-ai.md).
+Skill bodies: `ai/claude/skills/`. Deploy still via [claude-skills](https://github.com/MichaelHeaton/claude-skills) `make install` until `make install-system` lands here. Conventions: [docs/guides/skill-conventions.md](docs/guides/skill-conventions.md). Multi-AI layout: [docs/multi-ai.md](docs/multi-ai.md).
 
 ## Private config
 

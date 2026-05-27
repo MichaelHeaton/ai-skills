@@ -87,5 +87,20 @@ if [[ -f "$LEGACY_REPO/hooks/pre-commit" ]]; then
 fi
 
 log ""
+log "5. Materialize skill conventions (no symlinks to legacy repo)..."
+GUIDE="$REPO_DIR/docs/guides/skill-conventions.md"
+if [[ -f "$GUIDE" ]]; then
+  for skill in skill-create skill-review; do
+    ref="$REPO_DIR/ai/claude/skills/$skill/references"
+    mkdir -p "$ref"
+    rm -f "$ref/conventions.md"
+    cp "$GUIDE" "$ref/conventions.md"
+    log "  copied: $ref/conventions.md"
+  done
+else
+  log "  skip (missing): $GUIDE"
+fi
+
+log ""
 log "Import complete. Next: make bootstrap-version && make manifest-update"
 log ""
