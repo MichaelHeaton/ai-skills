@@ -13,7 +13,7 @@ A public, versioned home for **multi-AI** skills and conventions. The repo is gr
 |------|------|
 | `principles/` | Universal rules (present) |
 | `config/`, `categories/` | Templates, `sanitize.json`, placeholder tags |
-| `docs/` | Guides and runbooks (`docs/guides/` when present) |
+| `docs/` | Guides, multi-AI setup, runbook stubs — see [docs/README.md](docs/README.md) |
 | `ai/claude/skills/` | Claude Code skills (planned) |
 | `ai/cursor/rules/` | Cursor rules (planned) |
 | `scripts/` | Install, sync, manifests (planned) |
@@ -35,6 +35,15 @@ ai/claude/skills/<name>/SKILL.md  →  ~/.claude/skills/<name>/  (via make insta
 ## Private configuration
 
 Employer-specific values belong in **`~/.config/ai-skills/local.json`**. Copy from [`config/local.template.json`](config/local.template.json). See [`docs/guides/local-config.md`](docs/guides/local-config.md). Never commit filled copies.
+
+## Guides
+
+| Guide | Purpose |
+|-------|---------|
+| [docs/multi-ai.md](docs/multi-ai.md) | Claude + Cursor layout |
+| [docs/guides/skill-conventions.md](docs/guides/skill-conventions.md) | Skill naming and `SKILL.md` structure |
+| [docs/guides/branching.md](docs/guides/branching.md) | Branch + PR rules by repo type |
+| [docs/guides/local-config.md](docs/guides/local-config.md) | Private `local.json` |
 
 ## Principles (read order)
 

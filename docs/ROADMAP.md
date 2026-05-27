@@ -16,13 +16,15 @@ Migration from [claude-skills](https://github.com/MichaelHeaton/claude-skills) t
 - [x] `.gitignore`, `LICENSE`, `CHANGELOG.md`
 - [x] `config/` — templates, `sanitize.json`, leak-patterns README
 - [x] `categories/tags.yaml` — placeholder tag registry
-- [x] `docs/guides/local-config.md`
+- [x] `docs/guides/` — local-config, branching, formatting, skill-conventions
+- [x] `docs/multi-ai.md`, `docs/README.md`
+- [x] Doc stubs — deployment-contexts, cross-ai-review, self-improvement-loop, `mcps/`
 
 ## Planned (not yet in tree)
 
 | Area | Path | Notes |
 |------|------|--------|
-| Docs | `docs/guides/` (more) | Branching, conventions, multi-AI |
+| Docs | stub bodies | Fill deployment-contexts, cross-ai-review, MCP runbooks |
 | Tooling | `scripts/`, `Makefile` | `unlink-legacy`, import, manifests |
 | Claude skills | `ai/claude/skills/` | Import from claude-skills |
 | Deploy | `install-system`, `sync-from-system` | Copy-only; no symlinks |
