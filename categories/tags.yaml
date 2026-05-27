@@ -48,3 +48,9 @@ tags:
     description: Internal project or program name
     expected_format: string
     example: "Platform Alpha"
+
+  - name: personal_kb_github
+    description: GitHub owner/repo for personal knowledge base (second brain)
+    expected_format: string
+    example: "YOUR_USER/your-repo"
+    local_json_path: routing.personal_kb_github

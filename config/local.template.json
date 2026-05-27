@@ -40,7 +40,7 @@
   },
 
   "routing": {
-    "memex_github": "YOUR_USER/memex",
+    "personal_kb_github": "YOUR_USER/your-repo",
     "work_github_orgs": []
   },
 
@@ -60,14 +60,14 @@
       "recurring_github_issue": "",
       "quote_attribution_note": "Attribute quotes by name and role",
       "deadline_note": "",
-      "memex_format_ref": "Raw/Resources/<your-client-folder>/Weekly-Deck.md",
+      "vault_format_ref": "Raw/Resources/<your-client-folder>/Weekly-Deck.md",
       "output_file": "Outputs/Weekly/Client-Contract-Weekly-YYYY-MM-DD.md"
     },
     "work_team": {
       "display_name": "Your name as shown on the team wiki",
       "wiki_section": "",
       "meeting_note": "",
-      "memex_agent_ref": "Agents/<your-weekly-report-rules>.md",
+      "vault_agent_ref": "Agents/<your-weekly-report-rules>.md",
       "output_file": "Outputs/Weekly/Work-Team-Weekly-YYYY-MM-DD.md"
     }
   }

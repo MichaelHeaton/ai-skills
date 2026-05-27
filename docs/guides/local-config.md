@@ -37,6 +37,15 @@ Account keys are arbitrary in your **private** `local.json` — you may use desc
 
 `setup-account.sh` (when present) picks the account whose `remote_match` substring appears in `git remote get-url origin`.
 
+## Routing
+
+| Key | Purpose |
+|-----|---------|
+| `routing.personal_kb_github` | `owner/repo` for your personal knowledge base on GitHub (second brain, vault, PKM — any name) |
+| `routing.work_github_orgs` | Org slugs used to detect work-scoped GitHub repos |
+
+Paths under `weekly_reports.*.vault_format_ref` and `vault_agent_ref` are **relative to that repo’s tree**, not to this skills repo.
+
 ## Placeholders in skills
 
 | Placeholder | JSON path |
@@ -50,11 +59,13 @@ Tag definitions: [categories/tags.yaml](../../categories/tags.yaml).
 
 ## Weekly reports
 
-Single skill: **`weekly-report`** — routes via `weekly_reports.client_contract` (deck) and `weekly_reports.work_team` (wiki PPP) in your private `local.json`.
+Single skill: **`weekly-report`** — routes via `weekly_reports.client_contract` (deck) and `weekly_reports.work_team` (wiki PPP) in your private `local.json`. Use `vault_format_ref` / `vault_agent_ref` for paths inside your personal KB repo.
 
 ## Migration from `~/.config/claude-skills/`
 
 If you already have `local.json` or `local.yaml` under `~/.config/claude-skills/`, copy values into `~/.config/ai-skills/local.json` once, then rely on the new path only.
+
+If your private file still has `routing.memex_github`, rename it to `routing.personal_kb_github` (same `owner/repo` value). Likewise `memex_format_ref` → `vault_format_ref` and `memex_agent_ref` → `vault_agent_ref` under `weekly_reports`.
 
 ## Storage
 
