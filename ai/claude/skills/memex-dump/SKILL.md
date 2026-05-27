@@ -1,13 +1,13 @@
 ---
-
-name: memex-dump
-description: Quickly capture raw, unstructured ideas, thoughts, and to-dos before they're lost — brain dump mode. For unresolved, untriaged captures only; if a decision is already made and needs a permanent home, use memex-decide instead. Creates a ticket instantly, always tagged for triage and grooming, so nothing falls through the cracks. Defaults to Memex (personal GitHub Issues). Workstation/dotfiles/browser ideas route to workstation-devops; skill/AI-workflow ideas route to ai-skills. Work Jira is suppressed unless a named PROJ epic was mentioned earlier in this session — rough thoughts don't belong in work systems. Use when the user says "brain dump", "capture this idea", "remember this", "quick note", "log this thought", "don't let me forget", "jot this down", "dump this", "dump this to memex", "quick capture", "brain dump to memex", "here are a few things to capture", "brain dump, multiple items", or any fast-capture variation — including lists of multiple ideas at once.
-compatibility: Requires gh CLI. Shares scripts with issue-create.
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
+name: memex-dump
+description: Quickly capture raw, unstructured ideas, thoughts, and to-dos before they're lost — brain dump mode. For unresolved, untriaged captures only; if a decision is already made and needs a permanent home, use memex-decide instead. Creates a ticket instantly, always tagged for triage and grooming, so nothing falls through the cracks. Defaults to Memex (personal GitHub Issues). Workstation/dotfiles/browser ideas route to workstation-devops; skill/AI-workflow ideas route to ai-skills. Work Jira is suppressed unless a named PROJ epic was mentioned earlier in this session — rough thoughts don't belong in work systems. Use when the user says "brain dump", "capture this idea", "remember this", "quick note", "log this thought", "don't let me forget", "jot this down", "dump this", "dump this to memex", "quick capture", "brain dump to memex", "here are a few things to capture", "brain dump, multiple items", or any fast-capture variation — including lists of multiple ideas at once.
+compatibility: Requires gh CLI. Shares scripts with issue-create.
 ---
+
 
 
 # Memex Dump

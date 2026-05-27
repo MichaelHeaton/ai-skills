@@ -1,13 +1,13 @@
 ---
-
-name: lean-context
-description: Activates cost-aware, context-disciplined engineering mode. Minimizes token spend without hurting output quality — narrows context loading, steers toward fresh sessions, matches model to task complexity, and batches related reads. Use when starting an investigation, when the thread is getting long, or when token efficiency matters. Trigger on: "lean mode", "save tokens", "context discipline", "stay narrow", "I'm wasting tokens", "cost-aware mode", or at the start of any heavy investigation where scope creep is a risk.
-compatibility: Any repo or workspace.
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
+name: lean-context
+description: Activates cost-aware, context-disciplined engineering mode. Minimizes token spend without hurting output quality — narrows context loading, steers toward fresh sessions, matches model to task complexity, and batches related reads. Use when starting an investigation, when the thread is getting long, or when token efficiency matters. Trigger on: "lean mode", "save tokens", "context discipline", "stay narrow", "I'm wasting tokens", "cost-aware mode", or at the start of any heavy investigation where scope creep is a risk.
+compatibility: Any repo or workspace.
 ---
+
 
 
 # Lean Context Mode

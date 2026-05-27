@@ -1,13 +1,13 @@
 ---
-
-name: log-clip
-description: Filtered log capture system for noisy CLI tools (Terraform, Ansible, Vault, Kubernetes). Strips DEBUG/INFO/progress noise, redacts secrets, and saves signal-only output to ~/.claude/logs/ so Claude reads only what matters. Two modes: capture script (user runs the command, pipes through clog) and Claude-side filter (Claude pipes its own tool commands through clog before reading output). Trigger on: "read the last tf log", "show me the filtered log", "run terraform and show me errors only", "pipe through clog", or any time raw Terraform, Ansible, or Vault output is about to be loaded into context.
-compatibility: Requires Python 3. Install via `make install-system` in ai-skills (copies clog to ~/.local/bin/clog).
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
+name: log-clip
+description: Filtered log capture system for noisy CLI tools (Terraform, Ansible, Vault, Kubernetes). Strips DEBUG/INFO/progress noise, redacts secrets, and saves signal-only output to ~/.claude/logs/ so Claude reads only what matters. Two modes: capture script (user runs the command, pipes through clog) and Claude-side filter (Claude pipes its own tool commands through clog before reading output). Trigger on: "read the last tf log", "show me the filtered log", "run terraform and show me errors only", "pipe through clog", or any time raw Terraform, Ansible, or Vault output is about to be loaded into context.
+compatibility: Requires Python 3. Install via `make install-system` in ai-skills (copies clog to ~/.local/bin/clog).
 ---
+
 
 
 # Log Clip

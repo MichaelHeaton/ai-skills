@@ -1,12 +1,12 @@
 ---
-
-name: issue-list
-description: Get a list of open tasks/tickets — across all systems (GitHub, Jira) or scoped to a specific repo, label, or priority. Always syncs status back to the task index. Use during morning review, triage, or when the user asks "what's on my plate", "what are my open tasks", "show me my issues", "show me the bugs", "what high priority issues are open", "filter issues by label", "what issues are in this repo", "what should I work on today", "show me type/bug tickets", "pull the issues for this repo", or similar.
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
+name: issue-list
+description: Get a list of open tasks/tickets — across all systems (GitHub, Jira) or scoped to a specific repo, label, or priority. Always syncs status back to the task index. Use during morning review, triage, or when the user asks "what's on my plate", "what are my open tasks", "show me my issues", "show me the bugs", "what high priority issues are open", "filter issues by label", "what issues are in this repo", "what should I work on today", "show me type/bug tickets", "pull the issues for this repo", or similar.
 ---
+
 
 
 Fetch open tasks from all active systems, sync any status changes back to the task index, then present results.

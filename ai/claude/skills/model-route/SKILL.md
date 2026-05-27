@@ -1,13 +1,13 @@
 ---
-
-name: model-route
-description: Route tasks and sub-agents to the cheapest model that can reliably complete the work. Use when spawning Agent tool calls, when picking a model for a focused task, or when reviewing whether the current session is over-spending on heavy reasoning. Trigger on: "which model should I use", "route this to haiku", "spin up sub-agents", "model tier", "too expensive", or any time multiple Agent calls are about to be created.
-compatibility: Any context. Applies to Agent tool calls and model selection guidance.
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
+name: model-route
+description: Route tasks and sub-agents to the cheapest model that can reliably complete the work. Use when spawning Agent tool calls, when picking a model for a focused task, or when reviewing whether the current session is over-spending on heavy reasoning. Trigger on: "which model should I use", "route this to haiku", "spin up sub-agents", "model tier", "too expensive", or any time multiple Agent calls are about to be created.
+compatibility: Any context. Applies to Agent tool calls and model selection guidance.
 ---
+
 
 
 # Model Routing

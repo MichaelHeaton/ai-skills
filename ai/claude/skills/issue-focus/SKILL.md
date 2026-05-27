@@ -1,13 +1,13 @@
 ---
-
-name: issue-focus
-description: Load a Jira ticket or GitHub Issue into a focused working session. Fetches the ticket, presents a structured brief (narrative summary, acceptance criteria checklist, current status, recent comments, linked epic), asks which ACs are already done, then stays active so you can ask "what's next?", "am I done?", or "what did the last comment say?" throughout the session. Use when starting work on a specific ticket, when you need a quick orientation before diving in, or when you want to stay on track mid-session. Triggers on: "focus on PROJ-12345", "load ticket #94", "start a session for PROJ-12345", "brief me on this ticket", a bare Jira key like PROJ-12345, or a GitHub issue URL.
-compatibility: Jira requires Atlassian MCP. GitHub requires gh CLI with GITHUB_PERSONAL_USER set.
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
+name: issue-focus
+description: Load a Jira ticket or GitHub Issue into a focused working session. Fetches the ticket, presents a structured brief (narrative summary, acceptance criteria checklist, current status, recent comments, linked epic), asks which ACs are already done, then stays active so you can ask "what's next?", "am I done?", or "what did the last comment say?" throughout the session. Use when starting work on a specific ticket, when you need a quick orientation before diving in, or when you want to stay on track mid-session. Triggers on: "focus on PROJ-12345", "load ticket #94", "start a session for PROJ-12345", "brief me on this ticket", a bare Jira key like PROJ-12345, or a GitHub issue URL.
+compatibility: Jira requires Atlassian MCP. GitHub requires gh CLI with GITHUB_PERSONAL_USER set.
 ---
+
 
 
 # Issue Focus

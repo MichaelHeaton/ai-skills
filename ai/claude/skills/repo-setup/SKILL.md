@@ -1,13 +1,13 @@
 ---
-
-name: repo-setup
-description: Verify and set up project repositories on the current workstation. Checks that required repos are cloned, configures git identity and gh CLI per repo via direnv, and installs dependencies. Triggers on set up workstation, clone repos, repo not found, missing work docs repo, new machine setup, wrong git account, fix git identity.
-compatibility: Requires git, direnv (brew install direnv), jq, and ~/.config/ai-skills/local.json filled from config/local.template.json.
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
+name: repo-setup
+description: Verify and set up project repositories on the current workstation. Checks that required repos are cloned, configures git identity and gh CLI per repo via direnv, and installs dependencies. Triggers on set up workstation, clone repos, repo not found, missing work docs repo, new machine setup, wrong git account, fix git identity.
+compatibility: Requires git, direnv (brew install direnv), jq, and ~/.config/ai-skills/local.json filled from config/local.template.json.
 ---
+
 
 
 # Repo setup

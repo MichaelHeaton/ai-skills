@@ -1,13 +1,13 @@
 ---
-
-name: iac-triage
-description: SRE / IaC investigation mode for Terraform, Ansible, Kubernetes, CI/CD, and incident log work. Encodes evidence ordering (ask for the smallest useful slice first, not full output), hypothesis-driven questioning, and a structured triage response format. Prevents context overload from full plan dumps, verbose Ansible runs, and raw log pastes. Trigger on: any Terraform, Ansible, or kubectl investigation; "debug this plan", "ansible failed", "k8s error", "CI is failing", "deployment failed", "investigate this incident", "triage this", "terraform error", "playbook failing", "pipeline broken", or any time raw operational output is about to be loaded into context.
-compatibility: Any repo or workspace. Integrates with log-clip / clog if installed.
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
+name: iac-triage
+description: SRE / IaC investigation mode for Terraform, Ansible, Kubernetes, CI/CD, and incident log work. Encodes evidence ordering (ask for the smallest useful slice first, not full output), hypothesis-driven questioning, and a structured triage response format. Prevents context overload from full plan dumps, verbose Ansible runs, and raw log pastes. Trigger on: any Terraform, Ansible, or kubectl investigation; "debug this plan", "ansible failed", "k8s error", "CI is failing", "deployment failed", "investigate this incident", "triage this", "terraform error", "playbook failing", "pipeline broken", or any time raw operational output is about to be loaded into context.
+compatibility: Any repo or workspace. Integrates with log-clip / clog if installed.
 ---
+
 
 
 # IaC Triage Mode

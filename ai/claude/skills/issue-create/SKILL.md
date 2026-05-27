@@ -1,13 +1,13 @@
 ---
-
-name: issue-create
-description: Create a new task, issue, or story in the right system — GitHub Issues or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", or similar. Work org remotes → Jira Story (from local.json); personal GitHub repos → GitHub Issue; no repo → personal KB.
-compatibility: Requires gh CLI, Atlassian MCP (for Jira).
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
+name: issue-create
+description: Create a new task, issue, or story in the right system — GitHub Issues or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", or similar. Work org remotes → Jira Story (from local.json); personal GitHub repos → GitHub Issue; no repo → personal KB.
+compatibility: Requires gh CLI, Atlassian MCP (for Jira).
 ---
+
 
 
 Create a new task in the right system based on where you're working. See `references/routing.md` for the full routing rules.

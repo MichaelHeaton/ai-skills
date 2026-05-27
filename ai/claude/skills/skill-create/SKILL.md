@@ -1,13 +1,13 @@
 ---
-
-name: skill-create
-description: Create a new Claude Code skill from scratch using a guided interview. Handles the full lifecycle — capturing intent, naming, writing SKILL.md, testing, iterating, and saving the skill to the repo. Use this whenever the user wants to build a new skill, capture a workflow as a skill, or says "make a skill for X", "turn this into a skill", or "new skill".
-compatibility: Requires git. Deploy skills with `make install-system` in ai-skills (copy-only; see principles/deployment.md).
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
+name: skill-create
+description: Create a new Claude Code skill from scratch using a guided interview. Handles the full lifecycle — capturing intent, naming, writing SKILL.md, testing, iterating, and saving the skill to the repo. Use this whenever the user wants to build a new skill, capture a workflow as a skill, or says "make a skill for X", "turn this into a skill", or "new skill".
+compatibility: Requires git. Deploy skills with `make install-system` in ai-skills (copy-only; see principles/deployment.md).
 ---
+
 
 
 # Skill Creator
@@ -73,6 +73,10 @@ Use this structure:
 
 ```
 ---
+version: 1.0.0
+principles_version: 1.0.0
+last_updated: YYYY-MM-DD
+updated_by: human
 name: skill-name
 description: [see below]
 compatibility: [only if needed]

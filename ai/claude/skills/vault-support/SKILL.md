@@ -1,12 +1,12 @@
 ---
-
-name: vault-support
-description: "Analyze a vault support Slack thread to fact-check the team bot, identify documentation gaps, and generate knowledge-extraction questions. Use when the user pastes a thread from their vault support channel (slack.vault_support_channel in local.json). Triggers on vault questions, bot responses, AppRole, policy PRs, KV2, seal, onboarding pasted from Slack."
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
+name: vault-support
+description: "Analyze a vault support Slack thread to fact-check the team bot, identify documentation gaps, and generate knowledge-extraction questions. Use when the user pastes a thread from their vault support channel (slack.vault_support_channel in local.json). Triggers on vault questions, bot responses, AppRole, policy PRs, KV2, seal, onboarding pasted from Slack."
 ---
+
 
 
 # Vault Support Analyzer

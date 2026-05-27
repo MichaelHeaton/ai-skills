@@ -1,12 +1,12 @@
 ---
-
-name: skill-session-handoff
-description: Package the current session's skill activity and friction notes into a structured context block ready to pass to a sub-agent. Produces the SA1 output block that skill-review's sub-agent invocation pattern requires — run this in the parent session before spawning a sub-agent to run skill-review SA2–SA4. Triggers on: "package session skills for sub-agent", "build handoff block", "prepare skill context", "summarize session skills", "I'm about to spawn a skill-review sub-agent", "build the sub-agent context", "prep the handoff", "wrap up skills", "skill hygiene", "prep for skill review", "let's do skills before we close", "end of session skill stuff", or when skill-review's sub-agent pattern calls for an SA1 context block from the parent.
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
+name: skill-session-handoff
+description: Package the current session's skill activity and friction notes into a structured context block ready to pass to a sub-agent. Produces the SA1 output block that skill-review's sub-agent invocation pattern requires — run this in the parent session before spawning a sub-agent to run skill-review SA2–SA4. Triggers on: "package session skills for sub-agent", "build handoff block", "prepare skill context", "summarize session skills", "I'm about to spawn a skill-review sub-agent", "build the sub-agent context", "prep the handoff", "wrap up skills", "skill hygiene", "prep for skill review", "let's do skills before we close", "end of session skill stuff", or when skill-review's sub-agent pattern calls for an SA1 context block from the parent.
 ---
+
 
 
 # Skill Session Handoff

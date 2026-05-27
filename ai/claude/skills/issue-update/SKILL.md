@@ -1,12 +1,12 @@
 ---
-
-name: issue-update
-description: Update a task or ticket — change status, add a comment, edit labels, close it, or sync the task index. Works across GitHub Issues, GitLab Issues, and Jira. Use when the user says "close issue #X", "mark PROJ-12345XXXX done", "add a comment to #X", "update the priority on", or any similar task update request.
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
+name: issue-update
+description: Update a task or ticket — change status, add a comment, edit labels, close it, or sync the task index. Works across GitHub Issues, GitLab Issues, and Jira. Use when the user says "close issue #X", "mark PROJ-12345XXXX done", "add a comment to #X", "update the priority on", or any similar task update request.
 ---
+
 
 
 Update an existing task in its source system and keep the task index in sync.

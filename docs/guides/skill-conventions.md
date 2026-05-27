@@ -60,6 +60,10 @@ Only create `scripts/`, `references/`, or `assets/` when the skill actually need
 
 ```markdown
 ---
+version: 1.0.0
+principles_version: 1.0.0
+last_updated: YYYY-MM-DD
+updated_by: human
 name: skill-name
 description: One-paragraph description of what the skill does and *when* to use it.
   Include specific trigger phrases and contexts. Be slightly pushy — agents undertrigger
@@ -80,6 +84,10 @@ Brief orientation paragraph.
 
 | Field | Required | Notes |
 |---|---|---|
+| `version` | Yes | Semver for this skill ([principles/versioning.md](../../principles/versioning.md)) |
+| `principles_version` | Yes | `principles/` version the skill was written against |
+| `last_updated` | Yes | `YYYY-MM-DD` |
+| `updated_by` | Yes | `human`, `claude`, or `cursor` |
 | `name` | Yes | Must match directory name |
 | `description` | Yes | Max 1024 chars. What it does + when to trigger. |
 | `compatibility` | No | List tool/env requirements (git, Python, etc.) |

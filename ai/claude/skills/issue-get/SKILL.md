@@ -1,12 +1,12 @@
 ---
-
-name: issue-get
-description: Fetch the full details of a specific task or ticket by ID. Works across GitHub Issues and Jira. Use when the user references a specific issue number or ticket key (e.g. "#94", "PROJ-12345", "issue 94"), or when another skill needs full context for a task before acting on it.
 version: 1.0.0
 principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
+name: issue-get
+description: Fetch the full details of a specific task or ticket by ID. Works across GitHub Issues and Jira. Use when the user references a specific issue number or ticket key (e.g. "#94", "PROJ-12345", "issue 94"), or when another skill needs full context for a task before acting on it.
 ---
+
 
 
 Fetch full details for a specific task from its source system and present them clearly.
