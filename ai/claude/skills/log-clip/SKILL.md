@@ -129,7 +129,7 @@ Or the user can say: "read the last tf log" and Claude will find and read it fro
 `clog` is installed by `ai-skills/scripts/install.sh`:
 ```bash
 # Creates: ~/.local/bin/clog → ai/claude/skills/log-clip/scripts/clog.py
-make install  # run from ~/Projects/personal/ai-skills/
+make install-system   # from ~/Projects/personal/ai-skills/
 ```
 
 Make sure `~/.local/bin` is in your `$PATH`.

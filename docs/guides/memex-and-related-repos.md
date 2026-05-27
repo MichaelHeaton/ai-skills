@@ -29,7 +29,7 @@ If you fork or reuse **ai-skills**, use your own PKM repo and set:
 | Repo | Role |
 |------|------|
 | **ai-skills** (this repo) | Public principles, config templates, skills (after import), install scripts |
-| **[claude-skills](https://github.com/MichaelHeaton/claude-skills)** | Legacy runtime for skills until `make install-system` ships here |
+| **[claude-skills](https://github.com/MichaelHeaton/claude-skills)** | Legacy mirror during migration |
 | **[Memex](https://github.com/MichaelHeaton/memex)** | Private knowledge vault; employer-specific comms-write examples under `ai/claude/skills/comms-write-context/` |
 | **[workstation-devops](https://gitlab.com/Michael-Heaton/workstation-devops)** | Ansible bootstrap: clones repos, applies dotfiles, runs skill install on the author’s Macs |
 
@@ -38,16 +38,15 @@ If you fork or reuse **ai-skills**, use your own PKM repo and set:
 **[workstation-devops](https://gitlab.com/Michael-Heaton/workstation-devops)** is the supported way to install and refresh tooling on those workstations:
 
 - Clones `personal/ai-skills`, `personal/claude-skills`, and `personal/memex` (see `group_vars/all.yml` → `managed_repos_common`)
-- Today: runs **`make install`** in **claude-skills** to deploy skills to `~/.claude/skills/`
+- Runs **`make install-system`** in **ai-skills** to deploy skills to `~/.claude/`
 - Copies config **templates** only — filled `~/.config/ai-skills/local.json` stays on the machine ([local-config.md](local-config.md))
-- Target: **`make install-system`** in **ai-skills** after PR-F import (replaces claude-skills as deploy source)
 
 Manual install (any machine):
 
 ```bash
 git clone git@github.com-personal:MichaelHeaton/ai-skills.git ~/Projects/personal/ai-skills
-cp config/local.template.json ~/.config/ai-skills/local.json   # then edit
-cd ~/Projects/personal/claude-skills && make install             # until install-system exists
+cd ~/Projects/personal/ai-skills && make install-system
+# local.json created if missing; edit ~/.config/ai-skills/local.json
 ```
 
 Workstation playbook: `make apply` from `~/Projects/personal/workstation-devops`.

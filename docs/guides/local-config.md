@@ -21,7 +21,7 @@ JSON handles **N git identities** (personal, work, client contract, future) in o
 | `~/.config/ai-skills/leak-patterns` | Optional private regex list for pre-commit (see `config/leak-patterns.README`) |
 | `config/local.template.json` | Public template |
 
-`make install-system` (when added) will create `local.json` and `accounts.shell` if missing.
+`make install-system` creates `local.json` from the template if missing (never overwrites a filled file).
 
 ## Accounts model (`local.json`)
 

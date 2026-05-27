@@ -19,10 +19,8 @@ updated_by: human
 | Config / tags | `config/`, `categories/` | In repo |
 | Docs | `docs/` | Guides + stubs (`README.md`, `multi-ai.md`, `guides/*`) |
 | Tooling | `scripts/`, `Makefile` | In repo |
-| Claude skills | `ai/claude/skills/` | Planned |
+| Claude skills | `ai/claude/skills/` | Present — deploy via `make install-system` |
 | Private values | `~/.config/ai-skills/local.json` | On machine only; never committed |
-
-Until `ai/claude/skills/` exists, **skills stay in** [claude-skills](https://github.com/MichaelHeaton/claude-skills) and deploy to `~/.claude/skills/` via that repo's install flow.
 
 ## Multi-AI
 

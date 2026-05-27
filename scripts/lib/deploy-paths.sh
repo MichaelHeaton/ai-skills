@@ -1,0 +1,27 @@
+# Shared paths for install-system / sync-from-system (source with: . scripts/lib/deploy-paths.sh)
+
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+CLAUDE_SRC="$REPO_DIR/ai/claude"
+SKILLS_SRC="$CLAUDE_SRC/skills"
+HOOKS_SRC="$CLAUDE_SRC/hooks"
+MEMORY_SRC="$CLAUDE_SRC/memory"
+CLAUDE_MD_SRC="$CLAUDE_SRC/CLAUDE.md"
+CLOG_SRC="$SKILLS_SRC/log-clip/scripts/clog.py"
+
+SKILLS_DST="$HOME/.claude/skills"
+HOOKS_DST="$HOME/.claude/hooks"
+CLAUDE_MD_DST="$HOME/.claude/CLAUDE.md"
+CLOG_DST="$HOME/.local/bin/clog"
+
+CONFIG_TEMPLATE="$REPO_DIR/config/local.template.json"
+CONFIG_DST_DIR="$HOME/.config/ai-skills"
+CONFIG_DST="$CONFIG_DST_DIR/local.json"
+
+ENCODED_REPO="$(echo "$REPO_DIR" | tr '/' '-' | sed 's/^-//')"
+MEMORY_DST="$HOME/.claude/projects/$ENCODED_REPO/memory"
+
+SYSTEM_MANIFEST="$REPO_DIR/.deploy/system-manifest.json"
+LAST_SYNC="$REPO_DIR/.deploy/last-sync.json"
+
+# Skills removed from repo — delete from ~/.claude/skills on install
+RETIRED_SKILLS=(uv-weekly pr-slack)

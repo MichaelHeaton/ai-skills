@@ -22,18 +22,13 @@ A public, versioned home for **multi-AI** skills and conventions. The repo is gr
 
 **Canonical tree:** `ai/claude/skills/<name>/SKILL.md` in this repo.
 
-**Runtime deploy** still uses [claude-skills](https://github.com/MichaelHeaton/claude-skills) until `make install-system` exists:
-
-```
-claude-skills/skills/<name>/SKILL.md  →  ~/.claude/skills/<name>/   (today)
-ai/claude/skills/<name>/SKILL.md      →  ~/.claude/skills/<name>/   (target: make install-system)
-```
+**Runtime deploy:** `make install-system` (copy-only) → `~/.claude/skills/<name>/`. If you edited under `~/.claude/` first, run `make sync-from-system` before reinstalling. See [principles/deployment.md](principles/deployment.md).
 
 ## Related repositories
 
 | Repo | Role |
 |------|------|
-| [claude-skills](https://github.com/MichaelHeaton/claude-skills) | Legacy skill runtime until `ai/claude/` import + `install-system` |
+| [claude-skills](https://github.com/MichaelHeaton/claude-skills) | Legacy mirror; deploy from **ai-skills** |
 | [Memex](https://github.com/MichaelHeaton/memex) | Maintainer’s **personal second brain** (PKM vault) — project name, not a generic product |
 | [workstation-devops](https://gitlab.com/Michael-Heaton/workstation-devops) | Ansible install on author’s Macs (`make apply`) |
 
@@ -67,4 +62,4 @@ See [principles/security.md](principles/security.md).
 
 ## Legacy source
 
-Skill bodies were imported from **claude-skills**. That repo remains the **deploy** source until copy-only `make install-system` from here is implemented. Re-run `make import-legacy` after editing skills in the legacy repo.
+Skill bodies were imported from **claude-skills**. Edit here, deploy with `make install-system`. Re-run `make import-legacy` only when pulling changes from the legacy repo during migration.

@@ -1,4 +1,5 @@
-.PHONY: help import-legacy bootstrap-version manifest-update unlink-legacy unlink-legacy-dry-run
+.PHONY: help install install-system install-system-dry-run sync-from-system sync-from-system-apply \
+	import-legacy bootstrap-version manifest-update unlink-legacy unlink-legacy-dry-run
 
 .DEFAULT_GOAL := help
 
@@ -7,12 +8,34 @@ LEGACY_REPO ?= $(abspath $(CURDIR)/../claude-skills)
 help:
 	@echo "ai-skills — available targets:"
 	@echo ""
-	@echo "  make import-legacy          Import ai/claude/ from claude-skills (large; run when ready)"
-	@echo "  make bootstrap-version      Add version frontmatter to imported SKILL.md files"
-	@echo "  make manifest-update        Regenerate .deploy/repo-manifest.json"
-	@echo "  make unlink-legacy          Phase 0: materialize ~/.claude, migrate config"
-	@echo "  make unlink-legacy-dry-run  Preview Phase 0"
+	@echo "  Deploy (copy-only — no symlinks):"
+	@echo "    make install-system           Deploy ai/claude/ → ~/.claude/"
+	@echo "    make install-system-dry-run   Preview install"
+	@echo "    make install                  Alias for install-system"
+	@echo "    make sync-from-system         Dry-run: pull ~/.claude/ edits into repo"
+	@echo "    make sync-from-system-apply   Apply sync (review diff before commit)"
 	@echo ""
+	@echo "  Migration / maintenance:"
+	@echo "    make import-legacy            Import ai/claude/ from claude-skills"
+	@echo "    make bootstrap-version        Normalize version frontmatter"
+	@echo "    make manifest-update          Regenerate .deploy/repo-manifest.json"
+	@echo "    make unlink-legacy            Phase 0: materialize symlinks, migrate config"
+	@echo "    make unlink-legacy-dry-run    Preview Phase 0"
+	@echo ""
+
+install: install-system
+
+install-system:
+	@bash scripts/install-system.sh
+
+install-system-dry-run:
+	@bash scripts/install-system.sh --dry-run
+
+sync-from-system:
+	@bash scripts/sync-from-system.sh --dry-run
+
+sync-from-system-apply:
+	@bash scripts/sync-from-system.sh --apply
 
 import-legacy:
 	@LEGACY_REPO="$(LEGACY_REPO)" bash scripts/import-from-legacy.sh

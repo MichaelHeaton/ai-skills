@@ -16,4 +16,4 @@ When creating any file that belongs to the Claude Code setup (hooks, scripts, co
 
 **How to apply:** Any time a new hook, script, skill, or config artifact is created, default to **ai-skills → copy deploy** rather than writing directly to `~/.claude/` or linking with symlinks. If you find a symlink under `ai/`, replace it with a real file (see `make import-legacy` step 5 for skill conventions).
 
-Until `install-system` exists, see [docs/ROADMAP.md](../../../docs/ROADMAP.md) for the interim deploy path — still repo-first in **ai-skills**, not edits under `~/.claude/`.
+If you edited under `~/.claude/` first, run `make sync-from-system` before the next `make install-system`.
