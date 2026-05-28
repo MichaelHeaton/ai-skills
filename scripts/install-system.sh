@@ -131,7 +131,7 @@ if cm.is_file():
 
 out.parent.mkdir(parents=True, exist_ok=True)
 payload = {
-    "generated_at": __import__("datetime").datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+    "generated_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     "algorithm": "md5",
     "scope": "system-deploy",
     "paths": dict(sorted(paths.items())),
