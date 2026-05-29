@@ -1,7 +1,7 @@
 ---
 name: project_github_labels
 description: GitHub labeling convention — dual-label overlapping types for bot compatibility + taxonomy
-metadata: 
+metadata:
   node_type: memory
   type: project
   originSessionId: d4b24898-c21c-4c80-b90e-78485b9393bc

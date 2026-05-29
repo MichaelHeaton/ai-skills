@@ -24,6 +24,7 @@ bash ~/.claude/skills/issue-create/scripts/detect-context.sh
 ```
 
 The output tells you which path to follow:
+
 - `jira-work` → Path A (Jira Story)
 - `github-current:<owner/repo>` → Path B (GitHub Issue in that repo)
 - `memex` → Path C (GitHub Issue in personal KB)
@@ -57,6 +58,7 @@ Context:
 ```
 
 **Role rules** (same as GitHub Issues):
+
 - Use the hat the user is wearing — never "As I, I want"
 - Product/security work → "an SRE" or "a team lead"; safe default: "an engineer and knowledge worker"
 - Acceptance criteria are required — minimum one line
@@ -99,6 +101,7 @@ Report: ticket key, URL, and any epic it was linked to.
 ## Path B — GitHub Issue in current repo
 
 > **Account:** Export the personal token before `gh` calls to personal repos (`GITHUB_PERSONAL_USER` must be set):
+>
 > ```bash
 > export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")
 > ```
@@ -176,6 +179,7 @@ As a [role], I want [goal], so that [outcome].
 ```
 
 **Role rules:**
+
 - Use the user's context — never "As I, I want"
 - Map domain to a sensible role (e.g. `homelab` → "a homelab operator"; `personal` → "a family organizer")
 - Safe default: "an engineer and knowledge worker"

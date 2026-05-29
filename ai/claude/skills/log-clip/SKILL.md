@@ -60,7 +60,7 @@ If `clog` is not installed, Claude should apply a manual filter: grep for `Error
 ## What gets filtered
 
 | Tool | Kept | Stripped |
-|---|---|---|
+| --- | --- | --- |
 | `tf` / `terraform` | Errors, warnings, plan summary, state changes (+/-/~), resource names, Apply/Destroy result | Progress dots, Refreshing state..., provider version noise, blank lines |
 | `ansible` | TASK, PLAY, RECAP, failed, fatal, changed, WARNING, UNREACHABLE | ok:, skipping:, Gathering Facts (when successful), timing |
 | `vault` | Errors, key/value output, lease info, seal status, permission denied | Verbose request/response headers, progress |
@@ -73,6 +73,7 @@ If `clog` is not installed, Claude should apply a manual filter: grep for `Error
 ## Secrets redaction (always on)
 
 Before filtering, clog redacts:
+
 - AWS access keys (`AKIA...`)
 - passwords, tokens, api_key, bearer values in key=value format
 - Vault tokens (`s.XXXX`)
@@ -88,7 +89,7 @@ Redacted values become `[REDACTED]` inline. Raw output is kept in `~/.claude/log
 When clog isn't available, apply evidence ordering before asking for full output:
 
 | Tool | Ask for first | Ask for last |
-|---|---|---|
+| --- | --- | --- |
 | Terraform | Error block + affected resource + workspace | Full plan |
 | Ansible | Failed task name + module + stderr/stdout | Verbose run (`-vvv`) |
 | CI/CD | Failed step name + exit code + last 200 lines | Full job log |
@@ -127,6 +128,7 @@ Or the user can say: "read the last tf log" and Claude will find and read it fro
 ## Installation
 
 `clog` is installed by `ai-skills/scripts/install.sh`:
+
 ```bash
 # Creates: ~/.local/bin/clog → ai/claude/skills/log-clip/scripts/clog.py
 make install-system   # from ~/Projects/personal/ai-skills/

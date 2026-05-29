@@ -40,6 +40,7 @@ If any required field is missing and can't be inferred from context, ask once be
 Filename: `{Topic-In-Title-Case}-Decision.md`
 
 Rules:
+
 - Topic-based, not date-based — optimizes for retrieval by subject, not chronology
 - Title case with hyphens: `AI-Account-Architecture-Decision.md`
 - No date prefix

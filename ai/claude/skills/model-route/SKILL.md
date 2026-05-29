@@ -24,7 +24,7 @@ One unnecessary Opus call ≈ 25 Haiku calls. Route deliberately.
 ## Decision table
 
 | Task type | Model |
-|---|---|
+| --- | --- |
 | File search, locate a symbol, grep | `haiku` |
 | Extract, format, summarize, transform data | `haiku` |
 | Summarize a Terraform plan or Ansible run | `haiku` |
@@ -66,6 +66,7 @@ When spinning up parallel sub-agents, route each independently. A search agent a
 ## Escalation rule
 
 Before using Opus, verify:
+
 1. Did Sonnet produce a wrong or incomplete answer on at least one attempt?
 2. Is the task genuinely hard — novel reasoning, unstructured tradeoffs, no clear right answer?
 3. Or is the prompt underspecified? → Fix the prompt first, not the model.

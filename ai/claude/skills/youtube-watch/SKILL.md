@@ -28,12 +28,14 @@ print('DESC:', d.get('description','')[:500])
 ```
 
 Extract:
+
 - **title** — exact video title
 - **channel** — uploader/channel name
 - **duration** — runtime
 - **description** — first 500 characters (truncate at a sentence boundary if possible)
 
 If yt-dlp fails (private video, age-gated, etc.), fall back to the YouTube oEmbed API for the title only:
+
 ```bash
 curl -s "https://www.youtube.com/oembed?url={URL}&format=json" | python3 -c "import sys,json; print(json.load(sys.stdin).get('title',''))"
 ```
@@ -41,10 +43,12 @@ curl -s "https://www.youtube.com/oembed?url={URL}&format=json" | python3 -c "imp
 ### 2. Determine domain and priority
 
 Ask the user if not obvious from context:
+
 - **domain**: one of `homelab`, `learning`, `work-primary`, `client-contract`, `personal`, `mtb`, `iot`
 - **priority**: almost always `low` for watch-later items unless the user signals urgency
 
 Infer from the title/description if confident:
+
 - Proxmox, Docker, Ansible, networking, self-hosting → `homelab`
 - DevOps, CI/CD, cloud, platform engineering, certs → `learning`
 - AI, machine learning, neural networks, LLMs → `learning`
@@ -71,6 +75,7 @@ As a [role], I want to watch "[title]" by [channel], so that [benefit inferred f
 ```
 
 **Role guidance by domain:**
+
 - `homelab` → "a homelab operator"
 - `learning` → "an engineer upskilling in [topic]"
 - `work-primary` → "a Vault team lead" or "an SRE"
@@ -113,6 +118,7 @@ Otherwise skip project assignment.
 ### 8. Confirm to the user
 
 Report:
+
 - Issue number and URL as a markdown link
 - Title, channel, duration
 - Project it was added to

@@ -36,7 +36,7 @@ The workflow is the same for both modes: **Template → Context → Draft → Te
 Identify the document type:
 
 | Type | Template | Default tier | When to use |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Runbook | `templates/runbook.md` | oncall | On-call response: symptom → diagnosis → fix → escalate |
 | How-to | `templates/how-to.md` | customer | Step-by-step guide for internal customers consuming a service |
 | Customer guide | `templates/customer-guide.md` | customer | Broader reference for customers (onboarding, overview) |
@@ -54,6 +54,7 @@ For live mode: use the same structure but deliver as Confluence content.
 Collect everything needed for frontmatter and content.
 
 **Frontmatter fields** (staged mode — all required):
+
 - `title` — page title
 - `service` — service slug (vault, teleport, cyberark, emissary, hubble, etc.)
 - `tier` — one or more of: `team`, `oncall`, `customer`
@@ -64,6 +65,7 @@ Collect everything needed for frontmatter and content.
 
 **Content questions** (both modes):
 Ask for an unstructured info dump covering:
+
 - What problem or task does this doc address?
 - Triggering scenario (runbooks) or goal (how-tos)
 - The steps, decisions, or procedures involved
@@ -83,6 +85,7 @@ Generate the complete frontmatter block first and show it for confirmation — e
 ### Section by section (both modes)
 
 Work through template sections in order:
+
 1. Draft based on gathered context
 2. Show it, ask for feedback
 3. Apply edits surgically — never reprint the whole doc
@@ -110,9 +113,11 @@ Fix any gaps before delivery.
 ## Stage 4: Deliver
 
 ### Staged mode
+
 1. Write to `${repos.work_docs} (local.json)/services/{service}/{filename}.md`
 2. Remind the user to `git commit` and push
 3. To share with the team for review, sync to the personal wiki space:
+
    ```python
    mcp__atlassian__confluence_create_page(
        space_key="~${CONFLUENCE_USER}",
@@ -121,10 +126,12 @@ Fix any gaps before delivery.
        content_format="markdown"
    )
    ```
+
 4. Share the personal wiki URL with the team for async feedback
 5. Once approved, update `confluence_page_id` in frontmatter and note that the sync pipeline will push to the production wiki space
 
 ### Live mode
+
 1. If updating an existing page, fetch the current content first to avoid overwriting concurrent edits
 2. Use the Confluence MCP tool to create or update the page in the appropriate team wiki space
 3. Confirm the page URL to the user when done

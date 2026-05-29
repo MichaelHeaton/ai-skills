@@ -30,7 +30,7 @@ If your vault has a rules doc at `weekly_reports.work_team.memex_agent_ref`, rea
 Use **private config labels** and user phrasing — do not hardcode employer names from a public template.
 
 | User intent (examples) | Config key | Reference |
-|------------------------|------------|-----------|
+| ------------------------ | ------------ | ----------- |
 | Client deck, slides 8-10, contract weekly, labels in `client_contract` | `client_contract` | [references/client-contract.md](references/client-contract.md) |
 | Team wiki PPP, employer weekly, Thursday prep, labels in `work_team` | `work_team` | [references/work-team.md](references/work-team.md) |
 

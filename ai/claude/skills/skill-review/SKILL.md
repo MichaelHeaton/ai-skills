@@ -37,6 +37,7 @@ Otherwise: reflect on the current conversation. Look for every Skill tool invoca
 ### SA2. Assess each skill that fired
 
 For each skill that ran, evaluate:
+
 - **Did it trigger correctly?** Did I reach for it at the right moment, or did the user have to ask explicitly?
 - **Did it route correctly?** (Wrong repo, wrong ticket system, wrong output format?)
 - **Was there a correction loop?** Did the user have to redirect me mid-execution?
@@ -72,6 +73,7 @@ If there's nothing to improve: say "no skill changes identified this session" �
 Use `issue-create` Path B targeting `${GITHUB_PERSONAL_USER}/ai-skills`.
 
 **Security check before creating any ticket** — ai-skills is a **public GitHub repo**. Before writing ticket content, strip or generalize:
+
 - Employer-internal hostnames, URLs, or system names
 - Internal ticket keys used as examples (PROJ-12345 etc.)
 - Security findings, vulnerability details, or exploit patterns
@@ -81,6 +83,7 @@ Use `issue-create` Path B targeting `${GITHUB_PERSONAL_USER}/ai-skills`.
 Describe the skill improvement in generic terms. "The skill failed to detect the repo name from voice input" is fine. "The skill couldn't find the internal secrets management repo at git.corp.example.com" is not.
 
 Once the ticket exists:
+
 - **Work it now** → continue into single-skill mode or `skill-create`, then close/transition the ticket
 - **Defer it** → leave the ticket open, move on
 
@@ -93,6 +96,7 @@ If the user explicitly declines a ticket for a finding: acknowledge and move on 
 Run SA2–SA4 inside a sub-agent when you want fresh skill file reads mid-session (sub-agents reload all SKILL.md files from disk at startup) or when the accumulated session context would distort the audit.
 
 **Division of labor:**
+
 - **Parent session** — does SA1 (has the conversation history), then spawns a sub-agent
 - **Sub-agent** — receives the SA1 output as structured input, runs SA2–SA4, returns findings table
 - **Parent session** — handles SA5 (ticket creation, security scrub)
@@ -140,6 +144,7 @@ Do NOT run SA5. Do NOT create tickets.
 Your job is to help the user audit and improve an existing skill. Unlike skill-create, you're starting from something that exists — the goal is to make it better, not rebuild it from scratch.
 
 The most common reasons to review a skill:
+
 - It didn't trigger when it should have (or triggered when it shouldn't)
 - The output felt off — too rigid, missed the point, did unnecessary work
 - A session just produced a great result and that approach should be captured back into the skill
@@ -153,6 +158,7 @@ The most common reasons to review a skill:
 If the user named a skill, read it from `~/.claude/skills/{name}/SKILL.md`.
 
 If it's not clear which skill, list the available skills:
+
 ```bash
 ls ~/.claude/skills/
 ```
@@ -180,12 +186,15 @@ Get enough context before reading the skill so you know what to look for.
 Read the skill's SKILL.md and evaluate it across these dimensions. Read `references/conventions.md` for the full rules.
 
 ### Naming
+
 - Does the `name` match the directory name?
 - Does it follow the `{domain}-{verb}` or `{domain}-{noun}` pattern?
 - Is the domain prefix correct for this skill's context?
 
 ### Description (trigger quality)
+
 The description is the primary trigger mechanism. Ask:
+
 - Does it clearly state what the skill does AND when to use it?
 - Does it include natural-language phrases a user would actually type?
 - Is it pushy enough? (Claude undertriggers — the description should lean toward more situations, not fewer)
@@ -199,6 +208,7 @@ Global ADHD-friendly formatting rules live in `~/.claude/CLAUDE.md` — they app
 If the skill produces complex structured output, it may reference `references/formatting.md` for output-specific patterns — but only if the global rules aren't sufficient.
 
 ### Body (instruction quality)
+
 - Is the structure logical? Would a reader follow it without confusion?
 - Are instructions in imperative form ("Do X")?
 - Does it explain the *why* behind non-obvious steps?
@@ -208,6 +218,7 @@ If the skill produces complex structured output, it may reference `references/fo
 - Does every skill invocation/reference include a source label? (`_(personal — ai-skills repo)_`, `_(built-in — Claude Code)_`, or `_(repo — <name>)_`)
 
 ### Freshness
+
 - Does the skill reference tools, APIs, or patterns that have changed?
 - Does it account for current Claude capabilities? (e.g., a skill that manually scaffolds something Claude now handles natively is doing unnecessary work)
 - If a session just produced a better approach, is that approach captured?
@@ -230,14 +241,18 @@ Once the user approves:
 
 1. **Determine the skill's source** — global or project — then edit the repo source file, never `~/.claude/skills/` (the installed copy is a deployment artifact overwritten by the next install):
    - **Global skill** → `~/Projects/personal/ai/claude/skills/{name}/SKILL.md`
+
      ```bash
      ls ~/.claude/skills/{name}/   # confirms global
      ```
+
    - **Project skill** → `<project-repo>/.claude/skills/{name}/SKILL.md`
+
      ```bash
      find ~/Projects -maxdepth 4 -path "*/.claude/skills/{name}" -type d 2>/dev/null
      # use the repo path returned here
      ```
+
    If session-close passed a source annotation (`global: ai-skills` or `project: <repo>`), use that directly instead of running the lookup.
 2. Read it back and confirm it looks right
 3. **Global skills only** — verify the skill has a row in `README.md` and skim `AGENT.md` for stale references; update both if needed

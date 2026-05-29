@@ -1,0 +1,28 @@
+# Local: pip install pre-commit && make hooks-install
+# Manual: make lint  |  CI: .github/workflows/lint.yml
+
+repos:
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.22.1
+    hooks:
+      - id: markdownlint-cli2
+        name: Lint Markdown files
+        args: ["--fix"]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+      - id: end-of-file-fixer
+        name: Fix end of files
+      - id: check-yaml
+        name: Check YAML syntax
+
+  - repo: local
+    hooks:
+      - id: skill-secrets-scan
+        name: Scan staged SKILL.md for secrets and PII
+        entry: bash scripts/hooks/legacy-pre-commit
+        language: system
+        files: (^|/)SKILL\.md$

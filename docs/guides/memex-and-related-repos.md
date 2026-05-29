@@ -14,7 +14,7 @@ updated_by: human
 In this workspace:
 
 | Where you see “Memex” | Meaning |
-|----------------------|---------|
+| ---------------------- | --------- |
 | `comms_write.memex_repo_path` in `local.template.json` | **Example default** pointing at the author’s clone path (`~/Projects/personal/memex`) |
 | Skill names like `memex-dump`, `memex-decide` | **Legacy skill IDs** in claude-skills / future `ai/claude/skills/` — kept for compatibility |
 | Memex repo paths in docs | The author’s vault layout (`GitHub/Issues/`, `Wiki/`, `ai/claude/skills/comms-write-context/`, …) |
@@ -27,7 +27,7 @@ If you fork or reuse **ai-skills**, use your own PKM repo and set:
 ## How the repos fit together
 
 | Repo | Role |
-|------|------|
+| ------ | ------ |
 | **ai-skills** (this repo) | Public principles, config templates, skills (after import), install scripts |
 | **[claude-skills](https://github.com/MichaelHeaton/claude-skills)** | Legacy mirror during migration |
 | **[Memex](https://github.com/MichaelHeaton/memex)** | Private knowledge vault; employer-specific comms-write examples under `ai/claude/skills/comms-write-context/` |
@@ -38,7 +38,7 @@ If you fork or reuse **ai-skills**, use your own PKM repo and set:
 **[workstation-devops](https://gitlab.com/Michael-Heaton/workstation-devops)** is the supported way to install and refresh tooling on those workstations:
 
 - Clones `personal/ai-skills`, `personal/claude-skills`, and `personal/memex` (see `group_vars/all.yml` → `managed_repos_common`)
-- Runs **`make install-system`** in **ai-skills** to deploy skills to `~/.claude/`
+- Runs **`make install-system`** and **`make hooks-install`** in **ai-skills** (deploy skills + git lint hooks)
 - Copies config **templates** only — filled `~/.config/ai-skills/local.json` stays on the machine ([local-config.md](local-config.md))
 
 Manual install (any machine):
@@ -46,6 +46,7 @@ Manual install (any machine):
 ```bash
 git clone git@github.com-personal:MichaelHeaton/ai-skills.git ~/Projects/personal/ai-skills
 cd ~/Projects/personal/ai-skills && make install-system
+brew install pre-commit && make hooks-install
 # local.json created if missing; edit ~/.config/ai-skills/local.json
 ```
 

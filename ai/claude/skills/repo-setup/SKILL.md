@@ -22,7 +22,7 @@ Check that repos needed for AI-assisted workflows exist and are configured. Cove
 ## Typical repos (from local.json)
 
 | Key | Purpose | Example skills |
-|---|---|---|
+| --- | --- | --- |
 | `repos.work_docs` | Work documentation / wiki mirror | `doc-coauthor`, `vault-support` |
 | `repos.work_skills` | Customer-facing work skills | `vault-support` |
 | Clone of **this** repo (`ai-skills`) | Skill source | all skills |

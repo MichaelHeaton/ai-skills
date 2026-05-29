@@ -21,21 +21,22 @@ Migration from [claude-skills](https://github.com/MichaelHeaton/claude-skills) t
 - [x] Doc stubs — deployment-contexts, cross-ai-review, self-improvement-loop, `mcps/`
 - [x] `scripts/`, `Makefile` — Phase 0, import, manifest, `install-system`, `sync-from-system`
 - [x] `ai/claude/` — skills, hooks, memory, `CLAUDE.md` (import from claude-skills)
-- [x] `.deploy/repo-manifest.json` — `principles/` + `ai/claude/` (65 paths)
+- [x] `ai/cursor/rules/` — user rules → `~/.cursor/rules/` via `make install-system`
+- [x] `.deploy/repo-manifest.json` — `principles/` + `ai/claude/` + `ai/cursor/rules/`
+- [x] `.pre-commit-config.yaml`, `.markdownlint.json`, `.github/workflows/lint.yml` — markdown lint (MD060), YAML, SKILL.md secrets scan; `make lint`, `make hooks-install`
 
 ## Planned (not yet in tree)
 
 | Area | Path | Notes |
-|------|------|--------|
+| ------ | ------ | -------- |
 | Docs | stub bodies | Fill deployment-contexts, cross-ai-review, MCP runbooks |
-| Deploy | `install-repo`, manifest diff | Cursor rules deploy; drift tooling |
-| Cursor | `ai/cursor/rules/` | Thin rules → `AGENTS.md` |
-| Hooks | `.pre-commit-config.yaml` | Sanitize, version bump, secrets |
+| Deploy | `install-repo`, manifest diff | Per-repo Cursor rules; drift tooling |
+| Hooks | pre-commit extras | Sanitize scan, version bump automation |
 
 ## Runtime today
 
 - **Source of truth:** `ai/claude/skills/` in this repo
-- **Deploy:** `make install-system` → `~/.claude/` (copy-only). Sync back: `make sync-from-system`
+- **Deploy:** `make install-system` → `~/.claude/` and `~/.cursor/rules/` (copy-only). Sync back: `make sync-from-system`
 - **Private config:** `~/.config/ai-skills/local.json` (create-if-missing on install)
 
 ## Related work outside this repo

@@ -26,7 +26,7 @@ Routing uses two signals in order:
 If the idea is clearly about one of these topics, route to the named repo regardless of which repo the user is currently in:
 
 | Topic | Repo | System |
-|---|---|---|
+| --- | --- | --- |
 | Workstation setup, dotfiles, browser config (Brave/Chrome), dev environment, Homebrew, system tools, dashboard/homepage tools | `YOUR_USER/workstation-devops` | GitHub |
 | Skill improvements, install scripts, AI workflow, Claude skill authoring | `YOUR_USER/ai-skills` | GitHub |
 
@@ -39,7 +39,7 @@ bash ~/.claude/skills/issue-create/scripts/detect-context.sh
 ```
 
 | Detected | Brain dump routes to |
-|---|---|
+| --- | --- |
 | `jira-work` | Memex **unless** a named PROJ epic was mentioned in this session |
 | `github-current:<personal>` | That repo **if** the idea is clearly scoped to it; otherwise Memex |
 | `memex` | Memex |
@@ -86,9 +86,11 @@ If an idea is genuinely unclear, ask one short question — no more. Don't block
 **Path M — Memex (default)**
 
 > Export personal token before any `gh` call:
+>
 > ```bash
 > export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")
 > ```
+>
 > If `GITHUB_PERSONAL_USER` is not set, fall back to `gh auth token`.
 
 Seed labels (idempotent):
@@ -177,7 +179,7 @@ bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
 **Batch**: summary table after all tickets are created.
 
 | # | Title | Destination | Issue |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | … | workstation-devops | #N — link |
 | 2 | … | Memex | #N — link |
 

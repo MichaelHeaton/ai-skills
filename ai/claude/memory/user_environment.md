@@ -1,7 +1,7 @@
 ---
 name: user-environment
 description: "Claude Code usage environment — primarily terminal CLI, VS Code extension installed but not yet used"
-metadata: 
+metadata:
   node_type: memory
   type: user
   originSessionId: 2aba23b6-5060-4073-bf82-2b5ac8991ef3

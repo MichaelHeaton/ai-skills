@@ -19,7 +19,7 @@ updated_by: human
 **Examples**
 
 | Pattern | Examples |
-|---|---|
+| --- | --- |
 | `{domain}-{verb}` | `issue-create`, `issue-list`, `skill-create` |
 | `{domain}-{noun}` | `weekly-report`, `repo-setup` |
 | No domain prefix | `git-ops`, `grill-me` (cross-cutting or conversational) |
@@ -31,7 +31,7 @@ updated_by: human
 Add a short `{context}-` prefix only when the skill is useless outside one scope (a specific product, employer team, client account, or personal PKM repo). Pick a slug you control; keep it stable. **Do not maintain a master prefix table in this public repo** — that list is personal/team metadata and belongs in private notes, `~/.config/ai-skills/local.json` comments, or your org’s internal docs.
 
 | Situation | Guidance |
-|---|---|
+| --- | --- |
 | GitHub + GitLab issues/PRs | `issue-`, `pr-`, `git-` — no platform prefix unless the skill is platform-only |
 | Platform-only helper | `gh-` or `gl-` only when the other platform cannot run it |
 | One product or program | Product or program slug, e.g. `terraform-`, `k8s-` — not employer name |
@@ -84,7 +84,7 @@ Brief orientation paragraph.
 ### Frontmatter fields
 
 | Field | Required | Notes |
-|---|---|---|
+| --- | --- | --- |
 | `version` | Yes | Semver for this skill ([principles/versioning.md](../../principles/versioning.md)) |
 | `principles_version` | Yes | `principles/` version the skill was written against |
 | `last_updated` | Yes | `YYYY-MM-DD` |

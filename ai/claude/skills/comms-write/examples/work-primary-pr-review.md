@@ -9,7 +9,7 @@ updated_by: human
 
 Slack message after opening a GitHub PR for team review.
 
-**Audience:** Peers or admins on the team channel  
+**Audience:** Peers or admins on the team channel
 **Tone:** Short, scannable, TLDR-first
 
 ## What to gather

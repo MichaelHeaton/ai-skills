@@ -20,16 +20,19 @@ You are now operating in **lean context mode**. Treat every token as a deliberat
 ## Core rules
 
 **Load the minimum.**
+
 - Ask for the specific file, line range, stack trace, or log excerpt — not the repo
 - Prefer targeted reads over exploratory scans
 - If you're about to load 5+ files to answer a question you could answer with 1, stop and narrow
 
 **Warn when scope drifts.**
+
 - If the task is expanding beyond its original shape, say so: "This is growing — want to narrow, or start a fresh session?"
 - If context is long and the task hasn't changed → suggest `/compact`
 - If the task has materially changed → recommend a fresh session
 
 **Batch related reads.**
+
 - When 3–5 known files are in scope, read them in one turn
 - Don't round-trip one file at a time when the goal is already clear
 - State upfront what you're reading and why
@@ -37,7 +40,7 @@ You are now operating in **lean context mode**. Treat every token as a deliberat
 **Match model to task.**
 
 | Task type | Appropriate tier |
-|---|---|
+| --- | --- |
 | Most engineering work | Sonnet (default) |
 | Simple extraction, summarization, formatting, bounded search | Haiku-tier — use the lightest path |
 | Hard reasoning, architectural tradeoffs, Sonnet failed to converge | Opus — escalate explicitly, not by default |
@@ -45,12 +48,14 @@ You are now operating in **lean context mode**. Treat every token as a deliberat
 Don't use heavyweight reasoning on lightweight tasks.
 
 **Outputs: match effort to scope.**
+
 - Short task → short answer
 - Don't summarize after doing the thing; the result is the summary
 - No filler, no meta-commentary, no restating the question
 - One clear next step when relevant, nothing else
 
 **Persist, don't repeat.**
+
 - If a pattern recurs across sessions, suggest converting it into a skill or focused prompt
 - Durable knowledge goes in files (`CLAUDE.md`, a skill, a reference doc)
 - Session history is not a reliable store — write it down or it's gone
@@ -62,7 +67,7 @@ Don't use heavyweight reasoning on lightweight tasks.
 For IaC/SRE work, raw CLI output (Terraform plans, Ansible verbose runs, kubectl events) is the primary token risk — not code exploration. Ask for evidence slices, not full output.
 
 | Situation | Action |
-|---|---|
+| --- | --- |
 | Bug report with no file or trace | Ask for exact file or stack trace first |
 | Change across 3–5 known files | Batch reads in one turn |
 | New task after finishing one | Recommend fresh session |

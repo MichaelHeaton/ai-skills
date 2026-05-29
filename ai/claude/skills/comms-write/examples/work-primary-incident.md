@@ -9,7 +9,7 @@ updated_by: human
 
 Post-incident or operational event summary for **work-primary** context.
 
-**Audience:** Leadership, affected teams, on-call  
+**Audience:** Leadership, affected teams, on-call
 **Tone:** Factual, no blame; focus on impact, timeline, and follow-up
 
 ## What to gather

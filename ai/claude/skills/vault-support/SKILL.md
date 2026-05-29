@@ -17,7 +17,7 @@ description: "Analyze a vault support Slack thread to fact-check the team bot, i
 Read `~/.config/ai-skills/local.json` before any steps:
 
 | Key | Use |
-|---|---|
+| --- | --- |
 | `repos.work_docs` | Clone path for wiki mirror + scripts (`ask.py`, `add_test_case.py`, Confluence push) |
 | `repos.work_skills` | Customer-facing vault skill topic files |
 | `slack.vault_support_channel` | Support Slack channel name (private) |
@@ -114,6 +114,7 @@ python3 scripts/slack_intake.py --limit 5
 ```
 
 This outputs a JSON array of threads. Each thread has:
+
 - `thread_ts` — unique Slack timestamp (stored in test case frontmatter)
 - `permalink` — direct link back to the Slack thread (pass as `--slack-permalink`)
 - `question_text` — the original message
@@ -134,6 +135,7 @@ At skill startup, launch **memex** as a background agent so it's available for n
 **memex** — Note-taking and knowledge management. Uses the personal KB repo from local.json (comms_write.memex_repo_path). Captures support findings, doc gap patterns, and knowledge decisions. Follow that vault AGENTS.md.  Stand by for note capture.
 
 You don't need to wait for memex to confirm before proceeding with analysis. Call it via `SendMessage` when:
+
 - A thread surfaces a pattern worth remembering (recurring gap type, new product area with weak coverage)
 - the user asks you to capture or record something
 - A notable team answer comes in that resolves a longstanding ambiguity
@@ -171,10 +173,12 @@ Note the question type in your analysis. For roadmap questions, skip the the sup
 ## Step 3 — Search both doc sources
 
 **Search work docs repo (wiki mirror):**
+
 ```bash
 cd "${WORK_DOCS}"   # repos.work_docs from local.json
 python scripts/ask.py "<question>" --context-only --top 8
 ```
+
 Read the output. Then open and read the **top 3 matching files** in full — don't rely only on excerpts.
 
 **Search work customer skills repo (customer-facing skill):**
@@ -187,11 +191,13 @@ Scan topic files under `repos.work_skills` (vault skill directory) — check whe
 Compare the support bot's response to what the local docs say. Produce:
 
 **the support bot Assessment**
+
 - Was the support bot correct, partially correct, or wrong?
 - If wrong/partial: what specifically did it miss or get wrong?
 
 **Suggested Response**
 Draft a response the user can post in Slack. Keep it conversational (not copy-paste from docs). Include:
+
 - The actual answer with specific steps
 - Where it comes from (doc name is fine, no need for full path)
 
@@ -205,7 +211,7 @@ If the docs don't fully answer the question, list 2–3 questions the user shoul
 Before assessing the support bot, compare the team member's reply to the support bot's response:
 
 | Relationship | `team_reply_vs_sherlock` | Score implication |
-|---|---|---|
+| --- | --- | --- |
 | Admin confirmed or restated the support bot | `confirmed` | `good` — the support bot win; admin just reassured the user |
 | Admin added meaningful context the support bot missed | `expanded` | `partial` — the support bot got the direction right but missed something real |
 | Admin corrected or replaced the support bot's answer | `corrected` | `poor` — the support bot sent the user the wrong way |
@@ -218,6 +224,7 @@ Before assessing the support bot, compare the team member's reply to the support
 Summarize the resolution in plain language. What was the actual answer?
 
 **Did local docs cover this?**
+
 - If yes: which file? Did it cover it clearly enough that the support bot should have found it?
 - If partial: what was missing?
 - If no: this is a doc gap.
@@ -227,14 +234,17 @@ Summarize the resolution in plain language. What was the actual answer?
 For both cases, end with:
 
 ---
+
 ### Gap Analysis
 
 **work docs repo / wiki changes needed:**
+
 - List specific changes. For each: which file to update (or create), and what to add/fix.
 - If a page covers the answer but has `sherlock: false`, flag it for indexing.
 - If a page is stale or incomplete, note it needs updating before the support bot should index it.
 
 **work customer skills repo changes needed:**
+
 - For each gap, identify which existing topic file in `work customer skills repo/vault/` should be updated (e.g., `approle.md`, `kv2-basics.md`) — or whether a new topic file is warranted.
 - Be specific: what section to add, what example to include, what rule to document.
 - work customer skills repo covers the same ground as the support bot from the customer's perspective — if the support bot should know it, work customer skills repo should too.
@@ -275,8 +285,10 @@ python scripts/add_test_case.py \
 ```
 
 Then open the created file and fill in:
+
 - `sherlock_score`: `poor` / `partial` / `good` / `na`
 - Five structured reporting fields (add after the `tags:` line in frontmatter):
+
   ```yaml
   miss_reasons: []             # one or more: missing-doc | stale-doc | context-gap | correct | user-education | operational-request | wrong-team | team-only
   question_type: ""            # how-to | troubleshooting | pr-review | onboarding | access-request | roadmap | routing
@@ -284,6 +296,7 @@ Then open the created file and fill in:
   resolution_source: ""        # sherlock | team | unresolved
   team_reply_vs_sherlock: ""   # confirmed | expanded | corrected | no-reply | na
   ```
+
 - `## the support bot Response` section (from the thread)
 - `## Correct Answer` section (from your analysis)
 - Check the relevant `## Why the support bot Missed It` box
@@ -309,6 +322,7 @@ export $(cat .env | xargs)
 ### 7a. Update the Wiki Findings page
 
 Pull the current page:
+
 ```bash
 python3 scripts/pull_page.py --page-id <FINDINGS_PAGE_ID> --output-dir /tmp/confluence-pull
 ```
@@ -322,6 +336,7 @@ Find the most recent "Index — [Date] Session" section. If today's date falls w
 Use the next available item number (scan existing rows for the highest `#` value and increment).
 
 For each item, the row format is:
+
 ```
 | {N} | {Short description of what changes} | {File(s) affected and what's added} | {⚠️ Blocked on Q{N} — reason / ✅ Ready — no blockers} |
 ```
@@ -341,6 +356,7 @@ If the analysis produced a new team question, prepend a row to the `## Blocked /
 ```
 
 If no Slack permalink is available, use `—` in the Thread column. The table header should read:
+
 ```
 | Question | Owner | Unblocks | Thread |
 ```
@@ -352,6 +368,7 @@ If the existing table only has three columns (older entries), add the Thread col
 Update the the support bot Performance Report row to reflect the new thread count from the just-generated report.
 
 Then push:
+
 ```bash
 python3 scripts/push_page.py /tmp/confluence-pull/wiki-findings-and-proposed-changes.md
 ```
@@ -383,6 +400,7 @@ When a new item touches an existing staged page, append to the Addresses line �
 ### 7b. Push the the support bot Performance Report
 
 Pull the current page to get its frontmatter:
+
 ```bash
 python3 scripts/pull_page.py --page-id <PERF_REPORT_PAGE_ID> --output-dir /tmp/confluence-pull
 ```
@@ -392,6 +410,7 @@ The pulled file is at `/tmp/confluence-pull/sherlock-performance-report.md`. It 
 Replace everything **after** the closing `---` of the frontmatter with the full content of `SHERLOCK-REPORT.md` (the locally-generated report). Keep the frontmatter intact — only the body changes.
 
 Then push:
+
 ```bash
 python3 scripts/push_page.py /tmp/confluence-pull/sherlock-performance-report.md
 ```
@@ -401,6 +420,7 @@ Tell the user the test case file path and confirm both Confluence pages were pus
 ## Step 8 — Capture to Memex (when notable)
 
 Not every thread warrants a Memex capture — use judgment. Good candidates:
+
 - A recurring pattern (same gap appearing in 3+ recent threads)
 - A team answer that definitively resolves a longstanding ambiguity
 - A new product area with no doc coverage surfacing for the first time
