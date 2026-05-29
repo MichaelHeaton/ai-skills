@@ -1,7 +1,7 @@
 ---
 version: 1.0.1
 principles_version: 1.0.0
-last_updated: 2026-05-27
+last_updated: 2026-05-29
 updated_by: human
 ---
 
@@ -19,7 +19,7 @@ This repository is **public**. Treat every commit as publishable.
 ## Use instead
 
 - Placeholder tokens from `categories/tags.yaml` (when present)
-- Values in `~/.config/ai-skills/local.json`
+- Values in `~/.config/ai-skills/local.json` and optional domain answer files — see [domains.md](domains.md)
 - Optional private regex: `~/.config/ai-skills/leak-patterns`
 
 ## Before every pull request

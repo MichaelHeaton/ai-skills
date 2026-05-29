@@ -44,6 +44,14 @@
     "work_github_orgs": []
   },
 
+  "domains": {
+    "example-domain": {
+      "label": "Human-readable domain label (private)",
+      "cursor_rules_repo": "path-or-remote-hint-for-domain-cursor-rules",
+      "notes": "Optional overlay keys for one domain. Or use ~/.config/ai-skills/domains/<slug>.json — see principles/domains.md"
+    }
+  },
+
   "github_projects": {
     "work-primary": { "owner": "YOUR_USER", "number": 0 },
     "client-contract": { "owner": "YOUR_USER", "number": 0 },

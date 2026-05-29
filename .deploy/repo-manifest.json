@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-29T14:48:33Z",
+  "generated_at": "2026-05-29T14:51:02Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
@@ -62,11 +62,12 @@
     "ai/claude/skills/weekly-report/references/client-contract.md": "c504a572bb65eb1281346e728d4f9a0d",
     "ai/claude/skills/weekly-report/references/work-team.md": "38ac79967706a7a9f34aa0240c2f661d",
     "ai/claude/skills/youtube-watch/SKILL.md": "88e0cd51d26764206c98dc45cadeabb6",
-    "ai/cursor/rules/00-read-agents.mdc": "82ea1d2b9506936adebe5dfe4dd5c148",
-    "ai/cursor/rules/01-security-principles.mdc": "555f3f55045360dd3a114f21a164e98a",
-    "principles/core.md": "9606903a4c696124f020797dad2229fb",
+    "ai/cursor/rules/00-read-agents.mdc": "795b9f1713c2475398c5e8c248259aff",
+    "ai/cursor/rules/01-security-principles.mdc": "61982e997f34c41573defccf1cbedb88",
+    "principles/core.md": "00935735869470b8021c2ed1ebdcd256",
     "principles/deployment.md": "177595b05aeeb57e192c85f68a3095f9",
-    "principles/security.md": "c8328c65de16d8f433627b9fc711371b",
+    "principles/domains.md": "d32820bd2ddff224df885e7803aa53a1",
+    "principles/security.md": "eb5cb0636554940722a9e772b14add1f",
     "principles/token-efficiency.md": "6e4d6c695e8b4c702a0a363445219a4e",
     "principles/versioning.md": "e56bbcac12f435f5fc09545d41e64883"
   }

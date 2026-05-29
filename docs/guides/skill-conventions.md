@@ -7,6 +7,8 @@ updated_by: human
 
 # Skill conventions
 
+Skills must be **domain-aware** — portable in git, proprietary only in private answer files. Read [principles/domains.md](../../principles/domains.md) before authoring or reviewing a skill.
+
 ## Naming
 
 - **Format**: `{domain}-{verb}` for action skills, `{domain}-{noun}` for support/tool skills

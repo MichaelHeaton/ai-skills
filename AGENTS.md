@@ -36,7 +36,7 @@ See [docs/guides/memex-and-related-repos.md](docs/guides/memex-and-related-repos
 
 ## Private configuration
 
-Employer-specific values belong in **`~/.config/ai-skills/local.json`**. Copy from [`config/local.template.json`](config/local.template.json). See [`docs/guides/local-config.md`](docs/guides/local-config.md). Never commit filled copies.
+Employer- and domain-specific values belong in **`~/.config/ai-skills/local.json`** (and optional private answer files — see [principles/domains.md](principles/domains.md)). Copy from [`config/local.template.json`](config/local.template.json). See [`docs/guides/local-config.md`](docs/guides/local-config.md). Never commit filled copies.
 
 ## Guides
 
@@ -52,9 +52,10 @@ Employer-specific values belong in **`~/.config/ai-skills/local.json`**. Copy fr
 
 1. [principles/core.md](principles/core.md)
 2. [principles/security.md](principles/security.md)
-3. [principles/deployment.md](principles/deployment.md)
-4. [principles/versioning.md](principles/versioning.md)
-5. [principles/token-efficiency.md](principles/token-efficiency.md)
+3. [principles/domains.md](principles/domains.md)
+4. [principles/deployment.md](principles/deployment.md)
+5. [principles/versioning.md](principles/versioning.md)
+6. [principles/token-efficiency.md](principles/token-efficiency.md)
 
 ## Security
 
