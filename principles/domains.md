@@ -20,6 +20,19 @@ Skills and agents should:
 - Read **real values** only from private answer files on the machine.
 - **Never invent** internal URLs, project keys, channel names, or people.
 
+## Fictional examples in public content
+
+Committed skills, principles, and cursor rules must **not** use real employer or client names as illustrations. Use the shared fiction from [categories/tags.yaml](../categories/tags.yaml):
+
+| Use in git | Meaning |
+| ---------- | ------- |
+| **Acme Corp** | Example company display name (`company_name`) |
+| **`acme`** | Example domain slug (`domain_slug`) — keys in `local.json`, folder names |
+| **`acme-cursor-rules`** | Example domain rule-pack repo (`{domain_slug}-cursor-rules`) |
+| **Jane Doe**, **PROJ-12345**, **wiki.example.com** | Other placeholders in `tags.yaml` |
+
+Your filled `local.json` uses real labels and slugs privately; only templates and docs in this repo use Acme.
+
 ## Every skill is domain-aware
 
 All skills in `ai/claude/skills/` should follow this model:
@@ -66,7 +79,7 @@ When a workspace includes a repo named **`{domain}-cursor-rules`**, treat it as 
 Use existing signals — do not guess proprietary values:
 
 1. **Git remote** — match against `accounts.*.remote_match` in `local.json` (`issue-create` / `repo-setup` patterns).
-2. **User statement** — "for work", "UV Cyber", "personal KB".
+2. **User statement** — "for work", "Acme contract", "personal KB" (real names are fine in chat; do not copy them into public commits).
 3. **Repo in workspace** — `{domain}-cursor-rules`, employer docs repo path from `repos.work_docs`.
 4. **Ambiguity** — ask once; prefer the narrowest domain that fits.
 

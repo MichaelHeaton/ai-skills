@@ -13,4 +13,4 @@ Read **`principles/security.md`** and **`principles/domains.md`** in the ai-skil
 - Keep designs simple to reduce attack surface.
 - Use **`~/.config/ai-skills/local.json`** (and optional domain answer files) for proprietary values — never commit them to public repos.
 
-When an employer- or domain-specific security rule pack is open in the workspace, follow it in addition to universal principles. Convention: a repo named **`{domain}-cursor-rules`** (e.g. `uvcyber-cursor-rules`). If several are present, apply rules from repos that match the project you are editing.
+When an employer- or domain-specific security rule pack is open in the workspace, follow it in addition to universal principles. Convention: a repo named **`{domain}-cursor-rules`** (public docs example: **`acme-cursor-rules`**). If several are present, apply rules from repos that match the project you are editing.

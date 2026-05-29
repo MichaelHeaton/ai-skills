@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-29T14:51:02Z",
+  "generated_at": "2026-05-29T14:52:13Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
@@ -63,10 +63,10 @@
     "ai/claude/skills/weekly-report/references/work-team.md": "38ac79967706a7a9f34aa0240c2f661d",
     "ai/claude/skills/youtube-watch/SKILL.md": "88e0cd51d26764206c98dc45cadeabb6",
     "ai/cursor/rules/00-read-agents.mdc": "795b9f1713c2475398c5e8c248259aff",
-    "ai/cursor/rules/01-security-principles.mdc": "61982e997f34c41573defccf1cbedb88",
+    "ai/cursor/rules/01-security-principles.mdc": "3888e85fe6d62858e4b23487a6dbb67e",
     "principles/core.md": "00935735869470b8021c2ed1ebdcd256",
     "principles/deployment.md": "177595b05aeeb57e192c85f68a3095f9",
-    "principles/domains.md": "d32820bd2ddff224df885e7803aa53a1",
+    "principles/domains.md": "8889c052d541a672366e6eaf0376c05f",
     "principles/security.md": "eb5cb0636554940722a9e772b14add1f",
     "principles/token-efficiency.md": "6e4d6c695e8b4c702a0a363445219a4e",
     "principles/versioning.md": "e56bbcac12f435f5fc09545d41e64883"

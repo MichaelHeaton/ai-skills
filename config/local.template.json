@@ -45,10 +45,10 @@
   },
 
   "domains": {
-    "example-domain": {
-      "label": "Human-readable domain label (private)",
-      "cursor_rules_repo": "path-or-remote-hint-for-domain-cursor-rules",
-      "notes": "Optional overlay keys for one domain. Or use ~/.config/ai-skills/domains/<slug>.json — see principles/domains.md"
+    "acme": {
+      "label": "Acme Corp (fictional example — replace with your domain in private local.json)",
+      "cursor_rules_repo": "acme-cursor-rules",
+      "notes": "Template only. Real slugs live in your private copy or ~/.config/ai-skills/domains/<slug>.json — see principles/domains.md"
     }
   },
 
