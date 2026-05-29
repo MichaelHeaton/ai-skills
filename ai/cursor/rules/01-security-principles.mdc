@@ -12,4 +12,4 @@ Read **`principles/security.md`** in the ai-skills repo before writing or review
 - Fail securely; ship secure-by-default configurations.
 - Keep designs simple to reduce attack surface.
 
-For Adobe-specific security skill packs, use project rules from **adobe-cursor-rules** when that repo is in the workspace.
+When an employer- or domain-specific security rule pack is open in the workspace, follow it in addition to `principles/security.md`. Convention: a repo named **`{domain}-cursor-rules`** (e.g. `uvcyber-cursor-rules`). If several are present, apply rules from repos that match the project you are editing.
