@@ -26,3 +26,8 @@ repos:
         entry: bash scripts/hooks/legacy-pre-commit
         language: system
         files: (^|/)SKILL\.md$
+      - id: check-tier-a-version
+        name: Check Tier A version frontmatter
+        entry: python3 scripts/hooks/check-tier-a-version.py
+        language: system
+        files: ^(principles/.*\.md|ai/claude/skills/[^/]+/SKILL\.md|ai/cursor/rules/.*\.mdc)$

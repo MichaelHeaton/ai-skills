@@ -1,5 +1,5 @@
 ---
-version: 1.0.1
+version: 1.0.2
 principles_version: 1.0.0
 last_updated: 2026-05-29
 updated_by: human
@@ -47,7 +47,7 @@ When you edit a versioned file, bump the appropriate component and update `last_
 
 | Tier | Paths | Enforcement |
 | ------ | ------- | ------------- |
-| **A** | `ai/**/SKILL.md`, `ai/cursor/rules/**`, `principles/**` | Required once paths exist |
+| **A** | `ai/**/SKILL.md`, `ai/cursor/rules/**`, `principles/**` | Required once paths exist; enforced by pre-commit (`check-tier-a-version`) |
 | **B** | `docs/**`, `scripts/**`, `ai/claude/skills/**/references/*.md`, `ai/claude/skills/**/examples/*.md` | Recommended (version block via `make bootstrap-version`) |
 | **C** | Templates, `CHANGELOG.md` | Optional |
 

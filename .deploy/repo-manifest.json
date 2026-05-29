@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-29T14:58:36Z",
+  "generated_at": "2026-05-29T15:09:33Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
@@ -69,6 +69,6 @@
     "principles/domains.md": "8889c052d541a672366e6eaf0376c05f",
     "principles/security.md": "eb5cb0636554940722a9e772b14add1f",
     "principles/token-efficiency.md": "6e4d6c695e8b4c702a0a363445219a4e",
-    "principles/versioning.md": "d068d670b71c9b3a090115de546eed06"
+    "principles/versioning.md": "a04837c112a5a863c88e2d252ec3d0a6"
   }
 }
