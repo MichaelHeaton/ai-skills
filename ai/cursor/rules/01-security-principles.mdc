@@ -1,0 +1,15 @@
+---
+description: Security-first defaults for all generated and edited code.
+alwaysApply: true
+---
+
+# Security principles
+
+Read **`principles/security.md`** in the ai-skills repo before writing or reviewing code.
+
+- Validate external input; never use raw user input in sensitive operations.
+- Do not expose secrets in code, logs, or public artifacts.
+- Fail securely; ship secure-by-default configurations.
+- Keep designs simple to reduce attack surface.
+
+For Adobe-specific security skill packs, use project rules from **adobe-cursor-rules** when that repo is in the workspace.

@@ -17,7 +17,7 @@ for arg in "$@"; do
       cat <<'EOF'
 Usage: install-system.sh [--dry-run] [--force]
 
-  Deploys ai/claude/ to ~/.claude/ (copy only, never symlinks).
+  Deploys ai/claude/ to ~/.claude/ and ai/cursor/rules/*.mdc to ~/.cursor/rules/ (copy only).
 
   --dry-run  Show what would change
   --force    Install even if system files look newer than repo (unsynced edits)
@@ -129,6 +129,12 @@ cm = claude / "CLAUDE.md"
 if cm.is_file():
     add(cm)
 
+cursor_rules = repo / "ai" / "cursor" / "rules"
+if cursor_rules.is_dir():
+    for f in cursor_rules.glob("*.mdc"):
+        if f.is_file():
+            add(f)
+
 out.parent.mkdir(parents=True, exist_ok=True)
 payload = {
     "generated_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -155,7 +161,7 @@ log ""
 check_unsynced
 
 if ! $DRY_RUN; then
-  mkdir -p "$SKILLS_DST" "$HOOKS_DST" "$HOME/.local/bin" "$HOME/.claude/logs" "$CONFIG_DST_DIR"
+  mkdir -p "$SKILLS_DST" "$HOOKS_DST" "$HOME/.local/bin" "$HOME/.claude/logs" "$CONFIG_DST_DIR" "$CURSOR_RULES_DST"
   mkdir -p "$(dirname "$MEMORY_DST")"
 fi
 
@@ -193,15 +199,46 @@ log "4. CLAUDE.md (formatting overlay)"
 install_file "$CLAUDE_MD_SRC" "$CLAUDE_MD_DST" "CLAUDE.md"
 
 log ""
-log "5. Memory (copy to project path)"
+log "5. Cursor rules (*.mdc)"
+if [[ -d "$CURSOR_RULES_SRC" ]]; then
+  shopt -s nullglob
+  rules=("$CURSOR_RULES_SRC"/*.mdc)
+  shopt -u nullglob
+  if [[ ${#rules[@]} -eq 0 ]]; then
+    log "skip (no .mdc files): ai/cursor/rules/"
+  else
+    for rule in "${rules[@]}"; do
+      base="$(basename "$rule")"
+      install_file "$rule" "$CURSOR_RULES_DST/$base" "cursor: $base"
+    done
+  fi
+else
+  log "skip (missing source): ai/cursor/rules/"
+fi
+
+log ""
+log "5b. Retired Cursor rules"
+for retired in "${RETIRED_CURSOR_RULES[@]}"; do
+  dst="$CURSOR_RULES_DST/$retired"
+  [[ -e "$dst" ]] || continue
+  if $DRY_RUN; then
+    log "  → remove: $retired"
+  else
+    rm -f "$dst"
+    log "  removed: $retired"
+  fi
+done
+
+log ""
+log "6. Memory (copy to project path)"
 install_dir "$MEMORY_SRC" "$MEMORY_DST" "memory"
 
 log ""
-log "6. clog"
+log "7. clog"
 [[ -f "$CLOG_SRC" ]] && { $DRY_RUN || chmod +x "$CLOG_SRC"; install_file "$CLOG_SRC" "$CLOG_DST" "clog"; }
 
 log ""
-log "7. Private config (create-if-missing)"
+log "8. Private config (create-if-missing)"
 if [[ -f "$CONFIG_DST" ]]; then
   log "skip (exists): $CONFIG_DST"
 elif [[ -f "$CONFIG_TEMPLATE" ]]; then

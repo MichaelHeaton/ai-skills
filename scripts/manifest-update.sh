@@ -43,7 +43,19 @@ if claude.is_dir():
     if cm.is_file():
         add_file(cm)
 
-scope = "principles-only" if not (repo / "ai" / "claude").is_dir() else "principles+ai/claude"
+cursor_rules = repo / "ai" / "cursor" / "rules"
+if cursor_rules.is_dir():
+    for f in sorted(cursor_rules.glob("*.mdc")):
+        add_file(f)
+
+scope_parts = []
+if principles.is_dir():
+    scope_parts.append("principles")
+if (repo / "ai" / "claude").is_dir():
+    scope_parts.append("ai/claude")
+if cursor_rules.is_dir() and any(cursor_rules.glob("*.mdc")):
+    scope_parts.append("ai/cursor/rules")
+scope = "+".join(scope_parts) if scope_parts else "empty"
 
 out = {
     "generated_at": os.environ["TODAY"],

@@ -22,7 +22,7 @@ while [[ $# -gt 0 ]]; do
       cat <<'EOF'
 Usage: sync-from-system.sh [--dry-run] [--apply] [--skill NAME]
 
-  Copies whitelisted paths from ~/.claude/ back into this repo.
+  Copies whitelisted paths from ~/.claude/ and repo-managed ~/.cursor/rules/*.mdc back into this repo.
 
   Default: dry-run (shows what would change).
   --apply   Write files into ai/claude/
@@ -113,6 +113,19 @@ else
   log ""
   log "CLAUDE.md:"
   sync_file "$CLAUDE_MD_DST" "$CLAUDE_MD_SRC" "ai/claude/CLAUDE.md"
+
+  log ""
+  log "Cursor rules:"
+  if [[ -d "$CURSOR_RULES_SRC" ]]; then
+    shopt -s nullglob
+    for repo_rule in "$CURSOR_RULES_SRC"/*.mdc; do
+      base="$(basename "$repo_rule")"
+      sync_file "$CURSOR_RULES_DST/$base" "$repo_rule" "ai/cursor/rules/$base"
+    done
+    shopt -u nullglob
+  else
+    log "  skip (missing repo path): ai/cursor/rules/"
+  fi
 
   log ""
   log "Memory:"

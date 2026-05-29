@@ -1,0 +1,15 @@
+---
+description: Read the AI workspace source of truth before acting in this repo or its skills.
+alwaysApply: true
+---
+
+# AI workspace entry
+
+This repository is a **portable AI workspace** (skills, hooks, conventions) — not Claude-only.
+
+1. Read **`AGENTS.md`** at the repo root for architecture, security rules, and local config.
+2. For employer-specific URLs, Jira keys, names, or paths: read **`~/.config/ai-skills/local.json`** when present (see `docs/guides/local-config.md`). Never invent internal hostnames or project keys.
+3. Skills live under **`ai/claude/skills/<name>/SKILL.md`** (repo) and **`~/.claude/skills/<name>/`** after `make install-system`. Follow the matching skill for the user's request; do not reimplement it in generic chat behavior.
+4. Git commits and PRs: follow **`ai/claude/skills/git-ops/SKILL.md`**.
+5. Universal principles: **`principles/`** (security, deployment, token efficiency).
+6. This file deploys to **`~/.cursor/rules/`** via `make install-system`. Claude Code uses **`CLAUDE.md`** instead; both point at the same `AGENTS.md` and skills.
