@@ -16,6 +16,7 @@ Close out this session safely. The goal: nothing stranded in branches, all ticke
 ## Why this matters
 
 Claude sessions leave work stranded when:
+
 - Vault notes or task index entries live in a worktree branch that never merged — the next session can't read them
 - Memex is checked out on a capture/feature branch, not `main` — the next session reads stale context
 - Dead worktree dirs accumulate in `.claude/worktrees/` and create confusion
@@ -32,6 +33,7 @@ bash ~/.claude/skills/session-close/scripts/discover-repos.sh
 This scans repos in the active VS Code workspace (detected via `*.code-workspace` file in `$PWD`) and prints only those that need attention. Falls back to `~/Projects/` if no workspace file is found. Parse the output to build a working list.
 
 For each line, extract:
+
 - `REPO` — absolute path
 - `BRANCH` — current checkout branch
 - `CHANGES` — count of uncommitted files
@@ -79,27 +81,33 @@ For each repo with `WORKTREES > 0`:
 
 1. List all worktrees: `git -C <repo> worktree list`
 2. For each non-main worktree, check its status:
+
    ```bash
    git -C <worktree-path> status --short
    git -C <worktree-path> log main..HEAD --oneline 2>/dev/null || \
    git -C <worktree-path> log master..HEAD --oneline 2>/dev/null
    ```
+
 3. For worktrees with committed but unpushed work:
    - Push the branch (use the wrapper for GitLab repos; raw git for others):
+
      ```bash
      # GitHub or GitLab SSH remotes:
      bash ~/.claude/skills/session-close/scripts/git-ssh-fallback.sh <worktree-path> push -u origin <branch>
      # HTTPS remotes or other hosts:
      git -C <worktree-path> push -u origin <branch>
      ```
+
    - Create a PR (use `gh pr create` for GitHub repos, `glab mr create` for GitLab)
 4. For worktrees with uncommitted changes: handle via Step 2 flow first, then push + PR
 5. For worktrees with no new commits (already merged or empty): skip — handled by prune in Step 5
 
 **Memex-specific check**: After handling worktrees, verify that this session's vault notes and task index entries are reachable from `main`. Run:
+
 ```bash
 git -C ~/Projects/personal/memex log main..HEAD --oneline 2>/dev/null
 ```
+
 If notes are on a branch that hasn't merged, flag this prominently — the next session will start blind.
 
 ---
@@ -143,6 +151,7 @@ find ~/Projects -maxdepth 4 -path "*/.claude/skills/<name>" -type d 2>/dev/null
 ```
 
 Build a source-annotated list, e.g.:
+
 ```
 Skills active this session:
 - session-close (global: ai-skills)
@@ -171,12 +180,12 @@ Ask: "Want to run a permission-prompt hygiene pass? It scans recent transcripts 
 
 Reflect on how context was managed this session. This takes 30 seconds and shapes habits for the next session.
 
-**Exempt from flagging**: Running session-close at the end of a session is expected — do not flag it as "multiple unrelated tasks." Only flag task switching that happened *during* the working session.
+**Exempt from flagging**: Running session-close at the end of a session is expected — do not flag it as "multiple unrelated tasks." Only flag task switching that happened _during_ the working session.
 
 Check for any of these patterns (from your own observation of the session):
 
 | Pattern | Flag? |
-|---|---|
+| --- | --- |
 | Thread grew long on the same task without `/compact` | ⚠️ if thread felt heavy |
 | Multiple unrelated tasks handled in one session (excluding session-close) | ⚠️ recommend fresh session next time |
 | Wide file scans instead of targeted reads | ⚠️ note for lean-context |
@@ -213,6 +222,7 @@ Look for patterns like `PROJ-12345`, `PROJ-###`, `#94`, or ticket keywords match
 **Step 9c — Act on matches**
 
 For each open ticket that matches session activity:
+
 - If work is **done** → transition to Done/Closed or add a closing comment
 - If work is **in review** (PR open) → update status to "In Review", add PR link in comment
 - If work is **paused** → add a comment with where things stand so the next session picks up cleanly

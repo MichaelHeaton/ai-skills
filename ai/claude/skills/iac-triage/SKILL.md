@@ -22,6 +22,7 @@ Raw CLI output is hostile to context. A full `terraform apply` or `ansible-playb
 ## Evidence ordering (never ask for full output first)
 
 **Terraform**
+
 1. Exact error block
 2. Affected resource(s) + module path
 3. Workspace / environment / backend
@@ -29,6 +30,7 @@ Raw CLI output is hostile to context. A full `terraform apply` or `ansible-playb
 5. Full plan — only if steps 1–4 didn't resolve it
 
 **Ansible**
+
 1. Failed task name
 2. Module + target host/group
 3. stderr/stdout from the failed task only
@@ -36,6 +38,7 @@ Raw CLI output is hostile to context. A full `terraform apply` or `ansible-playb
 5. Verbose output — only if task evidence is insufficient
 
 **Kubernetes / cloud CLI**
+
 1. Error signature (pod status, event type, reason)
 2. Narrow time window (last 15–30 min)
 3. One representative failure block
@@ -43,12 +46,14 @@ Raw CLI output is hostile to context. A full `terraform apply` or `ansible-playb
 5. Full event stream — only if pattern is still ambiguous
 
 **CI/CD**
+
 1. Failed step name + exit code
 2. Command that failed
 3. Last 100–300 relevant lines
 4. Full log — only if failure location is unknown
 
 **Incident / general logs**
+
 1. First failing signal + timestamp
 2. Repeated error signature (pattern, not all instances)
 3. Narrow time window around first and last failure
@@ -110,7 +115,7 @@ Always structure operational output analysis as:
 ## Session hygiene for ops work
 
 | Situation | Action |
-|---|---|
+| --- | --- |
 | Same incident, thread getting long | `/compact` |
 | New incident / new environment / new failure class | Fresh session |
 | Repeated troubleshooting pattern | Suggest converting to runbook, skill, or helper script |
@@ -130,6 +135,7 @@ kubectl apply -f . 2>&1 | clog k8s
 ```
 
 Then read the filtered file — not the raw output:
+
 ```bash
 ls -t ~/.claude/logs/tf-*.log | head -1
 ```

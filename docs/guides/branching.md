@@ -54,7 +54,7 @@ Follow the same rule as work repos — always branch + MR, never push to main. G
 ## Summary table
 
 | Repo type | Default | Direct to main? |
-|---|---|---|
+| --- | --- | --- |
 | Employer / team GitHub | Branch + PR | Never |
 | GitLab | Branch + MR | Never |
 | Personal knowledge base | Branch + PR — merge promptly | Never |

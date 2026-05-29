@@ -47,7 +47,7 @@ Use conventional commits. Format:
 **Types**
 
 | Type | When to use |
-|---|---|
+| --- | --- |
 | `feat` | New capability or behavior |
 | `fix` | Bug fix |
 | `docs` | Documentation only |
@@ -57,6 +57,7 @@ Use conventional commits. Format:
 | `ci` | CI/CD pipeline changes |
 
 **Rules**
+
 - Subject line: imperative mood, lowercase after the type, no period, 72 chars max
 - Scope is optional but useful in multi-component repos (`feat(vault):`, `fix(auth):`)
 - Include the ticket key in the footer when one exists: `Refs: PROJ-XXXXX` or `Closes: #NN`
@@ -64,12 +65,14 @@ Use conventional commits. Format:
 - One logical change per commit — don't bundle unrelated fixes
 
 **Examples**
+
 ```
 feat(session-close): add skill hygiene review step
 
 Closes: #28
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 ```
+
 ```
 fix: scope terraform fmt to modified files only
 ```
@@ -81,6 +84,7 @@ fix: scope terraform fmt to modified files only
 **Title**: same format as the commit subject — conventional prefix, imperative, ≤70 chars.
 
 **Body structure**:
+
 ```markdown
 ## Summary
 - <what changed and why — 1-3 bullets>
@@ -96,6 +100,7 @@ fix: scope terraform fmt to modified files only
 ```
 
 **Rules**
+
 - Summary explains the *why*, not just the *what* — the diff shows the what
 - Test plan must have at least one checkable item; "tested manually" is not enough
 - Link the ticket; if there is no ticket, say so explicitly rather than omitting the section
@@ -132,7 +137,7 @@ Check first with `terraform fmt -check <file>` to see if changes are needed befo
 Only run formatters/linters that are already configured in the repo. Check before running:
 
 | Tool | Config signal | Scope |
-|---|---|---|
+| --- | --- | --- |
 | `black` / `ruff` | `pyproject.toml`, `.ruff.toml`, `setup.cfg` | Modified `.py` files only |
 | `shellcheck` | CI config, `Makefile` | Modified `.sh` files only |
 | `yamllint` | `.yamllint`, CI config | Modified `.yml`/`.yaml` files only |
@@ -171,6 +176,7 @@ Pushing to a merged branch orphans commits — they won't be in the default bran
 ### CI/CD behavior when pushing to an open PR
 
 In repos where CI runs `plan` on PR push and `apply` on merge to main:
+
 - Pushing to an open PR re-runs the **plan** check only — it does **not** trigger apply
 - Apply only fires when the PR is **merged** to the default branch
 - Never say "CI will re-run" in a way that implies apply will re-run — only the plan re-runs

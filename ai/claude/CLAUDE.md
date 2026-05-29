@@ -49,6 +49,7 @@ Responses should be scannable and low-friction by default. Chunked, explicit, vi
 **After creating or modifying any SKILL.md file**, always remind the user:
 
 > **Reload required** — Claude loads skill metadata at startup. Changes won't take effect until you reload.
+>
 > - **New conversation** — always works (all environments)
 > - **⌘R** — works in the desktop app and iTerm (starts a fresh session); does not work in VS Code
 > - **VS Code** — start a new chat; no known reload shortcut

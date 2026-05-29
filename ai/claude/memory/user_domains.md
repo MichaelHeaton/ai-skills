@@ -12,6 +12,7 @@ When suggesting a new skill name, follow the public conventions doc (default: no
 **Contexts** (you define in `local.json` → `accounts`, `routing`, `jira`): e.g. personal PKM (Memex), employer work, client contract. Never commit filled employer or client names here.
 
 **VCS routing (typical):**
+
 - GitHub: personal + work remotes (see `accounts.*.remote_match` in local.json)
 - GitLab: client or personal GitLab (`client_contract` or similar account block)
 - Cross-platform skills: `issue-`, `pr-`, `git-` — no platform suffix unless the skill is platform-only

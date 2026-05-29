@@ -8,6 +8,7 @@ updated_by: human
 # AGENT.md Specification
 
 This defines the standard structure for `AGENT.md` files. The goal is a document that:
+
 - Any AI agent from any provider can read and act on
 - Explains the *why* behind decisions, not just the *what*
 - Stays focused on what is non-obvious from the code itself
@@ -92,7 +93,7 @@ apply it to new situations.]
 file — just the ones that carry the most architectural weight.]
 
 | File | What it does |
-|---|---|
+| --- | --- |
 | `path/to/file` | [Why this file matters] |
 
 ## Common tasks

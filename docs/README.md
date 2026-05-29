@@ -8,7 +8,7 @@ updated_by: human
 # Documentation index
 
 | Doc | Status |
-|-----|--------|
+| --- | --- |
 | [multi-ai.md](multi-ai.md) | Claude + Cursor setup |
 | [guides/local-config.md](guides/local-config.md) | `local.json` schema |
 | [guides/branching.md](guides/branching.md) | Branch + PR rules |
@@ -20,4 +20,4 @@ updated_by: human
 | [self-improvement-loop.md](self-improvement-loop.md) | Stub — session feedback |
 | [mcps/README.md](mcps/README.md) | Stub — MCP runbooks |
 
-Universal rules live in [principles/](../principles/). Tooling: `make help` from repo root. Migration status: [ROADMAP.md](ROADMAP.md).
+Universal rules live in [principles/](../principles/). Tooling: `make help` from repo root; lint: `make lint` ([pre-commit](https://pre-commit.com/) — install with `make hooks-install`). Migration status: [ROADMAP.md](ROADMAP.md).

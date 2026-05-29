@@ -5,7 +5,7 @@ Public skills use placeholders. Your machine holds the real values in **`~/.conf
 ## Why JSON (not committed `.env`)
 
 | File | Claude `block-env-read` | Best for |
-|------|------------------------|----------|
+| ------ | ------------------------ | ---------- |
 | `local.json` | Allowed | Multiple accounts/roles, Jira, weekly report targets |
 | `accounts.shell` | Allowed (not `*.env`) | `export` vars for `setup-account.sh`, direnv |
 | Repo `.env` / skill `.env` | **Blocked** | Credentials only — never put AI config here |
@@ -15,7 +15,7 @@ JSON handles **N git identities** (personal, work, client contract, future) in o
 ## Files
 
 | File | Purpose |
-|------|---------|
+| ------ | --------- |
 | `~/.config/ai-skills/local.json` | Primary — copy from `config/local.template.json` |
 | `~/.config/ai-skills/accounts.shell` | Shell exports — copy from `config/accounts.shell.template` |
 | `~/.config/ai-skills/leak-patterns` | Optional private regex list for pre-commit (see `config/leak-patterns.README`) |
@@ -40,7 +40,7 @@ Account keys are arbitrary in your **private** `local.json` — you may use desc
 ## Routing
 
 | Key | Purpose |
-|-----|---------|
+| ----- | --------- |
 | `routing.personal_kb_github` | `owner/repo` for your personal knowledge base on GitHub (second brain, vault, PKM — any name) |
 | `routing.work_github_orgs` | Org slugs used to detect work-scoped GitHub repos |
 
@@ -49,7 +49,7 @@ Paths under `weekly_reports.*.vault_format_ref` and `vault_agent_ref` are **rela
 ## Placeholders in skills
 
 | Placeholder | JSON path |
-|-------------|-----------|
+| ------------- | ----------- |
 | `${JIRA_PROJECT_KEY}` | `jira.project_key` |
 | `${JIRA_BASE_URL}` | `jira.base_url` |
 | `${WORK_DOCS_REPO}` | `repos.work_docs` |
@@ -62,7 +62,7 @@ Tag definitions: [categories/tags.yaml](../../categories/tags.yaml).
 Optional block for `comms-write` example resolution:
 
 | Key | Purpose |
-|-----|---------|
+| ----- | --------- |
 | `comms_write.examples_root` | Absolute path to `.../examples/` (overrides everything) |
 | `comms_write.memex_repo_path` | Path to the **maintainer’s Memex** vault on disk (example default — use your own PKM repo) |
 | `comms_write.examples_relative` | Path under that repo (default: `ai/claude/skills/comms-write-context/examples`) |

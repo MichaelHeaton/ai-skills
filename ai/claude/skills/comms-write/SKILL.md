@@ -37,7 +37,7 @@ If private examples exist, prefer them over stubs. Do not commit private example
 ## Routing
 
 | Type | Domain | File (under resolved examples dir) |
-|------|--------|-------------------------------------|
+| ------ | -------- | ------------------------------------- |
 | 3P update (Progress / Plans / Problems) | work-primary | `work-primary-3p.md` |
 | Incident report or post-mortem | work-primary | `work-primary-incident.md` |
 | Customer notification | work-primary | `work-primary-customer-notify.md` |

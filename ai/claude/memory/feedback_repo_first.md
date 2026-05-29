@@ -1,7 +1,7 @@
 ---
 name: feedback_repo_first
 description: "When working in ai-skills, artifacts go in the repo first and are copied/deployed to ~/.claude/ — not written directly there"
-metadata: 
+metadata:
   node_type: memory
   type: feedback
   originSessionId: 3e7fd3bd-859c-4c9b-bdc9-b601e9c81c64

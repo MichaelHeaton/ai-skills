@@ -37,6 +37,7 @@ The script produces a structured report covering: file structure, tech stack, ex
 After reading the report, also skim 2–3 key source files to understand the main patterns — the script shows you what exists, but reading the actual code builds the mental model. For docs repos, read the schema or template files instead.
 
 Build a working theory of:
+
 - What this project does and why it exists
 - Primary language and framework
 - How it's built, tested, deployed
@@ -50,6 +51,7 @@ Build a working theory of:
 Present your understanding to the user and fill the gaps that code can't answer. Keep it focused — don't ask what you can infer.
 
 Key things that are never in the code:
+
 - Architectural decisions that were considered and rejected (the *why* behind the current design)
 - Organizational context (who owns this, who uses it, what breaks if it goes down)
 - Unwritten conventions that experienced contributors follow instinctively
@@ -66,6 +68,7 @@ Ask 5–8 targeted questions. Wait for answers before writing anything.
 Use the structure defined in `references/agent-md-spec.md`.
 
 Key principles:
+
 - Write for *any* AI agent, not just Claude. Avoid Claude-specific terminology.
 - Explain the *why* behind conventions and architectural decisions — don't just list rules. An AI that understands why a rule exists can apply it to new situations; one that only knows the rule will break it at the first novel case.
 - Focus on the non-obvious. Don't describe things derivable from the code itself. Document what would surprise a capable AI that just read all the files.
@@ -81,10 +84,11 @@ Show the draft to the user for review before saving. Apply feedback, then write 
 CLAUDE.md has a specific relationship with AGENT.md: it's a thin overlay, not a standalone document.
 
 Structure:
+
 ```markdown
 # CLAUDE.md
 
-> Claude Code configuration for [Project Name].  
+> Claude Code configuration for [Project Name].
 > For full project context, read AGENT.md first.
 
 ## Claude Code settings
@@ -97,6 +101,7 @@ and apply equivalent patterns in their own tooling.]
 ```
 
 The "why Claude does things this way" section matters more than it might seem. When another AI (or a future model) reads this file, it should be able to understand:
+
 - Why a hook runs before commits (e.g., "to prevent secrets in skill files")
 - Why certain tools are pre-approved (e.g., "read-only git commands that are safe to run without prompting")
 - Why the model is set to Sonnet instead of Haiku (e.g., "this repo requires multi-file reasoning")

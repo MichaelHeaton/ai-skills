@@ -12,11 +12,11 @@ One repo, multiple tools — each reads what it understands natively. Nothing fo
 ## Source of truth
 
 | Layer | Path | Who reads it |
-|-------|------|----------------|
+| ------- | ------ | ---------------- |
 | **Universal** | [principles/](../principles/) + [AGENTS.md](../AGENTS.md) | All agents |
 | **Claude overlay** | [CLAUDE.md](../CLAUDE.md) | Claude Code |
 | **Claude deploy** | `ai/claude/` (present) | Copied to `~/.claude/` via `make install-system` |
-| **Cursor overlay** | `ai/cursor/rules/` (planned) | Cursor |
+| **Cursor overlay** | `ai/cursor/rules/` | Cursor (`~/.cursor/rules/` via `make install-system`) |
 | **Private config** | `~/.config/ai-skills/local.json` | All agents on your machine |
 
 ## Claude Code
@@ -25,12 +25,13 @@ Skill bodies: **`ai/claude/skills/`** in this repo.
 
 ```bash
 cd ~/Projects/personal/ai-skills
-make install-system    # copy-only deploy repo → ~/.claude/
-make sync-from-system  # dry-run: pull allowed ~/.claude/ edits back into repo
+make install-system    # copy-only: ai/claude/ → ~/.claude/, rules → ~/.cursor/rules/
+make sync-from-system  # dry-run: pull allowed ~/.claude/ and ~/.cursor/rules/ edits back into repo
 ```
 
 - Skills: `~/.claude/skills/<name>/` (copies, never symlinks)
-- Reload: new conversation (or ⌘R in desktop/iTerm)
+- Cursor rules: `~/.cursor/rules/*.mdc` (copies from `ai/cursor/rules/`; other files in that folder are left alone)
+- Reload: **new Cursor chat** after rule edits (no ⌘R in VS Code)
 - Machine-specific: `~/.claude/CLAUDE.local.md` (never committed)
 
 See [principles/deployment.md](../principles/deployment.md).
@@ -38,8 +39,8 @@ See [principles/deployment.md](../principles/deployment.md).
 ## Cursor
 
 1. Open **ai-skills** in your workspace (or a parent workspace that includes it).
-2. When `ai/cursor/rules/` lands, thin rules will point at `AGENTS.md` and `principles/`.
-3. Start a **new chat** after skill or rule edits (no ⌘R in VS Code).
+2. Run **`make install-system`** so user rules land in **`~/.cursor/rules/`** (see `ai/cursor/rules/`).
+3. Start a **new chat** after rule or skill edits (no ⌘R in VS Code).
 4. Read private config from `~/.config/ai-skills/local.json` when skills reference local values.
 
 ## What not to do

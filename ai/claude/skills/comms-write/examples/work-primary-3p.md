@@ -9,7 +9,7 @@ updated_by: human
 
 3P = Progress, Plans, Problems. Weekly team status for a **work-primary** domain context.
 
-**Audience:** Leadership and adjacent teams  
+**Audience:** Leadership and adjacent teams
 **Tone:** Factual, concise, skimmable in under one minute
 
 ## What to gather

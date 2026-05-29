@@ -21,6 +21,7 @@ Reflect on the current conversation. List every Skill tool invocation and every 
 ## 2. Assess each skill briefly
 
 For each skill that ran:
+
 - Did it trigger without the user having to ask explicitly?
 - Was there a correction loop (user redirected mid-execution)?
 - Did it route correctly (right repo, right system, right output format)?

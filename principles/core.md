@@ -14,7 +14,7 @@ updated_by: human
 ## Source of truth
 
 | Layer | Path | Status |
-|-------|------|--------|
+| ------- | ------ | -------- |
 | Universal | `principles/` | In repo |
 | Config / tags | `config/`, `categories/` | In repo |
 | Docs | `docs/` | Guides + stubs (`README.md`, `multi-ai.md`, `guides/*`) |

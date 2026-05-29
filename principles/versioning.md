@@ -19,7 +19,7 @@ updated_by: claude | cursor | human
 ## Semver for skills and rules
 
 | Bump | When |
-|------|------|
+| ------ | ------ |
 | **MAJOR** | Breaking change to skill logic or interface |
 | **MINOR** | New capability; backwards compatible |
 | **PATCH** | Wording, bug fix, clarification |
@@ -29,7 +29,7 @@ When you edit a versioned file, bump the appropriate component and update `last_
 ## Tiers
 
 | Tier | Paths | Enforcement |
-|------|-------|-------------|
+| ------ | ------- | ------------- |
 | **A** | `ai/**/SKILL.md`, `ai/cursor/rules/**`, `principles/**` | Required once paths exist |
 | **B** | `docs/**`, `scripts/**`, `ai/claude/skills/**/references/*.md`, `ai/claude/skills/**/examples/*.md` | Recommended (version block via `make bootstrap-version`) |
 | **C** | Templates, `CHANGELOG.md` | Optional |

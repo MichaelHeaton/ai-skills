@@ -23,11 +23,13 @@ Runs your question through 5 parallel advisors, a blind peer review round, and a
 Before spawning advisors, do two things:
 
 **A. Load context.** Scan for files that give advisors grounded, specific context rather than generic advice:
+
 - Read memory files at `~/.claude/projects/*/memory/` — anything relevant to the question (audience, goals, constraints, past decisions)
 - Read any files the user referenced or attached in this conversation
 - Spend no more than 30 seconds — grab the 2–3 files that matter most
 
 **B. Write the framed question.** Produce a clean, neutral prompt that includes:
+
 1. The core decision or question
 2. Key context from the user's message
 3. Key context from memory (goals, constraints, relevant history or numbers)
@@ -56,6 +58,7 @@ Spawn all 5 advisors simultaneously. Each gets their identity, the framed questi
 - **The Executor** — only cares about "can this actually be done, and what's the fastest path?" Translates every idea into: what do you do Monday morning?
 
 Sub-agent prompt template:
+
 ```
 You are [Advisor Name] on a Decision Council.
 
@@ -76,11 +79,13 @@ Respond from your perspective. Be direct and specific. Do not hedge. Lean fully 
 Collect all 5 advisor responses. Anonymize as Response A–E (randomize the mapping — no positional bias).
 
 Spawn 5 new sub-agents. Each sees all 5 anonymized responses and answers three questions:
+
 1. Which response is strongest and why? (pick one)
 2. Which has the biggest blind spot? What is it missing?
 3. What did ALL five miss that the council should consider?
 
 Reviewer prompt template:
+
 ```
 You are reviewing the outputs of a Decision Council. Five advisors independently answered this question:
 ---
@@ -111,6 +116,7 @@ One final agent receives: the framed question, all 5 de-anonymized advisor respo
 The chairman's job: produce a clear verdict. The chairman can dissent from the majority if the dissenting reasoning is stronger — that's the point.
 
 Chairman prompt template:
+
 ```
 You are the Chairman of a Decision Council. Synthesize the work of 5 advisors and their peer reviews into a final verdict.
 
@@ -154,9 +160,11 @@ Present the full verdict in chat as markdown. No files generated unless the user
 ## Step 5 — Save transcript (optional)
 
 Save only if the user requests it or the decision warrants future reference:
+
 ```bash
 mkdir -p ~/Projects/personal/memex/Outputs/Council/
 ```
+
 Write to: `~/Projects/personal/memex/Outputs/Council/council-[YYYY-MM-DD]-[topic].md`
 
 ---

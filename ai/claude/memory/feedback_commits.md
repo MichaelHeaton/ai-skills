@@ -1,7 +1,7 @@
 ---
 name: feedback-commits
 description: "Don't commit until the user explicitly asks — they review changes via VS Code's green Explorer indicators before committing"
-metadata: 
+metadata:
   node_type: memory
   type: feedback
   originSessionId: 2410045b-33d6-4d61-a79f-c9b8e52b856a

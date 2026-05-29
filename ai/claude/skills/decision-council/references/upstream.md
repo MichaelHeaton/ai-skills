@@ -16,6 +16,7 @@ Karpathy's original uses *multiple real AI models* (GPT, Gemini, Claude, Grok) q
 **Intermediate adapter:** [`aiwithremy/ai-skills-llm-council`](https://github.com/aiwithremy/ai-skills-llm-council)
 
 Adapted the methodology for Claude Code as a single-model skill. Key changes from Karpathy:
+
 - Replaced model diversity with 5 thinking-style personas (Contrarian, Expansionist, etc.)
 - Replaced the ranking format with the 3-question peer review
 - Added structured chairman output sections (agreements, clashes, blind spots, recommendation, one thing)

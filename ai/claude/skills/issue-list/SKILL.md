@@ -76,12 +76,14 @@ Report any synced closures before presenting the list.
 **GitHub Issues — current repo (when in a specific repo context):**
 
 If the user is asking about a specific repo (e.g. "show me the bugs in this repo", "what issues are open here"), detect the repo first:
+
 ```bash
 bash ~/.claude/skills/issue-create/scripts/detect-context.sh
 # → github-current:<owner/repo>
 ```
 
 Then query that repo, adding `--label` when the user specifies a filter:
+
 ```bash
 gh issue list \
   --repo <owner/repo> \
@@ -92,6 +94,7 @@ gh issue list \
 ```
 
 **GitHub Issues — personal task review (Memex):**
+
 ```bash
 gh issue list \
   --repo ${GITHUB_PERSONAL_USER}/memex \
@@ -111,11 +114,13 @@ If any system returns an issue number not present in the index, append a new rec
 ### 4. Present results
 
 Group by domain. For each open task show:
+
 - Issue/ticket ID and title as a markdown link
 - Priority label
 - URL
 
 **Example output format:**
+
 ```
 ## Work (Jira)
 - [#130](url) Investigate cross-mount secrets access [priority/medium]
@@ -133,11 +138,13 @@ Group by domain. For each open task show:
 If the user specifies a domain, project, system, or label, filter before presenting:
 
 **By domain/system:**
+
 - "show me my work tasks" → `domain: work-primary`
 - "what's open in HomeLab" → `project: HomeLab`
 - "my Jira tickets" → `system: jira-work`
 
 **By label (pass to `--label` in the `gh` call, or filter post-fetch for Jira):**
+
 - "show me the bugs" / "type/bug issues" → `--label type/bug`
 - "high priority" / "what should I work on" → `--label priority/high`
 - "high or medium priority" → fetch with no label filter, then filter results for both

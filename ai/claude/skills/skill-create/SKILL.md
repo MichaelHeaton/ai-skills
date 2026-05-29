@@ -122,6 +122,7 @@ If the skill produces complex structured output (reports, audits, multi-section 
 Once the user approves the draft:
 
 1. Create the directory under the ai-skills repo:
+
    ```bash
    mkdir -p ai/claude/skills/{name}
    ```
@@ -147,6 +148,7 @@ Come up with 2–3 realistic test prompts — the kind of thing a real user woul
 For each test prompt, follow the skill's own instructions to complete the task, then show the user the output. Be honest about what worked and what felt off.
 
 Good test prompts are:
+
 - Specific and concrete (include file names, context, personal details)
 - Varied in phrasing (formal, casual, abbreviated)
 - Focused on edge cases, not just the obvious happy path

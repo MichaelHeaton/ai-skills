@@ -17,7 +17,7 @@ Update an existing task in its source system and keep the task index in sync.
 The description is the definition of done — it should always be accurate, but changes need handling deliberately. This policy applies to all systems (GitHub, GitLab, Jira).
 
 | Situation | Action |
-|---|---|
+| --- | --- |
 | Progress, decisions, blockers, status updates | **Comment only** — never edit the description |
 | Typo, wrong word, missing AC that was always intended | **Silent edit** — correct it, no comment needed |
 | Substantive rewrite (wrong role, wrong goal, missing scope) | **Edit + audit comment** — see format below |
@@ -41,6 +41,7 @@ Reason: [why the original was wrong]
 Look up the task in `~/Projects/personal/memex/Raw/_task-index.jsonl` by ID. Get the `system`, `repo`, and `url`.
 
 If not in the index, infer system from ID format:
+
 - `#NNN` or integer → run `scripts/detect-context.sh` (see issue-create) to find the repo; default `${GITHUB_PERSONAL_USER}/memex`
 - `PROJ-12345` → Jira (`jira-work`)
 
@@ -49,9 +50,11 @@ If not in the index, infer system from ID format:
 #### GitHub Issues (Memex or personal repos)
 
 > **Account:** Export the personal token before any `gh` call (`GITHUB_PERSONAL_USER` must be set in your environment):
+>
 > ```bash
 > export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")
 > ```
+>
 > Always pass `--repo <owner/repo>` explicitly — the SSH alias on Memex's remote confuses `gh`.
 
 ```bash
@@ -98,6 +101,7 @@ glab issue reopen {NUMBER} --repo {namespace/repo}
 #### Jira
 
 Use the Atlassian MCP tools:
+
 - `jira_add_comment` — for status updates, blockers, decisions, and audit comments on description rewrites
 - `jira_transition_issue` — to change Jira workflow status
 - `jira_update_issue` — for field changes (priority, due date) and description rewrites (apply description edit policy)
@@ -107,6 +111,7 @@ See [[Agents/23-jira-rules|23-jira-rules]] for work Jira conventions (private va
 ### 3. Sync task index
 
 After any status change, update `~/Projects/personal/memex/Raw/_task-index.jsonl`:
+
 - **Closed/resolved** → rewrite the matching line with `status: "closed"`
 - **Reopened** → rewrite with `status: "open"`
 - **No status change** (comment, label update) → no index change needed
@@ -116,6 +121,7 @@ To update: read the file, find the matching line by `id`, rewrite it with the up
 ### 4. Confirm to the user
 
 Report what changed:
+
 - "Closed [#94](url) — task index updated."
 - "Added comment to PROJ-12345."
 - "Updated priority on [#95](url) to high."

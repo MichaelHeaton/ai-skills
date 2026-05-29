@@ -12,7 +12,7 @@ Run `scripts/detect-context.sh` from the current working directory. All four `is
 ## Routing targets
 
 | Output | Meaning | Where issues go |
-|---|---|---|
+| --- | --- | --- |
 | `jira-work` | Remote matches an org in `routing.work_github_orgs` (or `SKILLS_WORK_ORGS`) | Jira — project from `jira.project_key` in local.json |
 | `github-current:<owner/repo>` | Personal or non-work GitHub remote | GitHub Issues in that repo |
 | `memex` | No remote / unrecognized | GitHub Issues in `routing.personal_kb_github` |
