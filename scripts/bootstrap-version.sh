@@ -2,6 +2,7 @@
 # Normalize version frontmatter on skill files:
 #   - ai/claude/skills/**/SKILL.md (version block + name, description, …)
 #   - ai/claude/skills/**/references/*.md and **/examples/*.md (version block only)
+#   - ai/cursor/rules/*.mdc (version block + description, alwaysApply, globs, …)
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -40,6 +41,7 @@ SKILL_ORDER = (
     "metadata",
     "allowed-tools",
 )
+CURSOR_RULE_ORDER = ("description", "globs", "alwaysApply")
 
 
 def parse_fm_line(line: str) -> tuple[str, str] | None:
@@ -67,7 +69,7 @@ def parse_frontmatter(text: str) -> tuple[dict[str, str], str, bool]:
     return data, body, True
 
 
-def render_frontmatter(data: dict[str, str], *, skill: bool) -> str:
+def render_frontmatter(data: dict[str, str], *, skill: bool, cursor_rule: bool = False) -> str:
     lines: list[str] = []
     for key in VERSION_ORDER:
         if key in data:
@@ -76,8 +78,13 @@ def render_frontmatter(data: dict[str, str], *, skill: bool) -> str:
         for key in SKILL_ORDER:
             if key in data:
                 lines.append(f"{key}: {data[key]}")
+    elif cursor_rule:
+        for key in CURSOR_RULE_ORDER:
+            if key in data:
+                lines.append(f"{key}: {data[key]}")
+    reserved = set(VERSION_ORDER) | set(SKILL_ORDER) | set(CURSOR_RULE_ORDER)
     for key in sorted(data.keys()):
-        if key not in VERSION_ORDER and key not in SKILL_ORDER:
+        if key not in reserved:
             lines.append(f"{key}: {data[key]}")
     return "---\n" + "\n".join(lines) + "\n---\n\n"
 
@@ -110,6 +117,15 @@ def normalize_support(text: str) -> tuple[str, bool]:
     return new_text, new_text != text
 
 
+def normalize_cursor_rule(text: str) -> tuple[str, bool]:
+    data, body, had_fm = parse_frontmatter(text)
+    if not had_fm:
+        data = {}
+    merged = merge_version_defaults(data)
+    new_text = render_frontmatter(merged, skill=False, cursor_rule=True) + body
+    return new_text, new_text != text
+
+
 count = 0
 print("SKILL.md:")
 for skill_md in sorted(skills_root.glob("*/SKILL.md")):
@@ -127,6 +143,19 @@ for pattern in ("*/references/*.md", "*/examples/*.md"):
     for path in sorted(skills_root.glob(pattern)):
         raw = path.read_text(encoding="utf-8")
         new, changed = normalize_support(raw)
+        if changed:
+            path.write_text(new, encoding="utf-8")
+            print(f"  updated: {path.relative_to(repo)}")
+            count += 1
+        else:
+            print(f"  skip (ok): {path.relative_to(repo)}")
+
+cursor_rules_root = repo / "ai" / "cursor" / "rules"
+if cursor_rules_root.is_dir():
+    print("\nai/cursor/rules/*.mdc:")
+    for path in sorted(cursor_rules_root.glob("*.mdc")):
+        raw = path.read_text(encoding="utf-8")
+        new, changed = normalize_cursor_rule(raw)
         if changed:
             path.write_text(new, encoding="utf-8")
             print(f"  updated: {path.relative_to(repo)}")

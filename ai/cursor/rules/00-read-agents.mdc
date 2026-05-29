@@ -1,7 +1,12 @@
 ---
+version: 1.0.0
+principles_version: 1.0.0
+last_updated: 2026-05-29
+updated_by: human
 description: Read the AI workspace source of truth before acting in this repo or its skills.
 alwaysApply: true
 ---
+
 
 # AI workspace entry
 

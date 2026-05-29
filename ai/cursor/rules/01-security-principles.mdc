@@ -1,7 +1,12 @@
 ---
+version: 1.0.0
+principles_version: 1.0.0
+last_updated: 2026-05-29
+updated_by: human
 description: Security-first defaults for all generated and edited code.
 alwaysApply: true
 ---
+
 
 # Security principles
 
