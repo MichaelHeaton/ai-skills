@@ -2,7 +2,7 @@
 ---
 version: 1.0.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
+last_updated: 2026-05-29
 updated_by: human
 
 tags:
@@ -33,6 +33,18 @@ tags:
     description: Organization label (private value only)
     expected_format: string
     example: "Acme Corp"
+
+  - name: domain_slug
+    description: Short slug for a domain in examples and repo names (public docs use fictional values only)
+    expected_format: lowercase-hyphenated string
+    example: "acme"
+    public_example_note: "Use acme / Acme Corp in committed skills and docs — never real employer or client names"
+
+  - name: cursor_rules_repo
+    description: Domain-scoped Cursor rule pack repository name
+    expected_format: string
+    example: "acme-cursor-rules"
+    pattern: "{domain_slug}-cursor-rules"
 
   - name: internal_url
     description: Internal wiki, SharePoint, or corp URL placeholder

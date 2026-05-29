@@ -1,6 +1,6 @@
 # Local configuration
 
-Public skills use placeholders. Your machine holds the real values in **`~/.config/ai-skills/local.json`** (primary) and optionally **`accounts.shell`** for bash/direnv.
+Public skills use placeholders. Your machine holds the real values in **`~/.config/ai-skills/local.json`** (primary) and optionally **`accounts.shell`** for bash/direnv. See [principles/domains.md](../../principles/domains.md) for the domain-awareness model — skills read these files; they are **never** synced back to public git.
 
 ## Why JSON (not committed `.env`)
 
@@ -19,6 +19,7 @@ JSON handles **N git identities** (personal, work, client contract, future) in o
 | `~/.config/ai-skills/local.json` | Primary — copy from `config/local.template.json` |
 | `~/.config/ai-skills/accounts.shell` | Shell exports — copy from `config/accounts.shell.template` |
 | `~/.config/ai-skills/leak-patterns` | Optional private regex list for pre-commit (see `config/leak-patterns.README`) |
+| `~/.config/ai-skills/domains/<slug>.json` | Optional per-domain overlay — same kinds of keys as `local.json`; never commit |
 | `config/local.template.json` | Public template |
 
 `make install-system` creates `local.json` from the template if missing (never overwrites a filled file).

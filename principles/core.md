@@ -1,7 +1,7 @@
 ---
 version: 1.0.1
 principles_version: 1.0.0
-last_updated: 2026-05-27
+last_updated: 2026-05-29
 updated_by: human
 ---
 
@@ -16,7 +16,7 @@ updated_by: human
 | Layer | Path | Status |
 | ------- | ------ | -------- |
 | Universal | `principles/` | In repo |
-| Config / tags | `config/`, `categories/` | In repo |
+| Config / tags | `config/`, `categories/` | In repo — placeholders only; values in `local.json` |
 | Docs | `docs/` | Guides + stubs (`README.md`, `multi-ai.md`, `guides/*`) |
 | Tooling | `scripts/`, `Makefile` | In repo |
 | Claude skills | `ai/claude/skills/` | Present — deploy via `make install-system` |
@@ -26,6 +26,7 @@ updated_by: human
 
 - Do not duplicate full skill bodies in Cursor rules — point at `AGENTS.md` and `principles/`
 - Same `local.json` for all tools on a machine
+- Skills are **domain-aware** — see [domains.md](domains.md)
 - Per-AI trees (`ai/claude/`, `ai/cursor/`) deploy when present in the repo
 
 ## Reload

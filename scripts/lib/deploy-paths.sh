@@ -8,6 +8,9 @@ MEMORY_SRC="$CLAUDE_SRC/memory"
 CLAUDE_MD_SRC="$CLAUDE_SRC/CLAUDE.md"
 CLOG_SRC="$SKILLS_SRC/log-clip/scripts/clog.py"
 
+CURSOR_RULES_SRC="$REPO_DIR/ai/cursor/rules"
+CURSOR_RULES_DST="$HOME/.cursor/rules"
+
 SKILLS_DST="$HOME/.claude/skills"
 HOOKS_DST="$HOME/.claude/hooks"
 CLAUDE_MD_DST="$HOME/.claude/CLAUDE.md"
@@ -25,3 +28,6 @@ LAST_SYNC="$REPO_DIR/.deploy/last-sync.json"
 
 # Skills removed from repo — delete from ~/.claude/skills on install
 RETIRED_SKILLS=(uv-weekly pr-slack)
+
+# Cursor rules removed from repo — delete from ~/.cursor/rules on install
+RETIRED_CURSOR_RULES=()

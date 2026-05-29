@@ -1,7 +1,7 @@
 ---
-version: 1.0.1
+version: 1.0.2
 principles_version: 1.0.0
-last_updated: 2026-05-27
+last_updated: 2026-05-29
 updated_by: human
 ---
 
@@ -15,6 +15,23 @@ principles_version: MAJOR.MINOR.PATCH
 last_updated: YYYY-MM-DD
 updated_by: claude | cursor | human
 ```
+
+### Cursor rules (`.mdc`)
+
+Files under `ai/cursor/rules/` use **one** YAML frontmatter block: repo version fields **first**, then Cursor-native fields:
+
+```yaml
+---
+version: 1.0.0
+principles_version: 1.0.0
+last_updated: YYYY-MM-DD
+updated_by: human
+description: Short label for the rule picker (Cursor)
+alwaysApply: true   # or globs: [...] when not global
+---
+```
+
+Do not omit `description` / `alwaysApply` / `globs` — Cursor needs them. Run `make bootstrap-version` to normalize order and fill missing version keys.
 
 ## Semver for skills and rules
 
@@ -30,7 +47,7 @@ When you edit a versioned file, bump the appropriate component and update `last_
 
 | Tier | Paths | Enforcement |
 | ------ | ------- | ------------- |
-| **A** | `ai/**/SKILL.md`, `ai/cursor/rules/**`, `principles/**` | Required once paths exist |
+| **A** | `ai/**/SKILL.md`, `ai/cursor/rules/**`, `principles/**` | Required once paths exist; enforced by pre-commit (`check-tier-a-version`) |
 | **B** | `docs/**`, `scripts/**`, `ai/claude/skills/**/references/*.md`, `ai/claude/skills/**/examples/*.md` | Recommended (version block via `make bootstrap-version`) |
 | **C** | Templates, `CHANGELOG.md` | Optional |
 

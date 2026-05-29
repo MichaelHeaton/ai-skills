@@ -7,6 +7,8 @@ updated_by: human
 
 # Skill conventions
 
+Skills must be **domain-aware** — portable in git, proprietary only in private answer files. Read [principles/domains.md](../../principles/domains.md) before authoring or reviewing a skill.
+
 ## Naming
 
 - **Format**: `{domain}-{verb}` for action skills, `{domain}-{noun}` for support/tool skills
@@ -27,7 +29,7 @@ updated_by: human
 
 **Default: no prefix** when the skill works across employers, clients, and tools. Prefer `issue-create`, `git-ops`, `skill-review` over baking org names into public skill names.
 
-Add a short `{context}-` prefix only when the skill is useless outside one scope (a specific product, employer team, client account, or personal PKM repo). Pick a slug you control; keep it stable. **Do not maintain a master prefix table in this public repo** — that list is personal/team metadata and belongs in private notes, `~/.config/ai-skills/local.json` comments, or your org’s internal docs.
+Add a short `{context}-` prefix only when the skill is useless outside one scope (a specific product, employer team, client account, or personal PKM repo). Pick a slug you control; keep it stable. **Do not maintain a master prefix table in this public repo** — that list is personal/team metadata and belongs in private notes, `~/.config/ai-skills/local.json` comments, or your org’s internal docs. **In public examples**, use fictional slugs from [categories/tags.yaml](../../categories/tags.yaml) (e.g. `acme`, not a real client name).
 
 | Situation | Guidance |
 | --- | --- |

@@ -44,6 +44,14 @@
     "work_github_orgs": []
   },
 
+  "domains": {
+    "acme": {
+      "label": "Acme Corp (fictional example — replace with your domain in private local.json)",
+      "cursor_rules_repo": "acme-cursor-rules",
+      "notes": "Template only. Real slugs live in your private copy or ~/.config/ai-skills/domains/<slug>.json — see principles/domains.md"
+    }
+  },
+
   "github_projects": {
     "work-primary": { "owner": "YOUR_USER", "number": 0 },
     "client-contract": { "owner": "YOUR_USER", "number": 0 },
