@@ -28,8 +28,8 @@ If you fork or reuse **ai-skills**, use your own PKM repo and set:
 
 | Repo | Role |
 | ------ | ------ |
-| **ai-skills** (this repo) | Public principles, config templates, skills (after import), install scripts |
-| **[claude-skills](https://github.com/MichaelHeaton/claude-skills)** | Legacy mirror during migration |
+| **ai-skills** (this repo) | Default public skills repo — principles, config, `ai/claude/skills/`, install scripts |
+| **[claude-skills](https://github.com/MichaelHeaton/claude-skills)** | Legacy — archive after migration to ai-skills completes |
 | **[Memex](https://github.com/MichaelHeaton/memex)** | Private knowledge vault; employer-specific comms-write examples under `ai/claude/skills/comms-write-context/` |
 | **[workstation-devops](https://gitlab.com/Michael-Heaton/workstation-devops)** | Ansible bootstrap: clones repos, applies dotfiles, runs skill install on the author’s Macs |
 

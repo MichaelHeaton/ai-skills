@@ -21,7 +21,7 @@ seed "type/brain-dump" "Quick capture, needs triage"                "6b7280"
 seed "triage/needs-grooming" "Brain dump not yet converted to a proper issue" "f59e0b"
 
 # Skills repo uses type/*; other personal repos use domain/* (see categories/tags.yaml)
-if echo "$REPO" | grep -qiE 'ai-skills|ai-skills'; then
+if echo "$REPO" | grep -qiE 'ai-skills|claude-skills'; then
   seed "type/new-skill"   "Proposing or building a new skill" "f97316"
   seed "type/enhancement" "Improving an existing skill"       "a2eeef"
   seed "type/bug"         "Skill producing wrong output"      "d73a4a"

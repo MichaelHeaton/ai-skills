@@ -4,7 +4,7 @@ principles_version: 1.0.0
 last_updated: 2026-05-27
 updated_by: human
 name: issue-update
-description: Update a task or ticket — change status, add a comment, edit labels, close it, or sync the task index. Works across GitHub Issues, GitLab Issues, and Jira. Use when the user says "close issue #X", "mark PROJ-12345XXXX done", "add a comment to #X", "update the priority on", or any similar task update request.
+description: Update a task or ticket — change status, add a comment, edit labels, close it, or sync the task index. Works across Linear, GitHub Issues, GitLab Issues, and Jira. Use when the user says "close issue #X", "mark SR-42 done", "mark PROJ-12345 done", or similar.
 ---
 
 
@@ -43,12 +43,17 @@ Look up the task in `~/Projects/personal/memex/Raw/_task-index.jsonl` by ID. Get
 
 If not in the index, infer system from ID format:
 
-- `#NNN` or integer → run `scripts/detect-context.sh` (see issue-create) to find the repo; default `${GITHUB_PERSONAL_USER}/memex`
-- `PROJ-12345` → Jira (`jira-work`)
+- `SR-NNN` / `LIN-NNN` → Linear (`linear`)
+- `#NNN` or integer → GitHub; use index `repo` or detect-context
+- `PROJ-12345` → Jira (`jira`)
 
 ### 2. Perform the requested update
 
-#### GitHub Issues (Memex or personal repos)
+#### Linear
+
+Use Linear MCP: `save_comment`, `save_issue` (with `id` for state/priority/description per edit policy). Close via completed state.
+
+#### GitHub Issues
 
 > **Account:** Export the personal token before any `gh` call (`GITHUB_PERSONAL_USER` must be set in your environment):
 >

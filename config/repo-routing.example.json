@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "notion_data_source": "collection://YOUR-NOTION-REPOSITORIES-DATA-SOURCE-UUID",
+  "synced_from": "notion",
+  "synced_at": "YYYY-MM-DD",
+  "defaults": {
+    "no_remote": {
+      "ticket_system": "Linear",
+      "linear_project": "Personal"
+    }
+  },
+  "repos": {
+    "YOUR_USER/ai-skills": {
+      "ticket_system": "Linear",
+      "linear_project": "AI Skills"
+    },
+    "YOUR_USER/workstation-devops": {
+      "ticket_system": "Linear",
+      "linear_project": "Workstation DevOps"
+    },
+    "YOUR_USER/minecraft-modpack-example": {
+      "ticket_system": "Linear",
+      "linear_project": "Minecraft Modpacks",
+      "notes": "Player/tester reports → GitHub with ISSUE_ROUTE=github"
+    }
+  }
+}

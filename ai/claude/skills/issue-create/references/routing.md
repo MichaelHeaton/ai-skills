@@ -1,77 +1,104 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
+last_updated: 2026-05-30
 updated_by: human
 ---
 
-
 # Issue routing rules
 
-Run `scripts/detect-context.sh` from the current working directory. All four `issue-*` skills use this logic.
+Run `scripts/detect-context.sh` from the current working directory. All four `issue-*` skills and `memex-dump` use this logic.
+
+**Notion SoT:** `System → Repositories` (`notion.repositories_data_source` in local.json) holds `Ticket System` and `Linear Project` per repo. Agents with Notion MCP use it when routing is ambiguous.
+
+**Shell cache (optional, private):** `~/.config/ai-skills/repo-routing.json` — one-way export from Notion for `detect-context.sh`. Not committed to git. See `docs/guides/repo-routing-cache.md`. Without the cache, the script uses built-in name/prefix heuristics and defaults to Linear **Personal**.
+
+Read `linear.*` and `routing.*` from `~/.config/ai-skills/local.json`.
 
 ## Routing targets
 
 | Output | Meaning | Where issues go |
 | --- | --- | --- |
-| `jira-work` | Remote matches an org in `routing.work_github_orgs` (or `SKILLS_WORK_ORGS`) | Jira — project from `jira.project_key` in local.json |
-| `github-current:<owner/repo>` | Personal or non-work GitHub remote | GitHub Issues in that repo |
-| `memex` | No remote / unrecognized | GitHub Issues in `routing.personal_kb_github` |
+| `jira-work` | Remote matches `routing.work_github_orgs` or `SKILLS_WORK_ORGS` | Jira — `jira.project_key` in local.json |
+| `linear:<project>` | Personal / cross-cutting work (default) | Linear — `linear.team` in local.json |
+| `github-current:<owner/repo>` | Explicit GitHub routing only | GitHub Issues in that repo |
+| `gitlab-current:<namespace/repo>` | GitLab remote | GitLab Issues in that repo |
+
+**Deprecated:** `memex` → use `linear:<project>`. Personal KB GitHub Issues is no longer the catch-all for new tasks.
+
+### When to use GitHub vs Linear (personal repos)
+
+| Situation | Route |
+| --- | --- |
+| Default capture in any personal repo | `linear:<project>` — do **not** auto-create GitHub Issues in-repo |
+| PR-linked dev work where GitHub workflow matters | `github-current:<repo>` when user asks for GitHub or repo `Ticket System` = GitHub in Notion |
+| Minecraft modpack **dev** | `linear:Minecraft Modpacks` |
+| Minecraft **player / tester / playtest** report | `github-current:<modpack-repo>` (`export ISSUE_ROUTE=github`) |
+| No git remote / brain dump | `linear:<project>` from domain |
+
+## Linear project map
+
+| Linear project | Use for | Domain tag (task index) |
+| --- | --- | --- |
+| Adobe | Work-adjacent without a Jira ticket | `work-primary` |
+| UV Cyber | Contractor ops, hiring, reporting | `client-contract` |
+| Homelab | Homelab / infra (default even when a repo exists) | `homelab` |
+| AI Skills | `ai-skills`, agent rules, MCP (`claude-skills` legacy until archived) | `learning` |
+| Workstation DevOps | Dotfiles, dev machine setup | `homelab` |
+| Minecraft Modpacks | Modpack **dev** work | `personal` |
+| MTB | Coaching, NICA, trails | `mtb` |
+| Personal | Life admin, learning, misc | `personal` |
+
+**Default skill repo:** `ai-skills`. `claude-skills` is legacy — archive after migration completes. Both map to Linear **AI Skills** until then.
+
+### Linear MCP
+
+- **Create:** `save_issue` — `team` from `linear.team`, `project`, `title`, `description`
+- **List:** `list_issues` — filter by `team`, `project`, `assignee: "me"`
+- **Get:** `get_issue` — id like `SR-123`
+- **Update:** `save_issue` (with `id`), `save_comment`, `state`
+
+Priority map: `high` → 2, `medium` → 3, `low` → 4.
 
 ## Jira (work context)
 
 Read `~/.config/ai-skills/local.json`:
 
-- **Project key**: `jira.project_key` (e.g. `PROJ-12345` in the template — use your real key privately)
+- **Project key**: `jira.project_key`
 - **Default type**: `jira.default_issue_type` (usually `Story`)
 - **Never create Epics** unless your org allows it — see `jira.epic_owners_note`
 - **Epic linking**: `jira.epic_link_field` when the user names an epic
-- **Updates go in comments**, not body edits — treat the description as definition of done
+- **Updates go in comments**, not body edits
 
-If no existing work ticket fits, create a personal-kb issue tagged `needs-jira-triage` for later linking.
+Work org remotes → Jira. Linear **Adobe** only when no Jira ticket applies.
 
-## GitHub Issues (personal KB or current repo)
+## GitHub Issues (explicit repo only)
 
-- **Personal KB repo**: `routing.personal_kb_github` (clone path: `comms_write.memex_repo_path` or your usual Projects path)
-- **Task index / issues log**: paths under that vault — see the vault’s `AGENTS.md` (e.g. `Raw/_task-index.jsonl`)
+Use when routing returns `github-current:*` or the user explicitly requests a GitHub issue / player report.
+
+- **Task index / issues log**: paths under personal KB vault — see vault `AGENTS.md` (`Raw/_task-index.jsonl`)
 - **Template**: user story format — see `issue-create` SKILL.md
 
-### Domain → GitHub Project (optional)
+### Deprecated: personal KB GitHub Projects
 
-If you use GitHub Projects for domain labels, define mapping in private `local.json` (example shape):
-
-```json
-"github_projects": {
-  "work-primary": { "name": "Work", "number": 0 },
-  "client-contract": { "name": "Client", "number": 0 },
-  "homelab": { "name": "HomeLab", "number": 0 },
-  "personal": { "name": "Personal", "number": 0 }
-}
-```
-
-Use `categories/tags.yaml` domain tokens (`work-primary`, `client-contract`, `personal`, …) — not employer names in the public repo.
-
-Issues in other repos use that repo’s own project board, if any.
+`gh project item-add` for domain → GitHub Project routing is **deprecated** for new tasks.
 
 ## GitHub account management
 
 When multiple `gh` accounts are active, the work account is often the default and cannot access personal repos.
 
-**Required env vars** (shell profile):
-
 ```bash
 export GITHUB_PERSONAL_USER=<personal-github-username>
-export SKILLS_WORK_ORGS=<org1>,<org2>   # comma-separated; match → jira-work
-```
-
-**Before `gh` commands targeting the personal KB or `github-current:*` personal repos:**
-
-```bash
+export SKILLS_WORK_ORGS=<org1>,<org2>
 export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")
 ```
+
+**Force GitHub routing:** `export ISSUE_ROUTE=github` before detect-context (player reports, PR-linked issues).
 
 Prefer `--repo <owner/repo>` explicitly when SSH remotes use a multi-account host alias.
 
 ## Task index
 
-Append a record for every issue created (GitHub or Jira). Update `status` when tasks close. Paths live in your personal KB repo — not in this public skills repo.
+Append a record for every issue created (`system`: `linear`, `github`, `jira`, `gitlab`). Update `status` when tasks close. Paths live in the personal KB repo.
+
+Linear records: `system: "linear"`, `repo: null`, `id: "SR-123"`, `project: "<Linear project name>"`.

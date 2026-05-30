@@ -1,10 +1,10 @@
 ---
 version: 1.0.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
+last_updated: 2026-05-30
 updated_by: human
 name: issue-get
-description: Fetch the full details of a specific task or ticket by ID. Works across GitHub Issues and Jira. Use when the user references a specific issue number or ticket key (e.g. "#94", "PROJ-12345", "issue 94"), or when another skill needs full context for a task before acting on it.
+description: Fetch the full details of a specific task or ticket by ID. Works across Linear, GitHub Issues, and Jira. Use when the user references SR-42, #94, PROJ-12345, or similar.
 ---
 
 
@@ -21,19 +21,13 @@ Check `~/Projects/personal/memex/Raw/_task-index.jsonl` first — find the recor
 
 - If found: use `system` and `repo` fields to know which API to call.
 - If not found: infer from the ID format:
-  - `#NNN` or plain integer → run detect-context to determine which repo (see §2 below)
-  - `PROJ-12345` or `PROJECT-XXXXX` → Work Jira (`jira-work`)
+  - `SR-NNN` / `LIN-NNN` → Linear (`linear`)
+  - `#NNN` or plain integer → GitHub; check index `repo` or detect-context
+  - `PROJ-12345` → Work Jira (`jira`)
 
 ### 2. Fetch from source system
 
-**Repo unknown — detect it:**
-
-```bash
-bash ~/.claude/skills/issue-create/scripts/detect-context.sh
-```
-
-- `github-current:<repo>` → use that repo
-- `memex` or no match → default to `${GITHUB_PERSONAL_USER}/memex`
+**Linear:** Use Linear MCP `get_issue` with the identifier.
 
 **GitHub Issues:**
 
@@ -67,4 +61,4 @@ Show:
 
 ### 4. Sync task index if status has drifted
 
-If the live status differs from the index record, update the index line to reflect current status.
+If the live status differs from the index record, update the index line. Linear: `completed`/`canceled` → `closed`.
