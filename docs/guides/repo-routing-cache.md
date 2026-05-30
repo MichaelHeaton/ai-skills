@@ -31,7 +31,10 @@ Run after adding or changing repos in Notion:
 
 1. Fetch the Repositories data source (`notion.fetch` on your `collection://…` ID).
 2. For each row, read `Name`, `Ticket System`, `Linear Project`, and `userDefined:URL` (GitHub URL).
-3. Build JSON:
+3. Build JSON in this shape and write to `~/.config/ai-skills/repo-routing.json` (mode `600`).
+4. Spot-check: `bash ~/.claude/skills/issue-create/scripts/detect-context.sh` from a few repo directories.
+
+Example JSON:
 
 ```json
 {
@@ -50,9 +53,6 @@ Run after adding or changing repos in Notion:
   }
 }
 ```
-
-4. Write to `~/.config/ai-skills/repo-routing.json` (mode 600).
-5. Spot-check: `bash ~/.claude/skills/issue-create/scripts/detect-context.sh` from a few repo directories.
 
 ## Override path
 
