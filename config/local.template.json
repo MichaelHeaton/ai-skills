@@ -53,6 +53,11 @@
     "repositories_data_source": "collection://YOUR-NOTION-DATA-SOURCE-UUID"
   },
 
+  "routing_cache": {
+    "repo_routing_json": "~/.config/ai-skills/repo-routing.json",
+    "comment": "Private cache exported from Notion — see docs/guides/repo-routing-cache.md. Never commit."
+  },
+
   "domains": {
     "acme": {
       "label": "Acme Corp (fictional example — replace with your domain in private local.json)",

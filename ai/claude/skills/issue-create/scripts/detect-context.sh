@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# Detect where to route a new issue based on git remote and repo-routing.json.
+# Detect where to route a new issue based on git remote.
 # Outputs one of:
 #   jira-work
 #   linear:<project>
 #   github-current:<owner/repo>
 #   gitlab-current:<namespace/repo>
+#
+# Repo → Linear project (optional precision):
+#   ~/.config/ai-skills/repo-routing.json  — private cache exported from Notion (see docs/guides/repo-routing-cache.md)
+#   Built-in name/prefix heuristics when cache is missing or repo not listed
 #
 # Configure work GitHub orgs (comma-separated):
 #   export SKILLS_WORK_ORGS=org1,org2
@@ -14,37 +18,44 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROUTING_FILE="${REPO_ROUTING_FILE:-${SCRIPT_DIR}/../references/repo-routing.json}"
+ROUTING_FILE="${REPO_ROUTING_FILE:-${HOME}/.config/ai-skills/repo-routing.json}"
 
 remote=$(git remote get-url origin 2>/dev/null || true)
 IFS=',' read -ra work_orgs <<< "${SKILLS_WORK_ORGS:-}"
 
+heuristic_linear_project() {
+  local repo_slug="$1"
+  local name="${repo_slug#*/}"
+  case "$name" in
+    workstation-devops) echo "Workstation DevOps" ;;
+    ai-skills|claude-skills) echo "AI Skills" ;;
+    memex|memex-suite|workspaces|nexus) echo "Personal" ;;
+    minecraft-modpack-*) echo "Minecraft Modpacks" ;;
+    homelab-*|ansible-role-*|tf-module-*|platform-bootstrap) echo "Homelab" ;;
+    *) echo "Personal" ;;
+  esac
+}
+
 lookup_repo() {
   local repo_slug="$1"
-  if [[ ! -f "$ROUTING_FILE" ]]; then
-    echo "linear:Personal"
-    return
+  local ticket_system="Linear"
+  local linear_project
+
+  if [[ -f "$ROUTING_FILE" ]]; then
+    ticket_system=$(jq -r --arg repo "$repo_slug" '
+      .repos[$repo].ticket_system // empty
+    ' "$ROUTING_FILE")
+    linear_project=$(jq -r --arg repo "$repo_slug" '
+      .repos[$repo].linear_project // empty
+    ' "$ROUTING_FILE")
+    if [[ -z "$ticket_system" ]]; then
+      ticket_system="Linear"
+    fi
   fi
 
-  local ticket_system linear_project
-  ticket_system=$(jq -r --arg repo "$repo_slug" '
-    .repos[$repo].ticket_system //
-    (if ($repo | test("^[^/]+/minecraft-modpack-")) then "Linear"
-     elif ($repo | test("^[^/]+/homelab-")) then "Linear"
-     elif ($repo | test("^[^/]+/ansible-role-")) then "Linear"
-     elif ($repo | test("^[^/]+/tf-module-")) then "Linear"
-     else .defaults.unknown_personal_repo.ticket_system end)
-  ' "$ROUTING_FILE")
-
-  linear_project=$(jq -r --arg repo "$repo_slug" '
-    .repos[$repo].linear_project //
-    (if ($repo | test("^[^/]+/minecraft-modpack-")) then "Minecraft Modpacks"
-     elif ($repo | test("^[^/]+/homelab-")) then "Homelab"
-     elif ($repo | test("^[^/]+/ansible-role-")) then "Homelab"
-     elif ($repo | test("^[^/]+/tf-module-")) then "Homelab"
-     else .defaults.unknown_personal_repo.linear_project end)
-  ' "$ROUTING_FILE")
+  if [[ -z "${linear_project:-}" ]]; then
+    linear_project=$(heuristic_linear_project "$repo_slug")
+  fi
 
   if [[ "${ISSUE_ROUTE:-}" == "github" ]] || [[ "$ticket_system" == "GitHub" ]]; then
     echo "github-current:${repo_slug}"
@@ -55,13 +66,16 @@ lookup_repo() {
   fi
 }
 
-if [[ -z "$remote" ]]; then
+default_no_remote_project() {
   if [[ -f "$ROUTING_FILE" ]]; then
-    project=$(jq -r '.defaults.no_remote.linear_project' "$ROUTING_FILE")
-    echo "linear:${project}"
+    jq -r '.defaults.no_remote.linear_project // "Personal"' "$ROUTING_FILE"
   else
-    echo "linear:Personal"
+    echo "Personal"
   fi
+}
+
+if [[ -z "$remote" ]]; then
+  echo "linear:$(default_no_remote_project)"
   exit 0
 fi
 
@@ -84,10 +98,5 @@ elif [[ "$remote" == *"gitlab.com"* ]]; then
   repo=$(echo "$remote" | sed 's|.*gitlab\.com[:/]||;s|\.git$||')
   echo "gitlab-current:$repo"
 else
-  if [[ -f "$ROUTING_FILE" ]]; then
-    project=$(jq -r '.defaults.no_remote.linear_project' "$ROUTING_FILE")
-    echo "linear:${project}"
-  else
-    echo "linear:Personal"
-  fi
+  echo "linear:$(default_no_remote_project)"
 fi

@@ -9,9 +9,11 @@ updated_by: human
 
 Run `scripts/detect-context.sh` from the current working directory. All four `issue-*` skills and `memex-dump` use this logic.
 
-**Notion SoT (author setup):** `System → Repositories` (`collection://6f44da4e-bb6b-433a-a9a7-c1a6f9d93579`) holds `Ticket System` and `Linear Project` per repo. `references/repo-routing.json` mirrors it for shell scripts — refresh when Notion changes.
+**Notion SoT:** `System → Repositories` (`notion.repositories_data_source` in local.json) holds `Ticket System` and `Linear Project` per repo. Agents with Notion MCP use it when routing is ambiguous.
 
-Read `linear.*` and `routing.*` from `~/.config/ai-skills/local.json` when values are not in the repo map.
+**Shell cache (optional, private):** `~/.config/ai-skills/repo-routing.json` — one-way export from Notion for `detect-context.sh`. Not committed to git. See `docs/guides/repo-routing-cache.md`. Without the cache, the script uses built-in name/prefix heuristics and defaults to Linear **Personal**.
+
+Read `linear.*` and `routing.*` from `~/.config/ai-skills/local.json`.
 
 ## Routing targets
 

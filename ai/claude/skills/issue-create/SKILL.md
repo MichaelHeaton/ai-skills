@@ -29,7 +29,7 @@ The output tells you which path to follow:
 
 **Player / tester / playtest reports:** set `export ISSUE_ROUTE=github` before detect-context, or use Path B when the user explicitly asks for a GitHub issue.
 
-**Notion override:** When ambiguous, fetch `System → Repositories` for `Ticket System` and `Linear Project` (see `references/routing.md`).
+**Notion override:** When routing is ambiguous, fetch Repositories DB (`Ticket System`, `Linear Project`). See `references/routing.md` and `docs/guides/repo-routing-cache.md`.
 
 **Voice transcription aliases**: If the repo name sounds like a voice transcription artifact, confirm with the user before routing.
 
