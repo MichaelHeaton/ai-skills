@@ -5,6 +5,7 @@ last_updated: 2026-05-27
 updated_by: human
 ---
 
+
 # Issue routing rules
 
 Run `scripts/detect-context.sh` from the current working directory. All four `issue-*` skills use this logic.

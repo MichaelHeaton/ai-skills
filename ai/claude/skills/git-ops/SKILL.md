@@ -10,6 +10,7 @@ description: Universal git hygiene guide — fires on any git commit, push, PR, 
 
 
 
+
 Apply these rules for every git operation, in every repo. They complement repo-specific conventions — if a repo has its own stricter rules, follow those instead.
 
 ---

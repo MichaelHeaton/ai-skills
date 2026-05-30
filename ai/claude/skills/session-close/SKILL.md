@@ -11,6 +11,7 @@ compatibility: Requires gh CLI, glab CLI, git. Atlassian MCP needed only if Jira
 
 
 
+
 Close out this session safely. The goal: nothing stranded in branches, all tickets reflect current state, next session starts with complete context.
 
 ## Why this matters

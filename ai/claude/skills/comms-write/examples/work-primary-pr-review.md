@@ -5,6 +5,7 @@ last_updated: 2026-05-27
 updated_by: human
 ---
 
+
 # [work-primary] — PR review request (public stub)
 
 Slack message after opening a GitHub PR for team review.

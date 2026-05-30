@@ -70,6 +70,21 @@ Optional block for `comms-write` example resolution:
 
 Public skill repos ship **stubs only**; full templates live in a **private** vault. The author keeps theirs in [Memex](https://github.com/MichaelHeaton/memex) — see [memex-and-related-repos.md](memex-and-related-repos.md).
 
+## Candidate pre-screen
+
+Optional block for **`candidate-pre-screen`** — private hiring context (opening folders, CRM paths, handoff rules):
+
+| Key | Purpose |
+| ----- | --------- |
+| `candidate_pre_screen.memex_repo_path` | Root of personal KB repo on disk |
+| `candidate_pre_screen.context_root` | Hiring resources folder under memex (relative path) |
+| `candidate_pre_screen.openings_glob` | Glob for active opening subfolders (default `Hiring-*`) |
+| `candidate_pre_screen.crm_person_path` | Candidate profile folder (default `CRM/Person`) |
+| `candidate_pre_screen.handoff_gate` | Shown in output — block client forward until pre-screen completes |
+| `candidate_pre_screen.screening_calendar_note` | Optional screener scheduling preference |
+
+JD comparisons, recruiter screening notes, and candidate outcomes stay in the private vault — never in this public repo.
+
 ## Weekly reports
 
 Single skill: **`weekly-report`** — routes via `weekly_reports.client_contract` (deck) and `weekly_reports.work_team` (wiki PPP) in your private `local.json`. Use `vault_format_ref` / `vault_agent_ref` for paths inside your personal KB repo.

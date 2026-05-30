@@ -11,6 +11,7 @@ compatibility: Jira requires Atlassian MCP. GitHub requires gh CLI with GITHUB_P
 
 
 
+
 # Issue Focus
 
 Load a ticket and keep it in context for the entire working session. The brief surfaces everything you need to start — the goal, what done looks like, current state, and recent decisions — then asks which ACs you've already completed so the checklist reflects reality from the first message.
