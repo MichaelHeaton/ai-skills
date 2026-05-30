@@ -5,6 +5,7 @@ last_updated: 2026-05-27
 updated_by: human
 ---
 
+
 # AGENT.md Specification
 
 This defines the standard structure for `AGENT.md` files. The goal is a document that:

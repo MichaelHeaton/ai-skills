@@ -11,6 +11,7 @@ compatibility: Requires git. Deploy skills with `make install-system` in ai-skil
 
 
 
+
 # Skill Creator
 
 Your job is to guide the user from a rough idea to a working, well-crafted skill. The process is:

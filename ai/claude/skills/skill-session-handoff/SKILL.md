@@ -10,6 +10,7 @@ description: Package the current session's skill activity and friction notes int
 
 
 
+
 # Skill Session Handoff
 
 Produces a structured context block from the current session's skill activity. The output matches the handoff contract in skill-review's "Sub-agent invocation pattern" section — paste it directly as context when spawning a sub-agent to run skill-review SA2–SA4.

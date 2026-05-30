@@ -77,6 +77,15 @@
     "examples_relative": "ai/claude/skills/comms-write-context/examples"
   },
 
+  "candidate_pre_screen": {
+    "memex_repo_path": "~/Projects/personal/memex",
+    "context_root": "Raw/Resources/<your-hiring-folder>",
+    "openings_glob": "Hiring-*",
+    "crm_person_path": "CRM/Person",
+    "handoff_gate": "Do not advance to client hiring manager until manager pre-screen completes",
+    "screening_calendar_note": ""
+  },
+
   "weekly_reports": {
     "client_contract": {
       "display_name": "Client account name for deck rows",

@@ -11,6 +11,7 @@ compatibility: Vault paths in Memex; Jira MCP when work_team path needs it; requ
 
 
 
+
 # Weekly Report
 
 Two formats, configured in **`local.json`** under `weekly_reports` — keys are generic (`client_contract`, `work_team`); your private file holds real names, URLs, and paths.
