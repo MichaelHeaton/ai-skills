@@ -1,10 +1,10 @@
 ---
 version: 1.0.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
+last_updated: 2026-05-30
 updated_by: human
 name: issue-list
-description: Get a list of open tasks/tickets — across all systems (GitHub, Jira) or scoped to a specific repo, label, or priority. Always syncs status back to the task index. Use during morning review, triage, or when the user asks "what's on my plate", "what are my open tasks", "show me my issues", "show me the bugs", "what high priority issues are open", "filter issues by label", "what issues are in this repo", "what should I work on today", "show me type/bug tickets", "pull the issues for this repo", or similar.
+description: Get a list of open tasks/tickets — across all systems (Linear, GitHub, Jira) or scoped to a project, label, or priority. Always syncs status back to the task index.
 ---
 
 
@@ -23,9 +23,11 @@ The active `gh` account may be a work account that cannot access personal repos.
 export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")
 ```
 
-### 1. Sync closed GitHub issues → task index
+### 1. Sync closed issues → task index
 
-Find any issues the index still shows as `open` that GitHub has since closed:
+**Linear:** `list_issues` with `assignee: "me"`, `team` from `linear.team` in local.json. Sync completed/canceled issues to index (`system: linear`).
+
+**GitHub:** Find index records still `open` that GitHub closed (group by `repo` from index, not only memex):
 
 ```bash
 python3 << 'EOF'
@@ -74,34 +76,14 @@ Report any synced closures before presenting the list.
 
 ### 2. Query live systems
 
-**GitHub Issues — current repo (when in a specific repo context):**
+**Linear (default personal backlog):** `list_issues` with `team` from local.json, `assignee: "me"`. Filter by `project` when scoped.
 
-If the user is asking about a specific repo (e.g. "show me the bugs in this repo", "what issues are open here"), detect the repo first:
+**GitHub Issues — repo-scoped** (when user asks about GitHub issues in a repo):
 
 ```bash
 bash ~/.claude/skills/issue-create/scripts/detect-context.sh
-# → github-current:<owner/repo>
-```
-
-Then query that repo, adding `--label` when the user specifies a filter:
-
-```bash
-gh issue list \
-  --repo <owner/repo> \
-  --state open \
-  --json number,title,labels,url \
-  --limit 100 \
-  [--label <label>]   # e.g. --label type/bug or --label priority/high
-```
-
-**GitHub Issues — personal task review (Memex):**
-
-```bash
-gh issue list \
-  --repo ${GITHUB_PERSONAL_USER}/memex \
-  --state open \
-  --json number,title,labels,url \
-  --limit 200
+# If github-current:<owner/repo>:
+gh issue list --repo <owner/repo> --state open --json number,title,labels,url --limit 100
 ```
 
 **Work Jira (via Atlassian MCP):**
@@ -123,15 +105,9 @@ Group by domain. For each open task show:
 **Example output format:**
 
 ```
-## Work (Jira)
-- [#130](url) Investigate cross-mount secrets access [priority/medium]
+## Homelab
+- [SR-12](url) Review DNS config [medium]
 - PROJ-12345 — Document security ticket timeline delays
-
-## client contract
-- [#144](url) Verify CPUID exploit tools not present [priority/high]
-
-## HomeLab
-- [#107](url) MCP Tutorial: Connect AI to your HomeLab [priority/low]
 ```
 
 ### 5. Optional filters
@@ -142,7 +118,8 @@ If the user specifies a domain, project, system, or label, filter before present
 
 - "show me my work tasks" → `domain: work-primary`
 - "what's open in HomeLab" → `project: HomeLab`
-- "my Jira tickets" → `system: jira-work`
+- "my Linear tasks" → `system: linear`
+- "my Jira tickets" → `system: jira`
 
 **By label (pass to `--label` in the `gh` call, or filter post-fetch for Jira):**
 

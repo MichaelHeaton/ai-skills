@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "notion_data_source": "collection://6f44da4e-bb6b-433a-a9a7-c1a6f9d93579",
+  "personal_owner": "MichaelHeaton",
+  "defaults": {
+    "no_remote": {
+      "ticket_system": "Linear",
+      "linear_project": "Personal",
+      "domain": "personal"
+    },
+    "unknown_personal_repo": {
+      "ticket_system": "Linear",
+      "linear_project": "Personal",
+      "domain": "personal"
+    }
+  },
+  "repos": {
+    "MichaelHeaton/ai-skills": {
+      "ticket_system": "Linear",
+      "linear_project": "AI Skills",
+      "domain": "learning"
+    },
+    "MichaelHeaton/ansible-role-base-server": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/ansible-role-cloudflared": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/ansible-role-factorio": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/ansible-role-minecraft": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/ansible-role-traefik": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/claude-skills": {
+      "ticket_system": "Linear",
+      "linear_project": "AI Skills",
+      "domain": "learning"
+    },
+    "MichaelHeaton/factorio-blueprints": {
+      "ticket_system": "Linear",
+      "linear_project": "Personal",
+      "domain": "personal"
+    },
+    "MichaelHeaton/homelab-automation": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/homelab-cicd-templates": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/homelab-core": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/homelab-esports": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/homelab-identity": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/homelab-infra": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/homelab-observability": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/homelab-streaming": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/memex": {
+      "ticket_system": "Linear",
+      "linear_project": "Personal",
+      "domain": "personal"
+    },
+    "MichaelHeaton/memex-suite": {
+      "ticket_system": "Linear",
+      "linear_project": "Personal",
+      "domain": "personal"
+    },
+    "MichaelHeaton/nexus": {
+      "ticket_system": "Linear",
+      "linear_project": "Personal",
+      "domain": "personal"
+    },
+    "MichaelHeaton/MichaelHeaton": {
+      "ticket_system": "Linear",
+      "linear_project": "Personal",
+      "domain": "personal"
+    },
+    "MichaelHeaton/minecraft-modpack-cp-verdant": {
+      "ticket_system": "Linear",
+      "linear_project": "Minecraft Modpacks",
+      "domain": "personal"
+    },
+    "MichaelHeaton/minecraft-modpack-family": {
+      "ticket_system": "Linear",
+      "linear_project": "Minecraft Modpacks",
+      "domain": "personal"
+    },
+    "MichaelHeaton/minecraft-modpack-ltm": {
+      "ticket_system": "Linear",
+      "linear_project": "Minecraft Modpacks",
+      "domain": "personal"
+    },
+    "MichaelHeaton/platform-bootstrap": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/tf-module-cloudflare-tunnel": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/tf-module-dns-record": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/tf-module-docker-service": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/tf-module-game-server": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/tf-module-ssl-cert": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/tf-module-vm-lxc": {
+      "ticket_system": "Linear",
+      "linear_project": "Homelab",
+      "domain": "homelab"
+    },
+    "MichaelHeaton/workspaces": {
+      "ticket_system": "Linear",
+      "linear_project": "Personal",
+      "domain": "personal"
+    },
+    "MichaelHeaton/workstation-devops": {
+      "ticket_system": "Linear",
+      "linear_project": "Workstation DevOps",
+      "domain": "homelab"
+    }
+  }
+}

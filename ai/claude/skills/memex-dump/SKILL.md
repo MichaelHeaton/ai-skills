@@ -1,196 +1,79 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
+last_updated: 2026-05-30
 updated_by: human
 name: memex-dump
-description: Quickly capture raw, unstructured ideas, thoughts, and to-dos before they're lost — brain dump mode. For unresolved, untriaged captures only; if a decision is already made and needs a permanent home, use memex-decide instead. Creates a ticket instantly, always tagged for triage and grooming, so nothing falls through the cracks. Defaults to Memex (personal GitHub Issues). Workstation/dotfiles/browser ideas route to workstation-devops; skill/AI-workflow ideas route to ai-skills. Work Jira is suppressed unless a named PROJ epic was mentioned earlier in this session — rough thoughts don't belong in work systems. Use when the user says "brain dump", "capture this idea", "remember this", "quick note", "log this thought", "don't let me forget", "jot this down", "dump this", "dump this to memex", "quick capture", "brain dump to memex", "here are a few things to capture", "brain dump, multiple items", or any fast-capture variation — including lists of multiple ideas at once.
-compatibility: Requires gh CLI. Shares scripts with issue-create.
+description: Quickly capture raw ideas before they're lost. Creates a Linear issue by default (SpecterRealm), tagged for triage. Workstation ideas → Linear Workstation DevOps; skill/AI-workflow → Linear AI Skills. Work Jira suppressed unless a named epic was mentioned. Use for brain dump, quick capture, "dump this to memex", etc.
+compatibility: Requires Linear MCP. GitHub path only for player/tester reports.
 ---
-
-
-
-
 
 # Memex Dump
 
-Get the thought down first, triage later. Minimal friction, always tagged for cleanup.
-
-Supports single ideas and batches — when the user provides a list, process each as its own ticket and confirm all at the end with a summary table.
+Get the thought down first, triage later.
 
 ## Routing
 
-Routing uses two signals in order:
+**1. Topic-based (check first)**
 
-**1. Topic-based routing (check first)**
+| Topic | Linear project |
+| --- | --- |
+| Workstation setup, dotfiles, browser, dev environment, Homebrew | Workstation DevOps |
+| Skill improvements, AI workflow, skill authoring (`ai-skills`; legacy `claude-skills`) | AI Skills |
+| Homelab / infra | Homelab |
+| MTB / coaching | MTB |
+| Client / contract ops | UV Cyber |
+| Modpack **dev** | Minecraft Modpacks |
+| Modpack **player / tester** | GitHub in modpack repo (`ISSUE_ROUTE=github`) |
 
-If the idea is clearly about one of these topics, route to the named repo regardless of which repo the user is currently in:
-
-| Topic | Repo | System |
-| --- | --- | --- |
-| Workstation setup, dotfiles, browser config (Brave/Chrome), dev environment, Homebrew, system tools, dashboard/homepage tools | `YOUR_USER/workstation-devops` | GitHub |
-| Skill improvements, install scripts, AI workflow, Claude skill authoring | `YOUR_USER/ai-skills` | GitHub |
-
-**2. Context-based routing (fallback)**
-
-Run the context detector:
+**2. Context fallback**
 
 ```bash
 bash ~/.claude/skills/issue-create/scripts/detect-context.sh
 ```
 
-| Detected | Brain dump routes to |
+| Detected | Route |
 | --- | --- |
-| `jira-work` | Memex **unless** a named PROJ epic was mentioned in this session |
-| `github-current:<personal>` | That repo **if** the idea is clearly scoped to it; otherwise Memex |
-| `memex` | Memex |
+| `jira-work` | Linear **Adobe** unless named epic in session → Jira |
+| `linear:<project>` | That Linear project |
+| `github-current:*` | GitHub only for player/tester or explicit request |
 
-When in doubt, route to Memex. Brain dumps are personal capture — don't push rough thoughts into work systems.
+Default: Linear **Personal**.
 
 ## Body format
 
-Use a lite user story — role and goal, no acceptance criteria required:
-
-```markdown
-As a [role], I want [goal].
-
-*Captured via brain-dump — needs triage.*
-```
-
-If the idea is too raw or abstract to fit a role/goal sentence, fall back to free-form:
-
-```markdown
-[Raw thought as captured]
-
-*Captured via brain-dump — needs triage.*
-```
-
-Role rules are the same as `issue-create` §C2. Safe default for personal/workstation ideas: `"a developer and workstation operator"`.
+Lite user story + `*Captured via brain-dump — needs triage.*`
 
 ## Steps
 
-### 1. Extract title, domain, and route for each idea
-
-For each idea (batch or single):
-
-- **Title**: imperative verb + short description — infer from what the user said
-- **Domain**: infer from context; ask only if completely ambiguous
-  - GitHub/Memex domains: `work-primary`, `client-contract`, `homelab`, `learning`, `personal`, `mtb`, `iot`
-  - Workstation-devops: use `workstation` in the task index — no GitHub Project assignment applies
-- **Priority**: default to `medium`; adjust only if user signals urgency
-- **Route**: apply topic-based routing first, then context-based fallback
-
-If an idea is genuinely unclear, ask one short question — no more. Don't block the whole batch for one ambiguous item; flag it and move on.
+### 1. Extract title, Linear project, domain, priority per idea
 
 ### 2. Route and create
 
-**Path M — Memex (default)**
+**Path L — Linear (default)**
 
-> Export personal token before any `gh` call:
->
-> ```bash
-> export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")
-> ```
->
-> If `GITHUB_PERSONAL_USER` is not set, fall back to `gh auth token`.
-
-Seed labels (idempotent):
-
-```bash
-bash ~/.claude/skills/issue-create/scripts/seed-labels.sh ${GITHUB_PERSONAL_USER}/memex
-```
-
-Create the issue:
-
-```bash
-gh issue create \
-  --repo ${GITHUB_PERSONAL_USER}/memex \
-  --title "<title>" \
-  --label "domain/<domain>,priority/<priority>,type/brain-dump,triage/needs-grooming" \
-  --body "<lite user story body>"
-```
-
-**Add to GitHub Project** — use domain → project routing from `references/routing.md`:
-
-```bash
-gh project item-add <PROJECT_NUMBER> --owner ${GITHUB_PERSONAL_USER} --url <ISSUE_URL>
-```
-
-**Append to `Raw/_GitHub-Issues-log.jsonl`:**
-
-```json
-{"v":1,"record":"issue","when":"YYYY-MM-DD","issue_number":NNN,"title":"...","url":"...","repo":"${GITHUB_PERSONAL_USER}/memex","vault_task":null,"labels":["domain/<domain>","priority/<priority>"],"notes":""}
-```
+Linear MCP `save_issue` with `team` from `linear.team` in local.json, labels `brain-dump`, `needs-grooming`.
 
 ```bash
 bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
-  --system github \
-  --repo "${GITHUB_PERSONAL_USER}/memex" \
-  --id "<NUMBER>" \
-  --url "<ISSUE_URL>" \
-  --title "<title>" \
-  --domain "<domain>" \
-  --project "<Project Name>"
-```
-
----
-
-**Path R — Personal GitHub repo (scoped idea)**
-
-```bash
-export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")
-bash ~/.claude/skills/issue-create/scripts/seed-labels.sh <owner/repo>
-gh issue create \
-  --repo <owner/repo> \
-  --title "<title>" \
-  --label "domain/<domain>,priority/<priority>,type/brain-dump,triage/needs-grooming" \
-  --body "<lite user story body>"
-```
-
-```bash
-bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
-  --system github \
-  --repo "<owner/repo>" \
-  --id "<NUMBER>" \
-  --url "<ISSUE_URL>" \
-  --title "<title>" \
-  --domain "<domain>"
-```
-
----
-
-**Path J — Jira (active PROJ epic only)**
-
-Create as Story with labels `brain-dump` and `needs-grooming` (Jira free-text labels). Link to the active epic via `customfield_11800`. See `issue-create` Path A for full Jira steps.
-
-```bash
-bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
-  --system jira-work \
-  --id "<KEY>" \
+  --system linear \
+  --id "<SR-NNN>" \
   --url "<url>" \
   --title "<title>" \
-  --domain work-primary \
-  --project PROJ
+  --domain "<domain>" \
+  --project "<Linear project>"
 ```
+
+**Path G — GitHub (player/tester only)**
+
+`export ISSUE_ROUTE=github` then `gh issue create` in modpack repo. Append task index with `--system github`.
+
+**Path J — Jira (active epic in session only)**
+
+See `issue-create` Path A.
 
 ### 3. Confirm
 
-**Single idea**: one-line confirm with issue number, URL, and where it landed.
+Single: one-line with SR-id and project. Batch: summary table.
 
-**Batch**: summary table after all tickets are created.
-
-| # | Title | Destination | Issue |
-| --- | --- | --- | --- |
-| 1 | … | workstation-devops | #N — link |
-| 2 | … | Memex | #N — link |
-
-### 4. Verify task-index (batch only)
-
-After a batch run, confirm the appends landed:
-
-```bash
-# Count entries added — should equal number of tickets created
-tail -n <COUNT> ~/Projects/personal/memex/Raw/_task-index.jsonl | jq -r '.id'
-```
-
-If the count is short, identify the missing IDs and append them manually before closing the session. Never leave a batch partially indexed.
+**Deprecated:** `gh project item-add` for Memex GitHub Projects.
