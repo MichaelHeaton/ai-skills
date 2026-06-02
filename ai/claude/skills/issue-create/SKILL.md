@@ -70,7 +70,7 @@ Report: ticket key, URL, and any epic it was linked to.
 
 - **Title**: imperative verb + clear description
 - **Type or Domain**:
-  - `ai-skills` repo (legacy `claude-skills`) → **type**: `new-skill`, `enhancement`, `bug`, or `review`
+  - `ai-skills` repo → **type**: `new-skill`, `enhancement`, `bug`, or `review`
   - Other repos → **domain** from `categories/tags.yaml`
 - **Priority**: `high`, `medium`, or `low`
 
