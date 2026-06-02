@@ -107,6 +107,7 @@ fix: scope terraform fmt to modified files only
 - Link the ticket; if there is no ticket, say so explicitly rather than omitting the section
 - Keep the title short — details belong in the body
 - Always `cd` into the repo before running `gh pr create` — the `--repo` flag handles routing but `gh` still needs local git context to resolve the remote
+- **SSH alias remotes**: if `origin` uses an SSH config alias (e.g. `git@github.com-personal:owner/repo`) rather than the literal `github.com` hostname, `gh pr create` fails with "must first push branch" even when the branch is already pushed. Fix: always pass `--repo owner/repo --head branch-name` to bypass alias resolution
 
 ---
 
