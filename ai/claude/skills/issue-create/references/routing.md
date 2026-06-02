@@ -43,13 +43,13 @@ Read `linear.*` and `routing.*` from `~/.config/ai-skills/local.json`.
 | Adobe | Work-adjacent without a Jira ticket | `work-primary` |
 | UV Cyber | Contractor ops, hiring, reporting | `client-contract` |
 | Homelab | Homelab / infra (default even when a repo exists) | `homelab` |
-| AI Skills | `ai-skills`, agent rules, MCP (`claude-skills` legacy until archived) | `learning` |
+| AI Skills | `ai-skills`, agent rules, MCP | `learning` |
 | Workstation DevOps | Dotfiles, dev machine setup | `homelab` |
 | Minecraft Modpacks | Modpack **dev** work | `personal` |
 | MTB | Coaching, NICA, trails | `mtb` |
 | Personal | Life admin, learning, misc | `personal` |
 
-**Default skill repo:** `ai-skills`. `claude-skills` is legacy — archive after migration completes. Both map to Linear **AI Skills** until then.
+**Default skill repo:** `ai-skills`.
 
 ### Linear MCP
 

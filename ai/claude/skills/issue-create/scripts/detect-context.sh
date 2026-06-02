@@ -28,7 +28,7 @@ heuristic_linear_project() {
   local name="${repo_slug#*/}"
   case "$name" in
     workstation-devops) echo "Workstation DevOps" ;;
-    ai-skills|claude-skills) echo "AI Skills" ;;
+    ai-skills) echo "AI Skills" ;;
     memex|memex-suite|workspaces|nexus) echo "Personal" ;;
     minecraft-modpack-*) echo "Minecraft Modpacks" ;;
     homelab-*|ansible-role-*|tf-module-*|platform-bootstrap) echo "Homelab" ;;
