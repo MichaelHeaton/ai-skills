@@ -253,6 +253,64 @@ else
 fi
 
 log ""
+log "9. Config validation"
+if [[ -f "$CONFIG_DST" && -f "$CONFIG_TEMPLATE" ]]; then
+  export CONFIG_DST CONFIG_TEMPLATE
+  python3 << 'PY'
+import json, os, sys
+from pathlib import Path
+
+template = json.loads(Path(os.environ["CONFIG_TEMPLATE"]).read_text())
+try:
+    local = json.loads(Path(os.environ["CONFIG_DST"]).read_text())
+except Exception as e:
+    print(f"  ⚠ could not parse local.json: {e}")
+    sys.exit(0)
+
+def flatten(obj, prefix=""):
+    out = {}
+    for k, v in obj.items():
+        key = f"{prefix}.{k}" if prefix else k
+        if isinstance(v, dict):
+            out.update(flatten(v, key))
+        else:
+            out[key] = v
+    return out
+
+t_flat = flatten(template)
+l_flat = flatten(local)
+
+PLACEHOLDER_PATTERNS = ("YOUR_", "<your-", "ACME", "acme", "PROJ-12345", "collection://YOUR")
+SKIP_KEYS = {"$schema", "comment"}
+
+unfilled = []
+for key, t_val in t_flat.items():
+    if any(s in key for s in SKIP_KEYS):
+        continue
+    l_val = l_flat.get(key)
+    if l_val is None:
+        continue
+    is_empty = l_val == "" or l_val == 0 or l_val == []
+    is_placeholder = isinstance(l_val, str) and any(p in l_val for p in PLACEHOLDER_PATTERNS)
+    is_unchanged = l_val == t_val and (is_empty or is_placeholder)
+    if is_empty or is_placeholder or is_unchanged:
+        unfilled.append(key)
+
+if unfilled:
+    print(f"  ⚠  {len(unfilled)} key(s) appear unfilled in local.json:")
+    for k in unfilled:
+        print(f"     {k}")
+    print("  → Edit ~/.config/ai-skills/local.json or sync from Notion")
+else:
+    configured = sum(1 for k, v in l_flat.items()
+                     if v not in ("", 0, []) and not any(p in str(v) for p in PLACEHOLDER_PATTERNS))
+    print(f"  ✓ local.json looks configured ({configured} non-empty keys)")
+PY
+else
+  log "  skip (local.json not present yet)"
+fi
+
+log ""
 if $DRY_RUN; then
   log "Dry run complete."
 else
