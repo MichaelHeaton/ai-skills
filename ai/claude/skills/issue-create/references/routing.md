@@ -24,14 +24,17 @@ Read `linear.*` and `routing.*` from `~/.config/ai-skills/local.json`.
 | `github-current:<owner/repo>` | Explicit GitHub routing only | GitHub Issues in that repo |
 | `gitlab-current:<namespace/repo>` | GitLab remote | GitLab Issues in that repo |
 
-**Deprecated:** `memex` → use `linear:<project>`. Personal KB GitHub Issues is no longer the catch-all for new tasks.
+**Deprecated:** `memex` and `claude-skills` → GitHub Issues. As of 2026-06-04 both repos route to Linear. Existing GitHub issues are retained in Linear via prior bidirectional sync; going forward all new issues are created directly in Linear.
 
 ### When to use GitHub vs Linear (personal repos)
 
 | Situation | Route |
 | --- | --- |
 | Default capture in any personal repo | `linear:<project>` — do **not** auto-create GitHub Issues in-repo |
-| PR-linked dev work where GitHub workflow matters | `github-current:<repo>` when user asks for GitHub or repo `Ticket System` = GitHub in Notion |
+| memex repo | `linear:Personal` — tickets go to Linear, not GitHub |
+| claude-skills repo | `linear:AI Skills` — repo being retired, tickets still tracked in Linear |
+| ai-skills repo | `linear:AI Skills` |
+| PR-linked dev work where GitHub workflow matters | `github-current:<repo>` only when user explicitly requests it |
 | Minecraft modpack **dev** | `linear:Minecraft Modpacks` |
 | Minecraft **player / tester / playtest** report | `github-current:<modpack-repo>` (`export ISSUE_ROUTE=github`) |
 | No git remote / brain dump | `linear:<project>` from domain |

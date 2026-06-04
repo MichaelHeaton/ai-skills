@@ -27,14 +27,16 @@ export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")
 
 **Linear:** `list_issues` with `assignee: "me"`, `team` from `linear.team` in local.json. Sync completed/canceled issues to index (`system: linear`).
 
-**GitHub:** Find index records still `open` that GitHub closed (group by `repo` from index, not only memex):
+**GitHub:** Find index records still `open` that GitHub closed. Groups by `repo` so all repos in the index are checked — not only memex.
+
+> **Note (2026-06-04):** memex and claude-skills GitHub Issues are being retired in favour of Linear. New issues go directly to Linear. Existing synced issues in the index may still have `system: "github"` — sync them below until they naturally close on GitHub.
 
 ```bash
 python3 << 'EOF'
 import json, os, subprocess
+from collections import defaultdict
 
 index_path = os.path.expanduser("~/Projects/personal/memex/Raw/_task-index.jsonl")
-github_user = os.environ.get("GITHUB_PERSONAL_USER", "")
 
 with open(index_path) as f:
     records = [json.loads(l) for l in f if l.strip()]
@@ -44,15 +46,25 @@ open_github = {r["id"]: r for r in records if r.get("system") == "github" and r.
 if not open_github:
     print("No open GitHub issues in index.")
 else:
-    result = subprocess.run(
-        ["gh", "issue", "list",
-         "--repo", f"{github_user}/memex",
-         "--state", "closed",
-         "--json", "number,title",
-         "--limit", "200"],
-        capture_output=True, text=True
-    )
-    closed_on_github = {str(i["number"]) for i in json.loads(result.stdout)}
+    # Group by repo so we query each repo separately
+    by_repo = defaultdict(dict)
+    for id_, r in open_github.items():
+        repo = r.get("repo")
+        if repo:
+            by_repo[repo][id_] = r
+
+    closed_on_github = set()
+    for repo, issues in by_repo.items():
+        result = subprocess.run(
+            ["gh", "issue", "list",
+             "--repo", repo,
+             "--state", "closed",
+             "--json", "number,title",
+             "--limit", "500"],
+            capture_output=True, text=True
+        )
+        if result.returncode == 0:
+            closed_on_github.update({str(i["number"]) for i in json.loads(result.stdout or "[]")})
 
     newly_closed = [id_ for id_ in open_github if id_ in closed_on_github]
 
@@ -78,13 +90,15 @@ Report any synced closures before presenting the list.
 
 **Linear (default personal backlog):** `list_issues` with `team` from local.json, `assignee: "me"`. Filter by `project` when scoped.
 
-**GitHub Issues — repo-scoped** (when user asks about GitHub issues in a repo):
+**GitHub Issues — explicit only** (when user explicitly asks, or `detect-context.sh` returns `github-current:*`):
 
 ```bash
 bash ~/.claude/skills/issue-create/scripts/detect-context.sh
-# If github-current:<owner/repo>:
+# Only proceed if output is github-current:<owner/repo>
 gh issue list --repo <owner/repo> --state open --json number,title,labels,url --limit 100
 ```
+
+> Personal repos (memex, claude-skills, ai-skills) now route to Linear. Do not list GitHub Issues for these repos unless the user explicitly requests it.
 
 **Work Jira (via Atlassian MCP):**
 Use JQL: `assignee = currentUser() AND resolution = Unresolved ORDER BY updated DESC`

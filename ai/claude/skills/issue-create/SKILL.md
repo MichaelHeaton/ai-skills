@@ -4,7 +4,7 @@ principles_version: 1.0.0
 last_updated: 2026-05-30
 updated_by: human
 name: issue-create
-description: Create a new task, issue, or story in the right system — Linear, GitHub Issues, or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", or similar. Work org remotes → Jira Story; personal work → Linear; GitHub Issues only when explicit or player/tester reports.
+description: Create a new task, issue, or story in the right system — Linear or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", or similar. Work org remotes → Jira Story; all personal repos (memex, claude-skills, ai-skills, etc.) → Linear; GitHub Issues only when explicitly requested or for player/tester reports.
 compatibility: Requires Linear MCP, gh CLI (GitHub path only), Atlassian MCP (Jira).
 ---
 
@@ -63,7 +63,8 @@ Report: ticket key, URL, and any epic it was linked to.
 
 ## Path B — GitHub Issue in current repo
 
-> Use only when `detect-context` returns `github-current:*` or the user explicitly requests a GitHub issue / player report.
+> Use **only** when `detect-context` returns `github-current:*` or the user explicitly requests a GitHub issue / player report.
+> **Personal repos (memex, claude-skills, ai-skills, workstation-devops) never route here** — they use Path C (Linear).
 > **Account:** `export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")`
 
 ### B1. Gather information
