@@ -61,8 +61,10 @@ lookup_repo() {
     echo "github-current:${repo_slug}"
   elif [[ "$ticket_system" == "Jira" ]]; then
     echo "jira-work"
+  elif [[ "$ticket_system" == "Notion" ]]; then
+    echo "notion:${linear_project}"
   else
-    echo "linear:${linear_project}"
+    echo "notion:${linear_project}"
   fi
 }
 
@@ -75,7 +77,7 @@ default_no_remote_project() {
 }
 
 if [[ -z "$remote" ]]; then
-  echo "linear:$(default_no_remote_project)"
+  echo "notion:$(default_no_remote_project)"
   exit 0
 fi
 
@@ -98,5 +100,5 @@ elif [[ "$remote" == *"gitlab.com"* ]]; then
   repo=$(echo "$remote" | sed 's|.*gitlab\.com[:/]||;s|\.git$||')
   echo "gitlab-current:$repo"
 else
-  echo "linear:$(default_no_remote_project)"
+  echo "notion:$(default_no_remote_project)"
 fi
