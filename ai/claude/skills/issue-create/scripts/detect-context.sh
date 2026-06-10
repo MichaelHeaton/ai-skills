@@ -2,13 +2,13 @@
 # Detect where to route a new issue based on git remote.
 # Outputs one of:
 #   jira-work
-#   linear:<project>
 #   github-current:<owner/repo>
+#   memex
+#   linear:<project>        (only when routing file explicitly sets ticket_system=Linear)
 #   gitlab-current:<namespace/repo>
 #
-# Repo → Linear project (optional precision):
-#   ~/.config/ai-skills/repo-routing.json  — private cache exported from Notion (see docs/guides/repo-routing-cache.md)
-#   Built-in name/prefix heuristics when cache is missing or repo not listed
+# Override via routing file:
+#   ~/.config/ai-skills/repo-routing.json  — set ticket_system per repo (GitHub/Linear/Jira/Notion)
 #
 # Configure work GitHub orgs (comma-separated):
 #   export SKILLS_WORK_ORGS=org1,org2
@@ -38,8 +38,8 @@ heuristic_linear_project() {
 
 lookup_repo() {
   local repo_slug="$1"
-  local ticket_system="Linear"
-  local linear_project
+  local ticket_system=""
+  local linear_project=""
 
   if [[ -f "$ROUTING_FILE" ]]; then
     ticket_system=$(jq -r --arg repo "$repo_slug" '
@@ -48,36 +48,24 @@ lookup_repo() {
     linear_project=$(jq -r --arg repo "$repo_slug" '
       .repos[$repo].linear_project // empty
     ' "$ROUTING_FILE")
-    if [[ -z "$ticket_system" ]]; then
-      ticket_system="Linear"
-    fi
   fi
 
-  if [[ -z "${linear_project:-}" ]]; then
-    linear_project=$(heuristic_linear_project "$repo_slug")
-  fi
-
-  if [[ "${ISSUE_ROUTE:-}" == "github" ]] || [[ "$ticket_system" == "GitHub" ]]; then
+  if [[ "${ISSUE_ROUTE:-}" == "github" ]] || [[ "$ticket_system" == "GitHub" ]] || [[ -z "$ticket_system" ]]; then
     echo "github-current:${repo_slug}"
   elif [[ "$ticket_system" == "Jira" ]]; then
     echo "jira-work"
-  elif [[ "$ticket_system" == "Notion" ]]; then
-    echo "notion:${linear_project}"
+  elif [[ "$ticket_system" == "Linear" ]]; then
+    if [[ -z "${linear_project:-}" ]]; then
+      linear_project=$(heuristic_linear_project "$repo_slug")
+    fi
+    echo "linear:${linear_project}"
   else
-    echo "notion:${linear_project}"
-  fi
-}
-
-default_no_remote_project() {
-  if [[ -f "$ROUTING_FILE" ]]; then
-    jq -r '.defaults.no_remote.linear_project // "Personal"' "$ROUTING_FILE"
-  else
-    echo "Personal"
+    echo "github-current:${repo_slug}"
   fi
 }
 
 if [[ -z "$remote" ]]; then
-  echo "notion:$(default_no_remote_project)"
+  echo "memex"
   exit 0
 fi
 
@@ -100,5 +88,5 @@ elif [[ "$remote" == *"gitlab.com"* ]]; then
   repo=$(echo "$remote" | sed 's|.*gitlab\.com[:/]||;s|\.git$||')
   echo "gitlab-current:$repo"
 else
-  echo "notion:$(default_no_remote_project)"
+  echo "memex"
 fi
