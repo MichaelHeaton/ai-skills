@@ -1,10 +1,10 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
-updated_by: human
+last_updated: 2026-06-10
+updated_by: claude
 name: vault-support
-description: "Analyze a vault support Slack thread to fact-check the team bot, identify documentation gaps, and generate knowledge-extraction questions. Use when the user pastes a thread from their vault support channel (slack.vault_support_channel in local.json). Triggers on vault questions, bot responses, AppRole, policy PRs, KV2, seal, onboarding pasted from Slack."
+description: "Analyze vault support content — Slack threads, Jira tickets, or direct research questions — to fact-check the team bot, identify documentation gaps, and generate knowledge-extraction questions. Use when the user pastes a Slack thread, references a vault ticket, or asks a vault behavior/config question directly. Triggers on: vault questions, bot responses, AppRole, policy PRs, KV2, seal, onboarding pasted from Slack, vault ticket, vault runbook, vault restore procedure, vault behavior, researching vault, how does vault handle, look at this vault ticket."
 ---
 
 
@@ -152,12 +152,14 @@ Every gap found should produce a concrete action for both.
 
 ## Step 1 — Detect the use case
 
-Read what was pasted and classify it:
+Read what was provided and classify it:
 
-- **Case A — Early triage** (question + the support bot reply, no team response yet): Your job is to fact-check the support bot and prepare the user to respond.
-- **Case B — Post-resolution** (full thread with team member replies): Your job is to extract knowledge and capture what the team knew that the support bot didn't.
+- **Case A — Early triage** (Slack thread: question + bot reply, no team response yet): Fact-check the support bot and prepare the user to respond.
+- **Case B — Post-resolution** (Slack thread: full thread with team member replies): Extract knowledge and capture what the team knew that the support bot didn't.
+- **Case C — Jira ticket** (user provides a Jira ticket ID/URL or asks to look at a vault ticket): Fetch ticket via MCP, extract the question or work context, then run the analysis flow (Steps 3+) treating the ticket description as the source.
+- **Case D — Direct research** (user asks a vault behavior/config question directly with no pasted source): Skip the bot-comparison steps; run doc-search and gap analysis, then optionally log a test case with `source: "direct research"`.
 
-If it's unclear, treat it as Case A.
+If unclear, ask: "Is this a Slack thread, a Jira ticket, or a direct research question?"
 
 ## Step 2 — Extract the question and classify it
 
@@ -230,9 +232,33 @@ Summarize the resolution in plain language. What was the actual answer?
 - If partial: what was missing?
 - If no: this is a doc gap.
 
+### Case C — Jira ticket intake
+
+**Fetch the ticket:**
+
+Use the Atlassian MCP `jira_get_issue` with the ticket key. Read `jira.*` from `~/.config/ai-skills/local.json` for the project key if needed.
+
+Extract:
+
+- The primary question or work context from the ticket description/title
+- Any related comments that contain team knowledge or resolution notes
+- Linked tickets or epics that provide context
+
+Treat the extracted question as the verbatim question (Step 2 equivalent). Skip bot-comparison scoring (`sherlock_score: na`, `team_reply_vs_sherlock: na`). Proceed directly to Step 3 (doc search) and onwards.
+
+When creating a test case (Step 6), use `source: "vault ticket"` and set the ticket key in a `jira_ref` field.
+
+### Case D — Direct research
+
+**No source artifact.** The user is asking a vault behavior or config question directly.
+
+Extract the question from the user's message. Skip bot-comparison scoring (`sherlock_score: na`, `team_reply_vs_sherlock: na`). Proceed to Step 3 (doc search) and onwards.
+
+When creating a test case (Step 6), use `source: "direct research"`. The "Correct Answer" section should contain your research findings rather than a team answer.
+
 ## Step 5 — Build the gap list
 
-For both cases, end with:
+For all cases, end with:
 
 ---
 
@@ -281,7 +307,7 @@ After the analysis, run:
 python scripts/add_test_case.py \
   --title "<short description>" \
   --question "<verbatim question>" \
-  --source "vault support Slack" \
+  --source "<vault support Slack | vault ticket | direct research>" \
   --tags "<relevant tags>"
 ```
 
