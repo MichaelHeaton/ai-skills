@@ -1,11 +1,11 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-05-30
+last_updated: 2026-06-10
 updated_by: human
 name: issue-create
-description: Create a new task, issue, or story in the right system — Linear, GitHub Issues, or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", or similar. Work org remotes → Jira Story; personal work → Linear; GitHub Issues only when explicit or player/tester reports.
-compatibility: Requires Linear MCP, gh CLI (GitHub path only), Atlassian MCP (Jira).
+description: Create a new task, issue, or story in the right system — GitHub Issues (Memex), Linear, or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", or similar. Work org remotes → Jira Story; personal work → GitHub Issue in Memex (default) or current repo; Linear only when routing file explicitly sets ticket_system=Linear.
+compatibility: Requires gh CLI, Atlassian MCP (Jira path only).
 ---
 
 Create a new task in the right system based on where you're working. See `references/routing.md` for the full routing rules.
@@ -23,13 +23,12 @@ bash ~/.claude/skills/issue-create/scripts/detect-context.sh
 The output tells you which path to follow:
 
 - `jira-work` → Path A (Jira Story)
-- `linear:<project>` → Path C (Linear issue)
 - `github-current:<owner/repo>` → Path B (GitHub Issue in that repo)
+- `memex` → Path C (GitHub Issue in Memex)
 - `gitlab-current:<namespace/repo>` → Path B2 (GitLab Issue)
+- `linear:<project>` → Path D (Linear issue — only when routing file sets `ticket_system=Linear`)
 
 **Player / tester / playtest reports:** set `export ISSUE_ROUTE=github` before detect-context, or use Path B when the user explicitly asks for a GitHub issue.
-
-**Notion override:** When routing is ambiguous, fetch Repositories DB (`Ticket System`, `Linear Project`). See `references/routing.md` and `docs/guides/repo-routing-cache.md`.
 
 **Voice transcription aliases**: If the repo name sounds like a voice transcription artifact, confirm with the user before routing.
 
@@ -82,18 +81,20 @@ Seed labels, `gh issue create`, append task index with `--system github`, confir
 
 ---
 
-## Path C — Linear issue (default personal path)
+## Path C — GitHub Issue in Memex (default personal path)
 
-Read `linear.team` from `~/.config/ai-skills/local.json` (e.g. `SpecterRealm`).
+> **Account:** `export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")`
 
 ### C1. Gather information
 
 - **Title**: imperative verb + clear description
-- **Project**: from `linear:<project>` output
-- **Domain**: map from project — see `references/routing.md`
+- **Domain**: `adobe`, `uv-cyber`, `homelab`, `learning`, `personal`, `mtb`, or `iot`
 - **Priority**: `high`, `medium`, or `low`
+- **Due date**: only if explicitly stated
 
-### C2. Draft the description (user story template)
+If the request is vague, ask one clarifying question.
+
+### C2. Draft the issue body (user story template)
 
 ```markdown
 ## Story
@@ -103,14 +104,91 @@ As a [role], I want [goal], so that [outcome].
 - [ ] [Criterion — what does done look like?]
 
 ## Context & Links
+- Vault: [link to relevant vault note, if any]
 - Reference: [external URL, doc, or wiki link, if any]
 
 > Add updates and blockers as comments, not edits to this body.
 ```
 
-**Role rules:** Use the user's context — never "As I, I want". Safe default: "an engineer and knowledge worker".
+**Role rules:** Use the hat the user is wearing — never "As I, I want".
 
-### C3. Create the Linear issue
+- `adobe` → "an SRE" or "a Vault team lead"; `uv-cyber` → "a UV Cyber director"; `homelab` → "a homelab operator"; `learning` → "an engineer upskilling on AI tooling"; `mtb` → "an MTB coach"; `personal` → "a parent" or "a family organizer"
+- Safe default: "an SRE and knowledge worker"
+- Acceptance criteria are required — minimum one line
+- Omit Context & Links lines with nothing to fill in
+
+### C3. Create the GitHub Issue
+
+```bash
+gh issue create \
+  --repo ${GITHUB_PERSONAL_USER}/memex \
+  --title "<title>" \
+  --label "domain/<domain>,priority/<priority>" \
+  --body "<rendered user story body>"
+```
+
+Capture the returned URL and extract the issue number.
+
+### C4. Add to the correct GitHub Project
+
+Use the domain → project routing from `references/routing.md`:
+
+```bash
+gh project item-add <PROJECT_NUMBER> --owner ${GITHUB_PERSONAL_USER} --url <ISSUE_URL>
+```
+
+If the command fails with `missing required scopes [read:project]`, **do not exit or abort** — continue to C5. Set a flag so C7 can report the skip. Print exactly:
+
+```
+⚠️ skipping project add — run `gh auth refresh -s read:project` to enable
+```
+
+### C5. Append to `Raw/_GitHub-Issues-log.jsonl`
+
+```json
+{"v":1,"record":"issue","when":"YYYY-MM-DD","issue_number":NNN,"title":"...","url":"...","repo":"${GITHUB_PERSONAL_USER}/memex","vault_task":null,"labels":["domain/<domain>","priority/<priority>"],"notes":""}
+```
+
+Append to `~/Projects/personal/memex/Raw/_GitHub-Issues-log.jsonl`.
+
+### C6. Append to task index
+
+```bash
+bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
+  --system github \
+  --repo "${GITHUB_PERSONAL_USER}/memex" \
+  --id "<NUMBER>" \
+  --url "<url>" \
+  --title "<title>" \
+  --domain "<domain>" \
+  --project "<Project Name>"
+```
+
+### C7. Confirm
+
+Report: issue number and URL as a markdown link, project it was added to (or skipped with reason), and labels applied.
+
+- Normal: `"Created [#97 — Review HomeLab DNS config](https://github.com/...) → HomeLab project, priority/medium."`
+- Project add skipped: `"Created [#97 — ...](https://github.com/...) — not added to project (missing read:project scope; run \`gh auth refresh -s read:project\` to fix), priority/medium."`
+
+---
+
+## Path D — Linear issue (explicit opt-in only)
+
+Only used when `~/.config/ai-skills/repo-routing.json` sets `ticket_system=Linear` for a repo.
+
+Read `linear.team` from `~/.config/ai-skills/local.json` (e.g. `SpecterRealm`).
+
+### D1. Gather information
+
+- **Title**: imperative verb + clear description
+- **Project**: from `linear:<project>` output
+- **Domain**: map from project — see `references/routing.md`
+- **Priority**: `high`, `medium`, or `low`
+
+### D2. Draft the description — use the user story template from §C2
+
+### D3. Create the Linear issue
 
 Use Linear MCP `save_issue`:
 
@@ -126,7 +204,7 @@ Use Linear MCP `save_issue`:
 
 Priority: `high` → 2, `medium` → 3, `low` → 4.
 
-### C4. Append to task index
+### D4. Append to task index
 
 ```bash
 bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
@@ -138,6 +216,6 @@ bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
   --project "<Linear project name>"
 ```
 
-### C5. Confirm
+### D5. Confirm
 
 Report: Linear identifier, URL, project, and priority.
