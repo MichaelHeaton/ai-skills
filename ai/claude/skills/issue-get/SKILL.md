@@ -1,10 +1,10 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-30
-updated_by: human
+last_updated: 2026-06-10
+updated_by: claude
 name: issue-get
-description: Fetch the full details of a specific task or ticket by ID. Works across Linear, GitHub Issues, and Jira. Use when the user references SR-42, #94, PROJ-12345, or similar.
+description: Fetch the full details of a specific task or ticket by ID. Works across Linear, GitHub Issues, and Jira. Use when the user references SR-42, #94, PROJ-12345, or similar — or pastes a bare ticket URL (GitHub, Jira, or Linear).
 ---
 
 
@@ -20,10 +20,13 @@ Fetch full details for a specific task from its source system and present them c
 Check `~/Projects/personal/memex/Raw/_task-index.jsonl` first — find the record matching the ID.
 
 - If found: use `system` and `repo` fields to know which API to call.
-- If not found: infer from the ID format:
+- If not found: infer from the ID format or URL:
   - `SR-NNN` / `LIN-NNN` → Linear (`linear`)
   - `#NNN` or plain integer → GitHub; check index `repo` or detect-context
   - `PROJ-12345` → Work Jira (`jira`)
+  - `https://github.com/<owner>/<repo>/issues/<N>` → GitHub; extract `owner/repo` and issue number
+  - `https://*.atlassian.net/browse/<KEY>-<N>` → Jira; extract ticket key
+  - `https://linear.app/*/issue/<ID>` → Linear; extract identifier
 
 ### 2. Fetch from source system
 

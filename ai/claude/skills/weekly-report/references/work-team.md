@@ -25,6 +25,8 @@ Confirm with user (often day before a standing team meeting — see `meeting_not
 
 Use `display_name` as the heading (e.g. your name on the team page).
 
+**Role clarification (verbally-provided items only):** Before drafting a Progress bullet for any work item described verbally (not sourced from a commit, Jira ticket, or vault note), ask whether the user was the **owner/doer** or an **observer/trainee**. Owner → draft a "I completed…" bullet. Observer → draft "attended/reviewed/supported…" framing. Do not assume ownership from vague phrasing like "worked on" or "helped with" — ask.
+
 **Progress** — 2–5 sentences per bullet; ticket keys from `jira.project_key`; one item per bullet.
 
 **Plans** — next-week actions with ticket refs.

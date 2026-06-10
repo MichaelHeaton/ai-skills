@@ -1,8 +1,8 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
-updated_by: human
+last_updated: 2026-06-10
+updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
 compatibility: Requires gh CLI, glab CLI, git. Atlassian MCP needed only if Jira tickets were worked on.
@@ -69,10 +69,19 @@ HTTPS remotes and non-GitHub/GitLab hosts pass through to `git` unchanged. When 
 
 For each repo with `CHANGES > 0`:
 
-1. Show the diff: `git -C <repo> status --short` and `git -C <repo> diff --stat`
-2. Ask: commit these changes, discard them, or leave for next session?
-3. If committing: run the standard commit flow (stage relevant files, write message, push)
-4. If leaving: note it in the session summary as "pending"
+1. **Filter noise files first.** Before showing the diff, strip known noise patterns from the changed-file list:
+
+   ```bash
+   git -C <repo> status --short \
+     | grep -vE '(^.{3}\.DS_Store$|^.{3}\.claude/|^.{3}\.cursor/|^.{3}\.idea/|\.pyc$|/__pycache__/)'
+   ```
+
+   If only noise files remain after filtering, skip this repo — no action needed. Do not surface noise-only repos in the ask loop.
+
+2. Show the filtered diff: remaining files only, via `git -C <repo> diff --stat`
+3. Ask: commit these changes, discard them, or leave for next session?
+4. If committing: run the standard commit flow (stage relevant files, write message, push)
+5. If leaving: note it in the session summary as "pending"
 
 ---
 
@@ -229,7 +238,15 @@ For each open ticket that matches session activity:
 - If work is **paused** → add a comment with where things stand so the next session picks up cleanly
 - If work is **blocked** → add a blocker comment and transition to Blocked
 
-Use `jira_transition_issue` + `jira_add_comment` for Jira, `gh issue comment` + `gh issue edit` for GitHub. Update `status` in `_task-index.jsonl` to reflect the new state.
+**Ordering — always comment before transitioning, for every ticket system (Jira, Linear, GitHub):**
+
+1. Add the comment (closing note, status update, PR link, etc.)
+2. Verify the comment was created (check the response from the MCP or CLI)
+3. Then transition the status
+
+Never run the comment and transition in parallel. A failed comment on a closed ticket has no audit trail — the ticket closes without context, which is worse than leaving it open. If the comment fails, keep the ticket open and flag it in the session summary.
+
+Use `jira_add_comment` → `jira_transition_issue` for Jira, `gh issue comment` → `gh issue close` for GitHub, `save_comment` → `save_issue` for Linear. Update `status` in `_task-index.jsonl` to reflect the new state.
 
 **If no matches are found**: say "No open tickets matched this session's git activity — skipping ticket updates." Do not ask an open question.
 
