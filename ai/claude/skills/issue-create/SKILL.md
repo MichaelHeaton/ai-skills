@@ -8,9 +8,7 @@ description: Create a new task, issue, or story in the right system — GitHub I
 compatibility: Requires gh CLI, Atlassian MCP (Jira path only).
 ---
 
-Create a new task in the right system based on where you're working. See `references/routing.md` for the full routing rules.
-
-Once created, the description is the definition of done — treat it as frozen. All subsequent updates go in comments. If a description needs correcting after creation, see the description edit policy in `issue-update`.
+Create a new task in the right system based on where you're working. See `references/routing.md` for routing rules. Once created, the description is frozen — all updates go in comments (see description edit policy in `issue-update`).
 
 ## Steps
 
@@ -116,26 +114,7 @@ If the request is vague, ask one clarifying question.
 
 ### C2. Draft the issue body (user story template)
 
-```markdown
-## Story
-As a [role], I want [goal], so that [outcome].
-
-## Acceptance Criteria
-- [ ] [Criterion — what does done look like?]
-
-## Context & Links
-- Vault: [link to relevant vault note, if any]
-- Reference: [external URL, doc, or wiki link, if any]
-
-> Add updates and blockers as comments, not edits to this body.
-```
-
-**Role rules:** Use the hat the user is wearing — never "As I, I want".
-
-- `adobe` → "an SRE" or "a Vault team lead"; `uv-cyber` → "a UV Cyber director"; `homelab` → "a homelab operator"; `learning` → "an engineer upskilling on AI tooling"; `mtb` → "an MTB coach"; `personal` → "a parent" or "a family organizer"
-- Safe default: "an SRE and knowledge worker"
-- Acceptance criteria are required — minimum one line
-- Omit Context & Links lines with nothing to fill in
+See [references/user-story-template.md](references/user-story-template.md) for the full template and role rules.
 
 ### C3. Create the GitHub Issue
 
