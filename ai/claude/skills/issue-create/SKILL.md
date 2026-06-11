@@ -1,10 +1,10 @@
 ---
-version: 1.3.0
+version: 1.4.0
 principles_version: 1.0.0
-last_updated: 2026-06-10
+last_updated: 2026-06-11
 updated_by: claude
 name: issue-create
-description: Create a new task, issue, or story in the right system — GitHub Issues (Memex), Linear, or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", "this should be its own ticket", "split this into", "break this out", "separate ticket for X", "let's decompose", or similar. Work org remotes → Jira Story; personal work → GitHub Issue in Memex (default) or current repo; Linear only when routing file explicitly sets ticket_system=Linear.
+description: Create a new task, issue, or story in the right system — GitHub Issues (Memex) or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", "this should be its own ticket", "split this into", "break this out", "separate ticket for X", "let's decompose", or similar. Work org remotes → Jira Story; personal work → GitHub Issue in Memex (default) or current repo; Linear is suspended (ticket limit reached — re-enable via routing file when 2-way sync is restored).
 compatibility: Requires gh CLI, Atlassian MCP (Jira path only).
 ---
 
@@ -27,8 +27,6 @@ The output tells you which path to follow:
 - `linear:<project>` → Path D (Linear issue — only when routing file sets `ticket_system=Linear`)
 
 **Player / tester / playtest reports:** set `export ISSUE_ROUTE=github` before detect-context, or use Path B when the user explicitly asks for a GitHub issue.
-
-**Personal GitHub orgs → Linear:** To force Linear routing for personal GitHub orgs (rather than GitHub Issues), set `PERSONAL_GITHUB_ORGS=org1,org2` in your shell or add `"personal_github_orgs": ["org1"]` to `~/.config/ai-skills/local.json`. Any repo whose GitHub org matches routes to `linear:<heuristic_project>`.
 
 **Voice transcription aliases**: If the repo name sounds like a voice transcription artifact, confirm with the user before routing.
 
@@ -172,7 +170,9 @@ Report: issue number and URL as a markdown link, project it was added to (or ski
 
 ---
 
-## Path D — Linear issue (explicit opt-in only)
+## Path D — Linear issue (suspended)
+
+> **⚠️ Suspended**: Linear ticket creation is paused due to plan ticket limits. Re-enable by restoring the 2-way sync and setting `ticket_system=Linear` in `~/.config/ai-skills/repo-routing.json`. Until then, route personal work to Path C (GitHub Issues / Memex).
 
 Only used when `~/.config/ai-skills/repo-routing.json` sets `ticket_system=Linear` for a repo.
 
