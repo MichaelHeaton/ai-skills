@@ -1,0 +1,10 @@
+# Skills deployed to every repo — useful regardless of domain or device
+comms-write
+decision-council
+doc-coauthor
+grill-me
+lean-context
+model-route
+session-close
+skill-create
+skill-review
