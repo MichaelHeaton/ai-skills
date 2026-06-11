@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-06-10
+last_updated: 2026-06-11
 updated_by: claude
 name: git-ops
 description: Universal git hygiene guide — fires on any git commit, push, PR, or MR operation in any repo. Covers branching rules, commit message format, PR/MR description format, and pre-commit checks scoped to modified files (including terraform fmt). Applies regardless of which other skills are active. Trigger on: any request to commit, push, open a PR or MR, "git commit", "create a PR", "push this", "open a pull request", "submit a MR", "ready to merge", or any variation of committing or sharing code changes.
@@ -195,6 +195,49 @@ In repos where CI runs `plan` on PR push and `apply` on merge to main:
 - Pushing to an open PR re-runs the **plan** check only — it does **not** trigger apply
 - Apply only fires when the PR is **merged** to the default branch
 - Never say "CI will re-run" in a way that implies apply will re-run — only the plan re-runs
+
+---
+
+## Multi-commit same-file rebase conflicts
+
+When a branch has multiple commits that all touch the same file **and** the default branch has also changed that file, `git rebase main` conflicts at every replayed commit — not just once. Each step re-introduces a conflict against the already-resolved state.
+
+**Detect it early** before starting a rebase:
+
+```bash
+# How many commits on this branch touch the file?
+git log main..HEAD --oneline -- <file>
+
+# Has main also changed it since the branch diverged?
+git diff main...HEAD -- <file>
+```
+
+If both return non-empty output, do **not** rebase. Instead:
+
+1. **Capture the net diff** — what does this branch add that isn't in main?
+
+   ```bash
+   git diff main...HEAD -- <file> > /tmp/net-changes.patch
+   ```
+
+2. **Abort any in-progress rebase**
+
+   ```bash
+   git rebase --abort
+   ```
+
+3. **Create a fresh branch from the updated default branch**
+
+   ```bash
+   git checkout main && git pull
+   git checkout -b <new-branch-name>
+   ```
+
+4. **Apply the net-new changes in a single commit** — manually apply from the patch or re-author the content from scratch if cleaner.
+
+5. **Push the new branch and open a new PR**; close the old branch with a note referencing the replacement.
+
+**Why not squash the original branch and rebase that?** Squash still replays the squashed commit against main's version of the file — one conflict instead of five, but the resolution is the same work. The fresh-branch approach is equivalent and sidesteps git's rebase state machine entirely.
 
 ---
 

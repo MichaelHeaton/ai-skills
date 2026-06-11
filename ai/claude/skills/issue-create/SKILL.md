@@ -1,10 +1,10 @@
 ---
-version: 1.4.0
+version: 1.5.0
 principles_version: 1.0.0
 last_updated: 2026-06-11
 updated_by: claude
 name: issue-create
-description: Create a new task, issue, or story in the right system — GitHub Issues (Memex) or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", "this should be its own ticket", "split this into", "break this out", "separate ticket for X", "let's decompose", or similar. Work org remotes → Jira Story; personal work → GitHub Issue in Memex (default) or current repo; Linear is suspended (ticket limit reached — re-enable via routing file when 2-way sync is restored).
+description: Create a new task, issue, or story in the right system — GitHub Issues (Memex), Linear, or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", "this should be its own ticket", "split this into", "break this out", "separate ticket for X", "let's decompose", or similar. Work org remotes → Jira Story; personal work → GitHub Issue in Memex (default) or current repo; Linear only when routing file explicitly sets ticket_system=Linear.
 compatibility: Requires gh CLI, Atlassian MCP (Jira path only).
 ---
 
@@ -27,6 +27,8 @@ The output tells you which path to follow:
 - `linear:<project>` → Path D (Linear issue — only when routing file sets `ticket_system=Linear`)
 
 **Player / tester / playtest reports:** set `export ISSUE_ROUTE=github` before detect-context, or use Path B when the user explicitly asks for a GitHub issue.
+
+**Personal GitHub orgs → Linear:** To force Linear routing for personal GitHub orgs (rather than GitHub Issues), set `PERSONAL_GITHUB_ORGS=org1,org2` in your shell or add `"personal_github_orgs": ["org1"]` to `~/.config/ai-skills/local.json`. Any repo whose GitHub org matches routes to `linear:<heuristic_project>`.
 
 **Voice transcription aliases**: If the repo name sounds like a voice transcription artifact, confirm with the user before routing.
 
@@ -58,7 +60,20 @@ Draft the user story body using the template in §C2. **Critical**: pass the des
 
 Create via Atlassian MCP `jira_create_issue` with `jira.project_key`, the component from A2 (if applicable), and the multi-line description.
 
-### A4. Append to task index
+### A4. Link to predecessor (if this ticket is a follow-on)
+
+If this ticket was split from or prompted by an existing ticket, establish the relationship in both directions.
+
+**Known gap**: The Atlassian MCP does not expose the `/rest/api/2/issueLink` endpoint — `issuelinks` is rejected as unsupported in `jira_update_issue`. Native Jira issue links cannot be created from here.
+
+**Workaround (do both):**
+
+1. **In the new ticket's description** — reference the predecessor in the Background section: `"Follow-on to <KEY>. <reason it was split out>."`
+2. **Comment on the predecessor** — add a comment via `jira_add_comment` noting the new ticket key and why it was created, so anyone viewing the original ticket can navigate forward.
+
+This gives bidirectional traceability even without native issue links. When the MCP gains issueLink support, replace this with a proper `Relates to` / `is caused by` link.
+
+### A5. Append to task index
 
 ```bash
 bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
@@ -70,9 +85,9 @@ bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
   --project "<jira.project_key>"
 ```
 
-### A5. Confirm
+### A6. Confirm
 
-Report: ticket key, URL, and any epic it was linked to.
+Report: ticket key, URL, epic it was linked to, and predecessor link (if applicable).
 
 ---
 
@@ -107,12 +122,20 @@ Seed labels, `gh issue create`, append task index with `--system github`, confir
 - **Domain**: `adobe`, `uv-cyber`, `homelab`, `learning`, `personal`, `mtb`, or `iot`
 - **Priority**: `high`, `medium`, or `low`
 - **Due date**: only if explicitly stated
+- **Vault note** (optional): if the user's message mentions a vault note path (e.g. `CRM/People/name.md`, `Wiki/...`, a Memex path) or a vault note title, capture it now. No need to ask — detect passively from the message.
 
 If the request is vague, ask one clarifying question.
 
 ### C2. Draft the issue body (user story template)
 
 See [references/user-story-template.md](references/user-story-template.md) for the full template and role rules.
+
+If a vault note was detected in C1, append a `Related note` line at the bottom of the issue body before creation:
+
+```markdown
+---
+**Related note:** `<vault-note-path-or-title>`
+```
 
 ### C3. Create the GitHub Issue
 
@@ -125,6 +148,17 @@ gh issue create \
 ```
 
 Capture the returned URL and extract the issue number.
+
+### C3.5. Back-link the vault note (if applicable)
+
+If a vault note was detected in C1 and the note file exists on disk:
+
+1. Read the vault note file
+2. If it has a `## GitHub Issues` or `## Related` section, append a line: `- [#NNN — <title>](<url>)`
+3. If no such section exists, append one at the end of the file
+4. If the vault note path was approximate (title only), skip this step and mention it in C7
+
+Do not block or fail the issue creation if the vault note cannot be found — the issue is the primary artifact.
 
 ### C4. Add to the correct GitHub Project
 
@@ -163,16 +197,16 @@ bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
 
 ### C7. Confirm
 
-Report: issue number and URL as a markdown link, project it was added to (or skipped with reason), and labels applied.
+Report: issue number and URL as a markdown link, project it was added to (or skipped with reason), labels applied, and vault note link status (if applicable).
 
 - Normal: `"Created [#97 — Review HomeLab DNS config](https://github.com/...) → HomeLab project, priority/medium."`
+- With vault note linked: `"Created [#97 — ...](https://github.com/...) → HomeLab project, priority/medium. Linked in vault note: CRM/People/jane.md."`
+- Vault note not found: `"Created [#97 — ...](https://github.com/...) — vault note 'jane.md' not found on disk; add the issue link manually."`
 - Project add skipped: `"Created [#97 — ...](https://github.com/...) — not added to project (missing read:project scope; run \`gh auth refresh -s read:project\` to fix), priority/medium."`
 
 ---
 
-## Path D — Linear issue (suspended)
-
-> **⚠️ Suspended**: Linear ticket creation is paused due to plan ticket limits. Re-enable by restoring the 2-way sync and setting `ticket_system=Linear` in `~/.config/ai-skills/repo-routing.json`. Until then, route personal work to Path C (GitHub Issues / Memex).
+## Path D — Linear issue (explicit opt-in only)
 
 Only used when `~/.config/ai-skills/repo-routing.json` sets `ticket_system=Linear` for a repo.
 

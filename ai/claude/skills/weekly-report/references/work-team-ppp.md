@@ -1,0 +1,69 @@
+---
+version: 1.0.0
+principles_version: 1.0.0
+last_updated: 2026-06-11
+updated_by: claude
+---
+
+# Work-team weekly — Problems / Plans / People
+
+Config: `weekly_reports.work_team` in `local.json`.
+
+Output path: `output_file` in that block (same file as the standard work-team path — adjust suffix if you need both formats in the same week).
+
+## Week ending
+
+Confirm with user (often the day before a standing team meeting — see `meeting_note` in config).
+
+## Sources
+
+- Jira MCP for `jira.project_key` / assignee = currentUser() — open blockers and next-sprint items
+- Recent git commits (last 7 days) across repos the user owns: `git log --since=1.week --oneline --author="$(git config user.name)"`
+- Vault: recent meetings, dailies, prep notes per `memex_agent_ref`
+
+## Format check
+
+Before generating, fetch the current week's Confluence wiki page (if `confluence_page_id` is set in config) to verify active section headers. Do not rely solely on prior output files — format can change between weeks.
+
+## Output structure
+
+Use `display_name` from config as the heading.
+
+---
+
+### Problems
+
+Real blockers, risks, or dependencies the team needs to know about. If none, use *(None this week.)*
+
+- **One bullet per problem** — name the blocker, who/what is blocking, and what's needed to unblock
+- Include ticket key when one exists
+- Skip resolved issues — only items still active at week-end
+
+### Plans
+
+Commitments for next week. These are what you're signing up to deliver, not a wish list.
+
+- **One bullet per commitment** — specific enough that the team can hold you to it
+- Include ticket key when one exists
+- 3–6 bullets is the right range; more than 6 suggests scope creep
+
+### People
+
+Team moves, shoutouts, hiring updates, and org changes worth surfacing.
+
+- **Shoutouts** — name someone who helped, delivered, or unblocked you this week
+- **Hiring** — open reqs, interview pipeline updates, offer status (use initials if sharing publicly)
+- **Org changes** — role changes, new starters, departures (only public info)
+- If nothing notable: omit the section entirely rather than writing *(None this week.)*
+
+---
+
+## Metadata in output file
+
+- Week ending date
+- Confluence paste target URL (from `weekly_reports.work_team.confluence_url` in config — confirm before user pastes)
+- Format variant: `ppp: problems-plans-people`
+
+End with `## Sources consulted (internal)`.
+
+Full rules: path in `weekly_reports.work_team.memex_agent_ref` (your private vault). Private vault rules win on conflict.
