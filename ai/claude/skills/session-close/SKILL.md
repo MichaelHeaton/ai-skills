@@ -1,5 +1,5 @@
 ---
-version: 1.2.0
+version: 1.4.0
 principles_version: 1.0.0
 last_updated: 2026-06-11
 updated_by: claude
@@ -35,6 +35,18 @@ Ask: "Which of these repos were you working in this session?" If the user says "
 Before Steps 2–4, invoke the `git-ops` skill _(personal — ai-skills repo)_ — it covers branching rules, commit format, PR format, and pre-commit checks. The short version: work GitHub and GitLab repos always get a branch + PR; personal KB uses branch + PR like work repos. Full rules in `~/.claude/references/branching.md`.
 
 **SSH port-22 fallback**: For all GitHub/GitLab SSH remote operations, use `scripts/git-ssh-fallback.sh <repo-path> <subcommand> [args...]` instead of raw `git`. It auto-detects port-22 blocks, switches to HTTPS, and retries transparently.
+
+**GH auth pre-flight (personal repos):** Before processing any GitHub.com repo, verify the active account matches the repo owner. Run this once now — don't wait for a push failure:
+
+```bash
+gh auth status 2>&1 | grep "Logged in to github.com account"
+```
+
+If the active account is not `${GITHUB_PERSONAL_USER}`, switch before continuing:
+
+```bash
+gh auth switch --user "${GITHUB_PERSONAL_USER}"
+```
 
 ---
 
@@ -133,6 +145,8 @@ find ~/Projects -maxdepth 4 -path "*/.claude/skills/<name>" -type d 2>/dev/null 
 
 Pass the annotated list as SA1 context. Then invoke the `skill-review` skill.
 
+**After skill-review returns:** Any Tier 1 findings (clear bugs, broken flows, skill missed entirely) must become tickets via `issue-create` Path B targeting `${GITHUB_PERSONAL_USER}/ai-skills` **before moving to Step 7**. Do not defer Tier 1 items silently — a ticket preserves context even if not worked this session. Tier 2/3 findings can be ticketed or deferred at your discretion.
+
 ---
 
 ## Step 7 — Permission-prompt hygiene
@@ -196,4 +210,13 @@ For Jira: call `jira_get_transitions` first to get valid transition IDs (never g
 
 ## Step 10 — Session summary
 
-Produce a brief close-out summary using the template in [references/session-summary-template.md](references/session-summary-template.md). Save to `~/Projects/personal/memex/Outputs/Session/session-close-[date].md` if non-trivial; delete after the next session picks it up.
+Produce a brief close-out summary using the template in [references/session-summary-template.md](references/session-summary-template.md). Save to `~/Projects/personal/memex/Outputs/Session/session-close-[date].md` if non-trivial.
+
+After writing the new file, prune files older than 14 days — they've been consumed by at least one subsequent session and have no remaining handoff value:
+
+```bash
+find ~/Projects/personal/memex/Outputs/Session -name "session-close-*.md" -mtime +14 -delete && \
+echo "✓ pruned old session files"
+```
+
+If no files are pruned, suppress the output — no action needed means no report needed.
