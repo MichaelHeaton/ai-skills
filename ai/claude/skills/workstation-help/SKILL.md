@@ -1,0 +1,139 @@
+---
+version: 1.0.0
+principles_version: 1.0.0
+last_updated: 2026-06-11
+updated_by: claude
+name: workstation-help
+description: "Quick reference for workstation-devops shell shortcuts, aliases, and make commands. Use when the user asks what a shortcut does, forgets a command, asks how to connect to AWS/Vault/Teleport, or asks what make targets are available. Triggers on: 'what was that command', 'how do I connect to', 'workstation shortcuts', 'ces_prd', 'ces_dev', 'vault login', 'vl command', 'klam', 'make targets', 'workstation commands', 'how do I run the playbook', 'how do I disconnect from AWS', 'what does vssh do'."
+---
+
+# Workstation Help
+
+Quick reference for shortcuts and commands installed by [workstation-devops](~/Projects/personal/workstation-devops). These live in your shell after `make apply` — they are not repo commands.
+
+---
+
+## AWS credentials (work — KLAM)
+
+| Alias | Environment |
+| --------- | ----------- |
+| `ces_sandbox` | Sandbox |
+| `ces_dev` | DEV |
+| `ces_prd` | PROD |
+
+**Disconnect / switch accounts:**
+
+```bash
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_PROFILE
+```
+
+Verify: `aws sts get-caller-identity`
+
+Requires corp VPN at runtime. If a profile isn't working, check IAM group membership and KLAM setup: `docs/work/klam.md`.
+
+---
+
+## Vault (work)
+
+| Command | What it does |
+| --------- | ------------ |
+| `vl` / `vault_login` | fzf cluster picker → sets `VAULT_ADDR` + Okta login |
+| `vault_mgmt` | Teleport `vault-mgmt-access` → local proxy `:8222` + Okta login |
+
+Cluster list: `group_vars/work.local.yml` in the workstation-devops repo (gitignored).
+Okta password from Keychain: `make secrets-vault-okta` to set it up.
+
+---
+
+## Teleport (work)
+
+| Command | What it does |
+| --------- | ------------ |
+| `t` | fzf cluster/node picker (requires `tsh` + `fzf`) |
+| `tshl` | Teleport SSH helper |
+| `vssh` | `tsh ssh --request-reason="Vault admin"` shorthand |
+
+`TELEPORT_LOGIN` must be set to your LDAP username (set by `make apply` on work profile).
+
+---
+
+## Personal AWS (personal profile only)
+
+| Command | What it does |
+| --------- | ------------ |
+| `platform_bootstrap` | Re-export `AWS_PROFILE=platform-bootstrap`, region, and tfstate bucket name |
+
+Auto-set on shell startup for personal machines. See `docs/home/platform-aws.md`.
+
+---
+
+## Makefile — `make` targets
+
+Run `make` or `make help` from `~/Projects/personal/workstation-devops` to see the full list.
+
+**Setup**
+
+| Target | Purpose |
+| --------- | ------- |
+| `make profile` | Detect or change machine profile (work/personal) |
+| `make deps` | Install Ansible + toolchain |
+| `make check` | Preflight: PATH, /Applications, Homebrew |
+| `make hooks` | Install pre-commit hooks |
+
+**Apply**
+
+| Target | Purpose |
+| --------- | ------- |
+| `make apply` | Apply full config (logs to `logs/apply-*.log`) |
+| `make dry-run` | Preview — no writes |
+| `make apply TAGS=dotfiles` | Dotfiles (chezmoi) only |
+| `make apply SKIP_TAGS=work` | Skip work-tagged tooling |
+| `make apply EXTRA_VARS='-e homebrew_upgrade=true'` | Upgrade Homebrew packages |
+
+**Debug**
+
+| Target | Purpose |
+| --------- | ------- |
+| `make triage` | Summarize latest apply log |
+| `make lint` | yamllint + ansible syntax + ansible-lint |
+| `make test` | Regression tests + personal dry-run |
+
+**Secrets**
+
+| Target | Purpose |
+| --------- | ------- |
+| `make secrets-check` | Verify all Keychain items |
+| `make secrets-help` | List all secret setup commands |
+| `make secrets-vault-okta` | Vault Okta password → Keychain |
+| `make secrets-notion` | Notion MCP token → Keychain |
+| `make secrets-linear` | Linear MCP API key → Keychain |
+| `make secrets-atlassian` | Atlassian tokens + config file |
+
+---
+
+## Feature tags (for `TAGS=` and `SKIP_TAGS=`)
+
+| Tag | What runs |
+| --------- | --------- |
+| `dotfiles` | Chezmoi: git, SSH, gh, MCP, Claude policy, Brave |
+| `shell` | zshrc common block (PATH, ai-skills source) |
+| `editors` | Cursor/VS Code extension lists + settings |
+| `work` | Work shell, Teleport, KLAM, Vault tools, kubelogin, GHEC SSH |
+| `home` | Personal shell, AWS defaults, homelab tasks |
+
+Default allowlist: **work machine** = `dotfiles shell editors work` | **personal machine** = `dotfiles shell editors home`
+
+---
+
+## Source files (for deeper reference)
+
+| File | What's in it |
+| ---- | ------------ |
+| `roles/klam/files/klam_aliases.zsh` | `ces_*` alias definitions |
+| `roles/vault_tools/templates/vault_functions.zsh.j2` | `vl`, `vault_login`, `vault_mgmt` |
+| `roles/teleport/files/teleport_helpers.zsh` | `t()`, `tshl()` |
+| `roles/shell/templates/shell_work.zsh.j2` | `vssh`, `TELEPORT_LOGIN` |
+| `roles/shell/templates/shell_personal.zsh.j2` | `platform_bootstrap`, AWS defaults |
+| `docs/work/klam.md` | KLAM setup + troubleshooting |
+| `docs/work/vault-tools.md` | Vault function details + Okta password store |
+| `docs/work/teleport.md` | Teleport helper details |
