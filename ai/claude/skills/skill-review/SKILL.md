@@ -1,8 +1,8 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
-updated_by: human
+last_updated: 2026-06-10
+updated_by: claude
 name: skill-review
 description: Review and improve skills — either a single skill or all skills used in the current session. Single-skill mode: audits a SKILL.md against conventions, incorporates session learnings, and tunes triggering. Session-audit mode: reflects on the current conversation to find skill friction, missed triggers, and workflow gaps worth turning into new skills — meant to be called at the end of every session to make skills a little better each time. Also invoked programmatically by a parent session passing pre-collected session context (sub-agent mode: SA1 done by parent, SA2–SA4 run in sub-agent with fresh skill files). Triggers on: "review this skill", "improve skill X", "this skill isn't working well", "update skill based on what we learned", "skill feels off", "tune skill description", "review skills from this session", "what skills need updating", "session skill review", "audit skills", or when session-close reaches its skill hygiene step.
 compatibility: Requires git. Skills deployed via `make install-system` (copy-only).
@@ -94,63 +94,13 @@ If the user explicitly declines a ticket for a finding: acknowledge and move on 
 
 ## Sub-agent invocation pattern
 
-Run SA2–SA4 inside a sub-agent when you want fresh skill file reads mid-session (sub-agents reload all SKILL.md files from disk at startup) or when the accumulated session context would distort the audit.
-
-**Division of labor:**
-
-- **Parent session** — does SA1 (has the conversation history), then spawns a sub-agent
-- **Sub-agent** — receives the SA1 output as structured input, runs SA2–SA4, returns findings table
-- **Parent session** — handles SA5 (ticket creation, security scrub)
-
-**What the parent must pass to the sub-agent:**
-
-```
-## Session context (from parent)
-
-Session focus: [one sentence]
-Skills active this session:
-- <skill-name> (global: ai-skills)
-- <skill-name> (project: <repo-name>)
-Friction observed: [bullet list — what went wrong or felt off]
-
-## Your task
-
-Run skill-review session-audit steps SA2–SA4.
-SA1 is complete — use the context above as input.
-Read ~/.claude/skills/{name}/SKILL.md fresh for each skill listed.
-Return ONLY the findings table, new skill ideas table, and a one-paragraph summary.
-Do NOT run SA5. Do NOT create tickets.
-```
-
-**Output format the sub-agent should return:**
-
-```
-### Findings Table
-| Skill | Finding | Type | Proposed Change | Priority |
-| skill-X | [text] | friction|gap|clean | [change or "none"] | high|medium|low |
-
-### New Skill Ideas
-| Proposed Name | One-line Description |
-
-### Summary
-[1–2 sentences]
-```
-
-**Security note**: SA5's security scrub (strip Employer-internal details before public tickets) applies to the **parent session** when it acts on the sub-agent's findings — not to the sub-agent itself. The sub-agent returns findings; the parent creates tickets and must run the scrub.
+See [references/sub-agent-pattern.md](references/sub-agent-pattern.md) for the full prompt template, output format, and security notes.
 
 ---
 
 ## Single-skill mode
 
-Your job is to help the user audit and improve an existing skill. Unlike skill-create, you're starting from something that exists — the goal is to make it better, not rebuild it from scratch.
-
-The most common reasons to review a skill:
-
-- It didn't trigger when it should have (or triggered when it shouldn't)
-- The output felt off — too rigid, missed the point, did unnecessary work
-- A session just produced a great result and that approach should be captured back into the skill
-- Claude has new capabilities that the skill doesn't take advantage of
-- The skill was written quickly and deserves a proper pass
+Audit and improve an existing skill — the goal is to make it better, not rebuild it from scratch.
 
 ---
 
@@ -184,45 +134,13 @@ Get enough context before reading the skill so you know what to look for.
 
 ## 3. Audit the Skill
 
-Read the skill's SKILL.md and evaluate it across these dimensions. Read `references/conventions.md` for the full rules.
+Read the skill's SKILL.md. Full audit dimensions are in `references/conventions.md`. Key checks:
 
-### Naming
-
-- Does the `name` match the directory name?
-- Does it follow the `{domain}-{verb}` or `{domain}-{noun}` pattern?
-- Is the domain prefix correct for this skill's context?
-
-### Description (trigger quality)
-
-The description is the primary trigger mechanism. Ask:
-
-- Does it clearly state what the skill does AND when to use it?
-- Does it include natural-language phrases a user would actually type?
-- Is it pushy enough? (Claude undertriggers — the description should lean toward more situations, not fewer)
-- Are there near-miss situations it should explicitly call out?
-- Is it under 1024 characters?
-
-### Output formatting
-
-Global ADHD-friendly formatting rules live in `~/.claude/CLAUDE.md` — they apply to every session automatically and don't need to be in the skill. Check whether the skill unnecessarily duplicates formatting instructions that are already covered globally. If it does, remove them.
-
-If the skill produces complex structured output, it may reference `references/formatting.md` for output-specific patterns — but only if the global rules aren't sufficient.
-
-### Body (instruction quality)
-
-- Is the structure logical? Would a reader follow it without confusion?
-- Are instructions in imperative form ("Do X")?
-- Does it explain the *why* behind non-obvious steps?
-- Is anything redundant or not pulling its weight?
-- Is it under 500 lines? If not, what could move to `references/`?
-- Are there rigid ALWAYS/NEVER rules that should be replaced with explained reasoning?
-- Does every skill invocation/reference include a source label? (`_(personal — ai-skills repo)_`, `_(built-in — Claude Code)_`, or `_(repo — <name>)_`)
-
-### Freshness
-
-- Does the skill reference tools, APIs, or patterns that have changed?
-- Does it account for current Claude capabilities? (e.g., a skill that manually scaffolds something Claude now handles natively is doing unnecessary work)
-- If a session just produced a better approach, is that approach captured?
+- **Naming**: `name` matches directory; follows `{domain}-{verb}` or `{domain}-{noun}` pattern
+- **Description**: states what + when; includes natural-language trigger phrases; pushy enough (≤1024 chars)
+- **Output formatting**: don't duplicate rules already in `~/.claude/CLAUDE.md`
+- **Body**: imperative form; explains non-obvious *why*; no dead weight; ≤200 lines or moved to `references/`; skill invocations include source label (`_(global: ai-skills)_`, `_(project: <repo>)_`, `_(built-in)_`)
+- **Freshness**: no stale tool refs; not scaffolding what Claude handles natively
 
 ---
 
@@ -263,12 +181,4 @@ Once the user approves:
 
 ## 6. Description Optimization (if triggering was the issue)
 
-If the main problem was the skill not triggering correctly, offer a description sharpening pass:
-
-1. Draft 8–10 "should trigger" prompts (varied phrasings, edge cases, casual speech)
-2. Draft 8–10 "should not trigger" prompts (near-misses — same keywords but different intent)
-3. Review the set with the user; prune bad examples
-4. Rewrite the description to handle the edge cases
-5. Apply the updated description to the frontmatter
-
-Focus on the near-misses — prompts that obviously trigger or obviously don't are useless test cases. The value is in the ambiguous middle.
+Draft 8–10 "should trigger" and 8–10 "should not trigger" prompts. Focus on near-misses — the ambiguous middle, not obvious cases. Review with the user, prune, then rewrite the description to handle the edge cases and apply to frontmatter.
