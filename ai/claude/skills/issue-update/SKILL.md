@@ -1,7 +1,7 @@
 ---
-version: 1.2.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-06-11
+last_updated: 2026-06-10
 updated_by: claude
 name: issue-update
 description: Update a task or ticket — change status, add a comment, edit labels, close it, or sync the task index. Works across Linear, GitHub Issues, GitLab Issues, and Jira. Use when the user says "close issue #X", "mark SR-42 done", "mark PROJ-12345 done", "update the description of PROJ-123", "scope this ticket to", "scope this down to only X", "narrow the scope of this ticket", "transition this to closed", "this ticket is done — close it", "transition to blocked", or similar.
@@ -64,14 +64,11 @@ Use Linear MCP: `save_comment`, `save_issue` (with `id` for state/priority/descr
 > Always pass `--repo <owner/repo>` explicitly — the SSH alias on Memex's remote confuses `gh`.
 
 ```bash
-# Close — always in two steps; never combine comment + close into one command
-# Step 1: add the closing comment and verify it succeeded (check for printed URL)
-gh issue comment {NUMBER} --repo {owner/repo} \
-  --body "Done: {one-line summary of what was completed}"
-# Step 2: only close after the comment is confirmed
-gh issue close {NUMBER} --repo {owner/repo}
+# Close
+gh issue close {NUMBER} --repo {owner/repo} \
+  --comment "Done: {one-line summary of what was completed}"
 
-# Comment (standalone)
+# Comment
 gh issue comment {NUMBER} --repo {owner/repo} --body "{comment text}"
 
 # Edit labels

@@ -1,10 +1,10 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-06-10
+last_updated: 2026-06-11
 updated_by: claude
 name: vault-support
-description: "Analyze vault support content — Slack threads, Jira tickets, or direct research questions — to fact-check the team bot, identify documentation gaps, and generate knowledge-extraction questions. Use when the user pastes a Slack thread, references a vault ticket, or asks a vault behavior/config question directly. Triggers on: vault questions, bot responses, AppRole, policy PRs, KV2, seal, onboarding pasted from Slack, vault ticket, vault runbook, vault restore procedure, vault behavior, researching vault, how does vault handle, look at this vault ticket."
+description: "Analyze vault support content — Slack threads, Jira tickets, direct research questions, or documentation gap sessions — to fact-check the team bot, identify documentation gaps, and generate knowledge-extraction questions. Use when the user pastes a Slack thread, references a vault ticket, asks a vault behavior/config question directly, or wants to identify what's missing in the wiki. Triggers on: vault questions, bot responses, AppRole, policy PRs, KV2, seal, onboarding pasted from Slack, vault ticket, vault runbook, vault restore procedure, vault behavior, researching vault, how does vault handle, look at this vault ticket, wiki gaps, documentation backlog, doc backlog, what's missing in the wiki, identify documentation gaps, audit our docs, build a doc backlog, find wiki gaps, what are we missing in the docs."
 ---
 
 # Vault Support Analyzer
@@ -56,12 +56,13 @@ Triage vault support Slack threads: fact-check the support bot, surface doc gaps
 
 Read what was provided and classify it:
 
+- **Case D — Gap analysis / doc backlog** (user asks "what's missing in the wiki", "find doc gaps", "build a doc backlog", "audit our docs", or similar — no pasted source): Run a broad doc-search across the wiki mirror, identify uncovered or thin topic areas, and output a structured gap list (see Case D section). This is the right entry point for planning sessions and documentation sprints — the output feeds directly into issue-create.
 - **Case A — Early triage** (Slack thread: question + bot reply, no team response yet): Fact-check the support bot and prepare the user to respond.
 - **Case B — Post-resolution** (Slack thread: full thread with team member replies): Extract knowledge and capture what the team knew that the support bot didn't.
 - **Case C — Jira ticket** (user provides a Jira ticket ID/URL or asks to look at a vault ticket): Fetch ticket via MCP, extract the question or work context, then run the analysis flow (Steps 3+) treating the ticket description as the source.
-- **Case D — Direct research** (user asks a vault behavior/config question directly with no pasted source): Skip the bot-comparison steps; run doc-search and gap analysis, then optionally log a test case with `source: "direct research"`.
+- **Case D (single question) — Direct research** (user asks a specific vault behavior/config question directly with no pasted source): Skip the bot-comparison steps; run doc-search and gap analysis, then optionally log a test case with `source: "direct research"`.
 
-If unclear, ask: "Is this a Slack thread, a Jira ticket, or a direct research question?"
+If unclear, ask: "Is this a Slack thread, a Jira ticket, a specific research question, or a broader doc gap audit?"
 
 ## Step 2 — Extract the question and classify it
 
@@ -148,13 +149,37 @@ Treat the extracted question as the verbatim question (Step 2 equivalent). Skip 
 
 When creating a test case (Step 6), use `source: "vault ticket"` and set the ticket key in a `jira_ref` field.
 
-### Case D — Direct research
+### Case D — Direct research (single question)
 
-**No source artifact.** The user is asking a vault behavior or config question directly.
+**No source artifact.** The user is asking a specific vault behavior or config question directly.
 
 Extract the question from the user's message. Skip bot-comparison scoring (`sherlock_score: na`, `team_reply_vs_sherlock: na`). Proceed to Step 3 (doc search) and onwards.
 
 When creating a test case (Step 6), use `source: "direct research"`. The "Correct Answer" section should contain your research findings rather than a team answer.
+
+### Case D — Gap analysis / doc backlog (broad audit)
+
+**No source artifact, no specific question.** The user wants to find what's missing or thin in the wiki.
+
+1. **Scan the wiki mirror** — list all topic files in `${WORK_DOCS}`, group by section/area
+2. **Identify gaps** — topics with no file, files under 200 lines, files with `sherlock: false` on most pages, areas with no recent updates
+3. **Cross-reference with support volume** — if `TEAM-QUESTIONS.md` exists, check for recurring questions with no corresponding doc
+4. **Output a structured gap list:**
+
+```
+## Doc Gap Audit — <date>
+
+### Missing topics (no file exists)
+- <topic> — <why it matters / signals it's needed>
+
+### Thin coverage (file exists but needs work)
+- <file> — <what's missing>
+
+### Not indexed for the support bot (sherlock: false)
+- <file> — <whether it's ready to index or needs cleanup first>
+```
+
+1. **Offer to create issues** — after presenting the list, ask: "Want me to create GitHub Issues for any of these gaps?" The list feeds directly into `issue-create`.
 
 ## Step 5 — Build the gap list
 
