@@ -1,10 +1,10 @@
 ---
-version: 1.2.0
+version: 1.3.0
 principles_version: 1.0.0
 last_updated: 2026-06-10
-updated_by: human
+updated_by: claude
 name: issue-create
-description: Create a new task, issue, or story in the right system — GitHub Issues (Memex), Linear, or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", or similar. Work org remotes → Jira Story; personal work → GitHub Issue in Memex (default) or current repo; Linear only when routing file explicitly sets ticket_system=Linear.
+description: Create a new task, issue, or story in the right system — GitHub Issues (Memex), Linear, or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", "this should be its own ticket", "split this into", "break this out", "separate ticket for X", "let's decompose", or similar. Work org remotes → Jira Story; personal work → GitHub Issue in Memex (default) or current repo; Linear only when routing file explicitly sets ticket_system=Linear.
 compatibility: Requires gh CLI, Atlassian MCP (Jira path only).
 ---
 
@@ -30,6 +30,8 @@ The output tells you which path to follow:
 
 **Player / tester / playtest reports:** set `export ISSUE_ROUTE=github` before detect-context, or use Path B when the user explicitly asks for a GitHub issue.
 
+**Personal GitHub orgs → Linear:** To force Linear routing for personal GitHub orgs (rather than GitHub Issues), set `PERSONAL_GITHUB_ORGS=org1,org2` in your shell or add `"personal_github_orgs": ["org1"]` to `~/.config/ai-skills/local.json`. Any repo whose GitHub org matches routes to `linear:<heuristic_project>`.
+
 **Voice transcription aliases**: If the repo name sounds like a voice transcription artifact, confirm with the user before routing.
 
 ---
@@ -38,9 +40,27 @@ The output tells you which path to follow:
 
 Read `jira.*` from `~/.config/ai-skills/local.json` before creating issues.
 
-### A1–A3
+### A1. Gather information
 
-Same as before — gather info, draft user story, create via Atlassian MCP with `jira.project_key`.
+- **Title**: imperative verb + clear description (user story format)
+- **Priority**: `high`, `medium`, or `low`
+- **Epic**: ask or infer from context
+
+### A2. Fetch project components (required fields)
+
+Before creating, fetch the project's components to pre-empt the "Component/s is required" error:
+
+```
+jira_get_project_components(project_key="<jira.project_key>")
+```
+
+Select the most relevant component based on ticket content and repo name. Include it in the creation call as `components: [{"name": "<component>"}]`. If no components exist for the project, skip this field.
+
+### A3. Draft description and create
+
+Draft the user story body using the template in §C2. **Critical**: pass the description body as a literal multi-line string — do **not** construct it with escaped `\n` characters. The Jira MCP requires real newlines; `\n` literals appear verbatim in the Jira UI.
+
+Create via Atlassian MCP `jira_create_issue` with `jira.project_key`, the component from A2 (if applicable), and the multi-line description.
 
 ### A4. Append to task index
 

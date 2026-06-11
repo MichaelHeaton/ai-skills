@@ -1,8 +1,8 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
-updated_by: human
+last_updated: 2026-06-10
+updated_by: claude
 name: git-ops
 description: Universal git hygiene guide — fires on any git commit, push, PR, or MR operation in any repo. Covers branching rules, commit message format, PR/MR description format, and pre-commit checks scoped to modified files (including terraform fmt). Applies regardless of which other skills are active. Trigger on: any request to commit, push, open a PR or MR, "git commit", "create a PR", "push this", "open a pull request", "submit a MR", "ready to merge", or any variation of committing or sharing code changes.
 ---
@@ -108,6 +108,19 @@ fix: scope terraform fmt to modified files only
 - Keep the title short — details belong in the body
 - Always `cd` into the repo before running `gh pr create` — the `--repo` flag handles routing but `gh` still needs local git context to resolve the remote
 - **SSH alias remotes**: if `origin` uses an SSH config alias (e.g. `git@github.com-personal:owner/repo`) rather than the literal `github.com` hostname, `gh pr create` may fail with "must first push branch" even when the branch is already pushed. **Default**: always pass `--repo owner/repo --head branch-name` — don't attempt without these flags first
+- **Multi-account pre-flight**: before running `gh pr create` on an org repo, verify the active `gh` account has access:
+
+  ```bash
+  gh auth status
+  ```
+
+  If the default account is your personal account and the target repo is a work org, switch with:
+
+  ```bash
+  GH_TOKEN=$(gh auth token --user <org-account>) gh pr create ...
+  ```
+
+  A `GraphQL: Could not resolve to a Repository` error almost always means account mismatch — fix the token, don't debug the remote.
 
 ---
 

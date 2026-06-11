@@ -13,15 +13,27 @@
 # Configure work GitHub orgs (comma-separated):
 #   export SKILLS_WORK_ORGS=org1,org2
 #
+# Configure personal GitHub orgs that should route to Linear (comma-separated):
+#   export PERSONAL_GITHUB_ORGS=org1,org2
+#   (also readable from ~/.config/ai-skills/local.json: personal_github_orgs array)
+#
 # Force GitHub for player/tester reports or PR-linked issues:
 #   export ISSUE_ROUTE=github
 
 set -euo pipefail
 
 ROUTING_FILE="${REPO_ROUTING_FILE:-${HOME}/.config/ai-skills/repo-routing.json}"
+LOCAL_JSON="${HOME}/.config/ai-skills/local.json"
 
 remote=$(git remote get-url origin 2>/dev/null || true)
 IFS=',' read -ra work_orgs <<< "${SKILLS_WORK_ORGS:-}"
+
+# Read personal_github_orgs from env or local.json
+personal_orgs_env="${PERSONAL_GITHUB_ORGS:-}"
+if [[ -z "$personal_orgs_env" ]] && [[ -f "$LOCAL_JSON" ]]; then
+  personal_orgs_env=$(jq -r '(.personal_github_orgs // []) | join(",")' "$LOCAL_JSON" 2>/dev/null || true)
+fi
+IFS=',' read -ra personal_orgs <<< "$personal_orgs_env"
 
 heuristic_linear_project() {
   local repo_slug="$1"
@@ -74,6 +86,17 @@ for org in "${work_orgs[@]}"; do
   [[ -z "$org" ]] && continue
   if [[ "$remote" == *"github.com:$org/"* ]] || [[ "$remote" == *"github.com/$org/"* ]]; then
     echo "jira-work"
+    exit 0
+  fi
+done
+
+for porg in "${personal_orgs[@]}"; do
+  porg="${porg// /}"
+  [[ -z "$porg" ]] && continue
+  if [[ "$remote" == *"github.com:$porg/"* ]] || [[ "$remote" == *"github.com/$porg/"* ]] || [[ "$remote" == *"github.com-personal:$porg/"* ]]; then
+    repo=$(echo "$remote" | sed -E 's|.*github\.com[:/]||;s|.*github\.com-personal:||;s|\.git$||')
+    lp=$(heuristic_linear_project "$repo")
+    echo "linear:${lp}"
     exit 0
   fi
 done
