@@ -1,16 +1,12 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-06-10
+last_updated: 2026-06-11
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
 compatibility: Requires gh CLI, glab CLI, git. Atlassian MCP needed only if Jira tickets were worked on.
 ---
-
-
-
-
 
 Close out this session safely. The goal: nothing stranded in branches, all tickets reflect current state, next session starts with complete context.
 
@@ -95,7 +91,7 @@ For each repo with `WORKTREES > 0`:
 git -C ~/Projects/personal/memex log main..HEAD --oneline 2>/dev/null
 ```
 
-If notes are on a branch that hasn't merged, flag this prominently — the next session will start blind.
+If notes are on a branch that hasn't merged, flag this prominently — the next session will start blind. If the push fails with an auth error, switch to the personal GitHub account first: `gh auth switch --user <personal-user>`.
 
 ---
 
@@ -192,7 +188,7 @@ For each open ticket that matches session activity:
 
 Never run the comment and transition in parallel. A failed comment on a closed ticket has no audit trail — the ticket closes without context, which is worse than leaving it open. If the comment fails, keep the ticket open and flag it in the session summary.
 
-Use `jira_add_comment` → `jira_transition_issue` for Jira, `gh issue comment` → `gh issue close` for GitHub, `save_comment` → `save_issue` for Linear. Update `status` in `_task-index.jsonl` to reflect the new state.
+For Jira: call `jira_get_transitions` first to get valid transition IDs (never guess — IDs vary per project), then `jira_add_comment` → `jira_transition_issue`. For GitHub: `gh issue comment` → `gh issue close`. For Linear: `save_comment` → `save_issue`. Update `status` in `_task-index.jsonl` to reflect the new state.
 
 **If no matches are found**: skip silently — no open question needed.
 
