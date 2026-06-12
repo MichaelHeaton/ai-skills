@@ -1,5 +1,5 @@
 ---
-version: 1.5.0
+version: 1.5.1
 principles_version: 1.0.0
 last_updated: 2026-06-12
 updated_by: claude
@@ -24,9 +24,7 @@ For each line, extract:
 - `BRANCH` — current checkout branch
 - `CHANGES` — count of uncommitted files
 - `WORKTREES` — count of active extra worktrees
-- `AHEAD_BRANCHES` — count of remote branches beyond main/master
-
-**Note on high ahead-branch counts**: Some team repos will always show many remote branches from other contributors — not yours to clean up. Focus on repos where you did work this session.
+- `AHEAD_BRANCHES` — count of remote branches ahead of main/master where the tip commit author matches `git config user.email`; team branches from other contributors are excluded
 
 Ask: "Which of these repos were you working in this session?" If the user says "all" or it's obvious from context, proceed with all flagged repos.
 
