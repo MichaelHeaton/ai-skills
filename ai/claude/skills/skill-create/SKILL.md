@@ -34,7 +34,7 @@ Meet the user where they are. If they have a half-formed idea, help them shape i
 Before anything else, determine which of the four Claude Code extensibility types fits the use case. If the user's request makes it obvious (e.g. "create a hook for when a file is saved"), confirm and proceed. If it's ambiguous, explain the options and ask.
 
 | Type | What it is | Best for |
-|------|-----------|----------|
+| ------ | --------- | -------- |
 | **Skill** | SKILL.md loaded on demand; gives Claude task-specific expertise | Repeatable workflows, specialist knowledge, guided processes |
 | **Subagent** | Isolated execution context; Claude delegates a bounded task to it | Long-running or risky work that should be isolated from the main session |
 | **Hook** | Shell command triggered by a Claude Code event (tool call, session start/stop, etc.) | Automation that should run automatically without Claude deciding to do it |
@@ -51,6 +51,7 @@ Once the type is confirmed, follow the type-specific guidance below, then contin
 ### Type-specific guidance
 
 #### Skill
+
 - Placement: `ai/claude/skills/{name}/SKILL.md` (global) or `<repo>/.claude/skills/{name}/SKILL.md` (project-scoped)
 - Required frontmatter fields: `version`, `principles_version`, `last_updated`, `updated_by`, `name`, `description`
 - The `description` field is the primary trigger — write it to answer "what does this do?" and "when should Claude use it?"
@@ -58,6 +59,7 @@ Once the type is confirmed, follow the type-specific guidance below, then contin
 - **Reload required after any SKILL.md change** — new conversation or ⌘R
 
 #### Subagent
+
 - Placement: `ai/claude/subagents/{name}.md` (global) or `<repo>/.claude/agents/{name}.md` (project-scoped)
 - Required frontmatter fields: `name`, `description`, `model` (optional — defaults to current), `tools` (list of tools the subagent may use)
 - The `description` tells Claude when to delegate to this subagent — same principle as skill descriptions
@@ -65,6 +67,7 @@ Once the type is confirmed, follow the type-specific guidance below, then contin
 - See `references/sub-agent-pattern.md` in skill-review for patterns
 
 #### Hook
+
 - Placement: configured in `.claude/settings.json` under `hooks`
 - Structure: `{ "event": "<EventName>", "hooks": [{ "type": "command", "command": "<shell cmd>" }] }`
 - Supported events: `PreToolUse`, `PostToolUse`, `Notification`, `Stop`, `SubagentStop`
@@ -73,6 +76,7 @@ Once the type is confirmed, follow the type-specific guidance below, then contin
 - Hook commands should be fast (<2s) and idempotent
 
 #### MCP server
+
 - Placement: configured in `.claude/settings.json` (or `~/.claude/settings.json` for global) under `mcpServers`
 - Structure: `{ "mcpServers": { "<name>": { "command": "<cmd>", "args": [...], "env": {...} } } }`
 - For remote MCP: use `"type": "sse"` or `"type": "http"` with a `"url"` field
@@ -218,6 +222,7 @@ Once the user approves the draft:
 **Skills and subagents:** Come up with 2–3 realistic test prompts — the kind of thing a real user would actually type. Share them with the user before running: "Here are the prompts I'd like to test. Do these look right?" For each, follow the skill's own instructions to complete the task, then show the output. Be honest about what worked and what felt off.
 
 Good test prompts are:
+
 - Specific and concrete (include file names, context, personal details)
 - Varied in phrasing (formal, casual, abbreviated)
 - Focused on edge cases, not just the obvious happy path
