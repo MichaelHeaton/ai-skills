@@ -1,0 +1,17 @@
+# General software engineering repos
+comms-write
+decision-council
+doc-coauthor
+git-ops
+grill-me
+issue-create
+issue-focus
+issue-get
+issue-list
+issue-update
+lean-context
+log-clip
+model-route
+session-close
+skill-create
+skill-review

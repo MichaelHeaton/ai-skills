@@ -1,6 +1,7 @@
 .PHONY: help install install-system install-system-dry-run sync-from-system sync-from-system-apply \
 	import-legacy bootstrap-version manifest-update unlink-legacy unlink-legacy-dry-run \
-	lint lint-fix hooks-install
+	lint lint-fix hooks-install \
+	push-skills list-bundles
 
 .DEFAULT_GOAL := help
 
@@ -15,6 +16,11 @@ help:
 	@echo "    make install                  Alias for install-system"
 	@echo "    make sync-from-system         Dry-run: pull ~/.claude/ edits into repo"
 	@echo "    make sync-from-system-apply   Apply sync (review diff before commit)"
+	@echo ""
+	@echo "  Cross-repo skill sync (for web/mobile access):"
+	@echo "    make push-skills PROJECT=<path> [BUNDLE=<name>]"
+	@echo "                                  Copy a skill bundle into another repo's .claude/skills/"
+	@echo "    make list-bundles             Show available bundles and their skills"
 	@echo ""
 	@echo "  Lint (pre-commit — markdown, YAML, secrets on SKILL.md):"
 	@echo "    make hooks-install            Install git commit + pre-push hooks"
@@ -66,3 +72,15 @@ hooks-install:
 lint lint-fix:
 	@command -v pre-commit >/dev/null || { echo "Install pre-commit: brew install pre-commit  (or pipx install pre-commit)"; exit 1; }
 	pre-commit run --all-files
+
+push-skills:
+	@test -n "$(PROJECT)" || { echo "Usage: make push-skills PROJECT=<path> [BUNDLE=<name>]"; exit 1; }
+	@bash scripts/push-skills.sh "$(PROJECT)" "$(or $(BUNDLE),universal)"
+
+list-bundles:
+	@for f in skill-sets/*.txt; do \
+		echo ""; \
+		echo "── $$(basename $$f .txt) ──"; \
+		grep -v '^#' $$f | grep -v '^$$' | sed 's/^/  /'; \
+	done
+	@echo ""

@@ -1,0 +1,18 @@
+# SRE / platform / infrastructure repos
+comms-write
+decision-council
+doc-coauthor
+grill-me
+iac-triage
+issue-create
+issue-focus
+issue-get
+issue-list
+issue-update
+git-ops
+lean-context
+log-clip
+model-route
+session-close
+skill-create
+skill-review
