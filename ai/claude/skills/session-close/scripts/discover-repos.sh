@@ -19,16 +19,21 @@ check_repo() {
   extra_worktrees=$(( worktree_count - 1 ))
   [[ $extra_worktrees -lt 0 ]] && extra_worktrees=0
 
-  local base_ref ahead_branches
+  local base_ref ahead_branches user_email
   base_ref=$(git -C "$repo" symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null)
   [[ -z "$base_ref" ]] && base_ref="origin/main"
+  user_email=$(git -C "$repo" config user.email 2>/dev/null)
   ahead_branches=$(git -C "$repo" branch -r 2>/dev/null \
     | grep -v "HEAD" \
     | grep -v -E "origin/(main|master)$" \
     | tr -d ' ' \
     | while read -r rb; do
         count=$(git -C "$repo" rev-list --count "${base_ref}..${rb}" 2>/dev/null) || count=0
-        [[ "${count:-0}" -gt 0 ]] && echo "$rb"
+        if [[ "${count:-0}" -gt 0 ]]; then
+          # Only count branches where the tip commit was authored by this user
+          tip_author=$(git -C "$repo" log -1 --format="%ae" "${rb}" 2>/dev/null)
+          [[ "$tip_author" == "$user_email" ]] && echo "$rb"
+        fi
       done \
     | wc -l | tr -d ' ')
 

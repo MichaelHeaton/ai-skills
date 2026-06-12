@@ -24,9 +24,7 @@ For each line, extract:
 - `BRANCH` — current checkout branch
 - `CHANGES` — count of uncommitted files
 - `WORKTREES` — count of active extra worktrees
-- `AHEAD_BRANCHES` — count of remote branches beyond main/master
-
-**Note on high ahead-branch counts**: Some team repos will always show many remote branches from other contributors — not yours to clean up. Focus on repos where you did work this session.
+- `AHEAD_BRANCHES` — count of remote branches ahead of main/master where the tip commit author matches `git config user.email`; team branches from other contributors are excluded
 
 **If only one repo is flagged, or the session was clearly scoped to a single repo** (e.g. the workspace contains only one folder, or the entire conversation was in one project context), skip the question and proceed automatically. Only ask "Which of these repos were you working in this session?" when multiple unrelated repos are flagged and context doesn't make it obvious.
 
