@@ -253,23 +253,28 @@ Once the user approves the draft:
 Before handing over for testing, run through this quickly:
 
 **Frontmatter**
+
 - [ ] `name` matches the directory name exactly
 - [ ] `description` includes both *what* and *when*; ≤1024 chars
 - [ ] `version`, `last_updated`, `updated_by` filled in
 
 **File structure**
+
 - [ ] Skill directory is directly under `ai/claude/skills/{name}/` (not nested further)
 - [ ] `references/`, `scripts/`, or `assets/` created only if actually needed
 
 **Content**
+
 - [ ] SKILL.md body ≤200 lines (or overflow moved to `references/`)
 - [ ] Instructions are imperative ("Do X", not "You should X")
 - [ ] Non-obvious *why* is explained; obvious commentary omitted
 
 **For subagents**
+
 - [ ] `tools` list is minimal — only what the task requires
 
 **For hooks**
+
 - [ ] Command exits non-zero only when it should block; fast (<2 s)
 
 ---
