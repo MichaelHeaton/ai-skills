@@ -8,27 +8,33 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 DRY_RUN=true
 APPLY=false
+FORCE=false
 SKILL_FILTER=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dry-run) DRY_RUN=true; APPLY=false; shift ;;
     --apply) DRY_RUN=false; APPLY=true; shift ;;
+    --force) FORCE=true; shift ;;
     --skill)
       SKILL_FILTER="${2:?--skill requires a skill directory name}"
       shift 2
       ;;
     -h|--help)
       cat <<'EOF'
-Usage: sync-from-system.sh [--dry-run] [--apply] [--skill NAME]
+Usage: sync-from-system.sh [--dry-run] [--apply] [--force] [--skill NAME]
 
   Copies whitelisted paths from ~/.claude/ and repo-managed ~/.cursor/rules/*.mdc back into this repo.
 
   Default: dry-run (shows what would change).
   --apply   Write files into ai/claude/
+  --force   Apply even when local skill version is older than repo version
   --skill   Limit to one skill directory name
 
   Never syncs: local.json, settings.json, CLAUDE.local.md, secrets.
+
+  Skills where local version < repo version are skipped by default (downgrade protection).
+  Use --force to override.
 
   After --apply: review diff, bump version fields, run make manifest-update, open PR.
 EOF
@@ -42,6 +48,17 @@ EOF
 done
 
 log() { echo "$*"; }
+
+get_version() {
+  local skill_md="$1/SKILL.md"
+  [[ -f "$skill_md" ]] || { echo "0.0.0"; return; }
+  grep -m1 '^version:' "$skill_md" | awk '{print $2}' || echo "0.0.0"
+}
+
+version_lt() {
+  [[ "$1" == "$2" ]] && return 1
+  [[ "$(printf '%s\n' "$1" "$2" | sort -V | head -1)" == "$1" ]]
+}
 
 sync_file() {
   local sys="$1" repo="$2" label="$3"
@@ -91,6 +108,17 @@ if [[ -n "$SKILL_FILTER" ]]; then
     log "error: no system skill at $sys" >&2
     exit 1
   fi
+  local_ver="$(get_version "$sys")"
+  repo_ver="$(get_version "$repo")"
+  if version_lt "$local_ver" "$repo_ver"; then
+    if $FORCE; then
+      log "  ⚠️  skills/$SKILL_FILTER — local v${local_ver} < repo v${repo_ver} (--force: applying anyway)"
+    else
+      log "  ⚠️  skills/$SKILL_FILTER — local v${local_ver} < repo v${repo_ver} (local is OLDER — skipping to avoid downgrade)"
+      log "  → Re-run with --force to override."
+      exit 0
+    fi
+  fi
   sync_dir "$sys" "$repo" "skills/$SKILL_FILTER"
 else
   log "Skills:"
@@ -99,6 +127,20 @@ else
     name="$(basename "$sys_skill")"
     repo_skill="$SKILLS_SRC/$name"
     [[ -d "$repo_skill" ]] || continue
+    local_ver="$(get_version "$sys_skill")"
+    repo_ver="$(get_version "$repo_skill")"
+    if version_lt "$local_ver" "$repo_ver"; then
+      if $FORCE; then
+        log "  ⚠️  skills/$name — local v${local_ver} < repo v${repo_ver} (--force: applying anyway)"
+      else
+        if $APPLY; then
+          log "  ⚠️  skills/$name — local v${local_ver} < repo v${repo_ver} (local is OLDER — skipping to avoid downgrade)"
+        else
+          log "  ⚠️  skills/$name — local v${local_ver} < repo v${repo_ver} (local is OLDER — would skip to avoid downgrade)"
+        fi
+        continue
+      fi
+    fi
     sync_dir "$sys_skill" "$repo_skill" "skills/$name"
   done
 
