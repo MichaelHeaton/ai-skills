@@ -88,6 +88,11 @@ find "${PROJECTS_BASE:-$HOME/Projects}" -maxdepth 4 -name ".git" -type d 2>/dev/
   | grep -v "/.claude/worktrees/" \
   >> "$REPO_PATHS"
 
+# Always include the current working repo, even if it's outside ~/Projects/ and
+# not listed in the workspace file (e.g. a repo cloned to a custom path).
+CWD_GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || true)
+[[ -n "$CWD_GIT_ROOT" ]] && echo "$CWD_GIT_ROOT" >> "$REPO_PATHS"
+
 # Sort, deduplicate, and check each repo
 sort -u "$REPO_PATHS" | while read -r repo; do
   check_repo "$repo"

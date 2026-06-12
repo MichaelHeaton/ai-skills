@@ -1,5 +1,5 @@
 ---
-version: 1.4.1
+version: 1.4.2
 principles_version: 1.0.0
 last_updated: 2026-06-12
 updated_by: claude
