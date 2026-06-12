@@ -1,5 +1,5 @@
 ---
-version: 1.5.1
+version: 1.5.2
 principles_version: 1.0.0
 last_updated: 2026-06-11
 updated_by: claude
@@ -15,6 +15,8 @@ Create a new task in the right system based on where you're working. See `refere
 ## Steps
 
 ### 1. Detect routing target
+
+**Explicit repo override (SR-847, SR-901):** If the user's request names a specific repo (e.g. "in claude-skills", "in MichaelHeaton/workstation-devops"), that repo takes precedence over `detect-context.sh` output — skip the script and route directly to the named repo. Only run `detect-context.sh` when no repo is named. When running the script for a named repo that differs from Claude's CWD, `cd` to that repo's directory first (or the script will return the wrong target).
 
 ```bash
 bash ~/.claude/skills/issue-create/scripts/detect-context.sh
