@@ -6,6 +6,8 @@ updated_by: human
 ---
 
 
+
+
 # Work-team weekly (wiki PPP)
 
 Config: `weekly_reports.work_team` in `local.json`.

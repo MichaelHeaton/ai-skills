@@ -8,6 +8,8 @@ description: Run a brain-dump intake session — accept raw items one at a time,
 compatibility: Requires at least one ticket system (GitHub Issues, GitLab Issues, Jira, or Linear) reachable via MCP or CLI.
 ---
 
+
+
 # Brain Dump
 
 Intake raw items quickly, ask questions once, create tickets in batch.

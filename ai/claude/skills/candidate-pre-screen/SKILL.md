@@ -9,6 +9,8 @@ compatibility: Optional resume PDF or vault paths; ~/.config/ai-skills/local.jso
 ---
 
 
+
+
 # Candidate Pre-Screen
 
 Support a **manager pre-screen** before forwarding a candidate to a client hiring manager. Three phases — run the phases the user asks for; default to **A + B** when they say "pre-screen" without specifying.

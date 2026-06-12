@@ -5,6 +5,8 @@ last_updated: 2026-06-11
 updated_by: claude
 ---
 
+
+
 # Work-team weekly — Problems / Plans / People
 
 Config: `weekly_reports.work_team` in `local.json`.

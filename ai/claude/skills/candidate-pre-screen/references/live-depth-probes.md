@@ -6,6 +6,8 @@ updated_by: cursor
 ---
 
 
+
+
 # Live depth probes
 
 Techniques for detecting scripted answers, screen-reading, or AI assist during a video screen. Generate **specific questions** from the candidate's resume and prior screener notes — this file defines *how*, not a generic question bank.

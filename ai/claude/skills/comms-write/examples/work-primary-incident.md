@@ -6,6 +6,8 @@ updated_by: human
 ---
 
 
+
+
 # [work-primary] — Incident report (public stub)
 
 Post-incident or operational event summary for **work-primary** context.

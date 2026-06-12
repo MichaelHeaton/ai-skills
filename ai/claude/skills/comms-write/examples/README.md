@@ -6,6 +6,8 @@ updated_by: human
 ---
 
 
+
+
 # Comms-write examples (public stubs)
 
 These files are **generic templates** safe for the public repo. They define structure only.

@@ -1,6 +1,11 @@
 ---
 version: 1.0.0
+principles_version: 1.0.0
+last_updated: 2026-06-12
+updated_by: human
 ---
+
+
 
 # Wiki tracking note template
 

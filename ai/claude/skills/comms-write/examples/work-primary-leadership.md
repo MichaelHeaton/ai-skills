@@ -6,6 +6,8 @@ updated_by: human
 ---
 
 
+
+
 # [work-primary] — Leadership update (public stub)
 
 Short update for leadership or stakeholders in **work-primary** context.

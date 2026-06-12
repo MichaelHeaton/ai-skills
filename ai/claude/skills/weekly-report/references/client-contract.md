@@ -6,6 +6,8 @@ updated_by: human
 ---
 
 
+
+
 # Client-contract weekly (deck)
 
 Config: `weekly_reports.client_contract` in `local.json`.

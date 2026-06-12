@@ -8,6 +8,8 @@ description: Safely close out a Claude Code session across all active repos. Che
 compatibility: Requires gh CLI, glab CLI, git. Atlassian MCP needed only if Jira tickets were worked on.
 ---
 
+
+
 Close out this session safely. The goal: nothing stranded in branches, all tickets reflect current state, next session starts with complete context.
 
 ## Step 1 — Discover repos with open work
