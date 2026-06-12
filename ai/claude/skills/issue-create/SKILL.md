@@ -1,5 +1,5 @@
 ---
-version: 1.5.0
+version: 1.5.1
 principles_version: 1.0.0
 last_updated: 2026-06-11
 updated_by: claude
@@ -109,6 +109,51 @@ Draft the body using the user story template in §C2.
 ### B2–B5
 
 Seed labels, `gh issue create`, append task index with `--system github`, confirm.
+
+---
+
+## Path B2 — GitLab Issue in current repo
+
+> Use when `detect-context` returns `gitlab-current:<namespace/repo>`.
+
+### B2-1. Gather information
+
+- **Title**: imperative verb + clear description
+- **Domain**: from `categories/tags.yaml` based on project context
+- **Priority**: `high`, `medium`, or `low`
+
+Draft the body using the user story template in §C2.
+
+### B2-2. Create the GitLab issue
+
+```bash
+glab issue create \
+  --repo <namespace/repo> \
+  --title "<title>" \
+  --label "priority/<priority>,type/<type>" \
+  --description "<rendered user story body>"
+```
+
+Labels must be created in GitLab before use. If `glab issue create` fails with a label-not-found error, create the label first:
+
+```bash
+glab label create --repo <namespace/repo> --name "priority/<priority>" --color "#d97706"
+```
+
+### B2-3. Append to task index
+
+```bash
+bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
+  --system gitlab \
+  --id "<issue-number>" \
+  --url "<url>" \
+  --title "<title>" \
+  --domain "<domain>"
+```
+
+### B2-4. Confirm
+
+Report: issue number, URL, repo, and labels applied.
 
 ---
 
