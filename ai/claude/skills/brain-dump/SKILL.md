@@ -78,6 +78,7 @@ After the user answers (or if Phase 3 was skipped), determine the target ticket 
 4. **Ask** — if genuinely ambiguous and it matters (e.g. no default system, or the item could go to work Jira or personal GitHub), ask once
 
 For each item, note:
+
 - Target system: GitHub / GitLab / Jira / Linear
 - Target project/repo/board
 - Type: bug / feature / chore / question / spike
