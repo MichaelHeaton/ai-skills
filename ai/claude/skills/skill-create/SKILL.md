@@ -1,10 +1,10 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
 last_updated: 2026-06-12
 updated_by: claude
 name: skill-create
-description: Create a new Claude Code skill from scratch using a guided interview. Handles the full lifecycle — capturing intent, naming, writing SKILL.md, testing, iterating, and saving the skill to the repo. Use this whenever the user wants to build a new skill, capture a workflow as a skill, or says "make a skill for X", "turn this into a skill", "new skill", "adapt this into a skill", "make our own version of", "build a skill based on", "port this skill", or "create a version of [X skill]".
+description: Create a new Claude Code extensibility artifact — skill, subagent, hook, or MCP server — from scratch using a guided interview. Handles the full lifecycle: capturing intent, selecting the right artifact type, naming, writing the config/SKILL.md, testing, iterating, and saving to the repo. Use this whenever the user wants to build or capture a workflow, or says "make a skill for X", "turn this into a skill", "new skill", "make a subagent for X", "create a hook for X", "add an MCP server", "set up MCP for X", "adapt this into a skill", "make our own version of", "build a skill based on", "port this skill", "create a version of [X skill]", or "automate X with a hook".
 compatibility: Requires git. Deploy skills with `make install-system` in ai-skills (copy-only; see principles/deployment.md).
 ---
 
@@ -14,17 +14,71 @@ compatibility: Requires git. Deploy skills with `make install-system` in ai-skil
 
 # Skill Creator
 
-Your job is to guide the user from a rough idea to a working, well-crafted skill. The process is:
+Your job is to guide the user from a rough idea to a working, well-crafted Claude Code extensibility artifact. The process is:
 
+0. Select the artifact type
 1. Capture intent
 2. Interview and research
-3. Name the skill
-4. Write SKILL.md
-5. Create the skill file
+3. Name the artifact
+4. Write the config / SKILL.md
+5. Create the file(s)
 6. Test it
 7. Iterate until the user is satisfied
 
 Meet the user where they are. If they have a half-formed idea, help them shape it. If they walk in with a draft, skip to testing. If they say "just vibe with me and skip the formalities", do that.
+
+---
+
+## 0. Select the Artifact Type
+
+Before anything else, determine which of the four Claude Code extensibility types fits the use case. If the user's request makes it obvious (e.g. "create a hook for when a file is saved"), confirm and proceed. If it's ambiguous, explain the options and ask.
+
+| Type | What it is | Best for |
+|------|-----------|----------|
+| **Skill** | SKILL.md loaded on demand; gives Claude task-specific expertise | Repeatable workflows, specialist knowledge, guided processes |
+| **Subagent** | Isolated execution context; Claude delegates a bounded task to it | Long-running or risky work that should be isolated from the main session |
+| **Hook** | Shell command triggered by a Claude Code event (tool call, session start/stop, etc.) | Automation that should run automatically without Claude deciding to do it |
+| **MCP server** | External process exposing tools via the MCP protocol | Integrating third-party APIs, databases, or persistent services |
+
+**Key tradeoffs:**
+
+- **Skill vs. subagent** — Use a skill when Claude needs expertise loaded into context. Use a subagent when the work is long, potentially destructive, or benefits from a clean slate (no prior conversation context leaking in).
+- **Hook vs. skill** — Use a hook for things that must happen automatically (e.g. run linter on every file save). Use a skill for things the user consciously invokes.
+- **MCP vs. hook** — MCP exposes tools Claude can call. Hooks run shell commands in response to events. MCP is right when Claude needs to query or act on an external system mid-conversation; hooks are right for fire-and-forget side effects.
+
+Once the type is confirmed, follow the type-specific guidance below, then continue with the shared steps (Interview → Name → Write → Create → Test → Iterate).
+
+### Type-specific guidance
+
+#### Skill
+- Placement: `ai/claude/skills/{name}/SKILL.md` (global) or `<repo>/.claude/skills/{name}/SKILL.md` (project-scoped)
+- Required frontmatter fields: `version`, `principles_version`, `last_updated`, `updated_by`, `name`, `description`
+- The `description` field is the primary trigger — write it to answer "what does this do?" and "when should Claude use it?"
+- Deploy: `make install-system` in ai-skills copies to `~/.claude/skills/`
+- **Reload required after any SKILL.md change** — new conversation or ⌘R
+
+#### Subagent
+- Placement: `ai/claude/subagents/{name}.md` (global) or `<repo>/.claude/agents/{name}.md` (project-scoped)
+- Required frontmatter fields: `name`, `description`, `model` (optional — defaults to current), `tools` (list of tools the subagent may use)
+- The `description` tells Claude when to delegate to this subagent — same principle as skill descriptions
+- Keep the subagent's tool list minimal: only what it needs for its bounded task
+- See `references/sub-agent-pattern.md` in skill-review for patterns
+
+#### Hook
+- Placement: configured in `.claude/settings.json` under `hooks`
+- Structure: `{ "event": "<EventName>", "hooks": [{ "type": "command", "command": "<shell cmd>" }] }`
+- Supported events: `PreToolUse`, `PostToolUse`, `Notification`, `Stop`, `SubagentStop`
+- Use `update-config` skill to add hooks to the right settings file (global vs. project)
+- Commands run with the repo root as CWD; non-zero exit code blocks the tool call (PreToolUse only)
+- Hook commands should be fast (<2s) and idempotent
+
+#### MCP server
+- Placement: configured in `.claude/settings.json` (or `~/.claude/settings.json` for global) under `mcpServers`
+- Structure: `{ "mcpServers": { "<name>": { "command": "<cmd>", "args": [...], "env": {...} } } }`
+- For remote MCP: use `"type": "sse"` or `"type": "http"` with a `"url"` field
+- Use `update-config` skill to add the server to the right settings file
+- After adding, Claude Code must be restarted to pick up new MCP servers
+- Verify the server is live: check `MCP Servers` in the Claude Code status bar
 
 ---
 
@@ -118,43 +172,59 @@ If the skill produces complex structured output (reports, audits, multi-section 
 
 ---
 
-## 5. Create the Skill File
+## 5. Create the File(s)
 
 Once the user approves the draft:
 
 > **Supporting scripts or tools discovered during skill development?** Create a ticket for that work via `issue-create` before starting — keeps implementation traceable even when the work is done and closed in the same session.
 
-1. Create the directory under the ai-skills repo:
+**For skills:**
 
-   ```bash
-   mkdir -p ai/claude/skills/{name}
-   ```
-
+1. Create the directory: `mkdir -p ai/claude/skills/{name}`
 2. Write `SKILL.md` there (and `references/conventions.md` copy if this is a meta skill).
-
 3. Create `scripts/`, `references/`, or `assets/` only if needed.
-
 4. Run `make bootstrap-version` and `make manifest-update` from the ai-skills repo root.
-
-5. Deploy: `make install-system` (or interim path in docs/ROADMAP.md).
-
+5. Deploy: `make install-system` (copies to `~/.claude/skills/`).
 6. Update `README.md` / `AGENTS.md` if the skill changes documented workflows.
+7. Branch + PR in ai-skills — do not commit to `main` directly.
+8. **Reload required** — remind the user: new conversation or ⌘R.
 
-7. Branch + PR in ai-skills — do not commit to `main` directly. Remind the user to reload Claude Code after deploy.
+**For subagents:**
+
+1. Create the file: `ai/claude/subagents/{name}.md` (or `<repo>/.claude/agents/{name}.md` for project-scoped).
+2. Write the frontmatter (`name`, `description`, `tools`) and the body (the subagent's instructions).
+3. Deploy: `make install-system` or copy manually to `~/.claude/subagents/`.
+4. Branch + PR in ai-skills — do not commit to `main` directly.
+5. **Reload required** — new conversation or ⌘R.
+
+**For hooks:**
+
+1. Use the `update-config` skill to add the hook to the correct `settings.json` (global or project).
+2. The hook entry goes under `hooks` in `settings.json` — see Step 0 for the structure.
+3. No deploy step needed — hooks take effect immediately in the current session.
+4. If the hook command is non-trivial, write it as a script in `~/.claude/scripts/` and reference it.
+
+**For MCP servers:**
+
+1. Use the `update-config` skill to add the server under `mcpServers` in the correct `settings.json`.
+2. If the server requires local installation, run it now (e.g. `npm install -g @example/mcp-server`).
+3. **Restart required** — Claude Code must be fully restarted to pick up new MCP servers.
+4. Verify: confirm the server appears in the Claude Code status bar after restart.
 
 ---
 
-## 6. Test the Skill
+## 6. Test the Artifact
 
-Come up with 2–3 realistic test prompts — the kind of thing a real user would actually type. Share them with the user before running: "Here are the prompts I'd like to test. Do these look right?"
-
-For each test prompt, follow the skill's own instructions to complete the task, then show the user the output. Be honest about what worked and what felt off.
+**Skills and subagents:** Come up with 2–3 realistic test prompts — the kind of thing a real user would actually type. Share them with the user before running: "Here are the prompts I'd like to test. Do these look right?" For each, follow the skill's own instructions to complete the task, then show the output. Be honest about what worked and what felt off.
 
 Good test prompts are:
-
 - Specific and concrete (include file names, context, personal details)
 - Varied in phrasing (formal, casual, abbreviated)
 - Focused on edge cases, not just the obvious happy path
+
+**Hooks:** Test by triggering the event the hook listens on (e.g. run a tool call for `PreToolUse`, end the session for `Stop`). Confirm the hook command ran and produced the expected side effect. Check exit codes — a non-zero exit from a `PreToolUse` hook blocks the tool.
+
+**MCP servers:** After restart, confirm the server appears in the status bar. Run a tool call that exercises the server and verify the response. Check for auth errors or missing env vars early — they fail silently until first use.
 
 ---
 
