@@ -1,5 +1,5 @@
 ---
-version: 1.2.0
+version: 1.2.1
 principles_version: 1.0.0
 last_updated: 2026-05-30
 updated_by: human
@@ -74,7 +74,26 @@ bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
 
 **Path J — Jira (active epic in session only)**
 
-See `issue-create` Path A.
+Read `jira.*` from `~/.config/ai-skills/local.json`. Fetch project components first to avoid "Component/s is required" errors:
+
+```
+jira_get_project_components(project_key="<jira.project_key>")
+```
+
+Draft a lite user story body (same format as Path L). Create via Atlassian MCP:
+
+```json
+{
+  "project_key": "<jira.project_key>",
+  "summary": "<title>",
+  "issue_type": "Story",
+  "description": "<body>",
+  "priority": "<High|Medium|Low>",
+  "components": [{"name": "<component>"}]
+}
+```
+
+Append task index with `--system jira --domain work-primary`. Report: ticket key and URL.
 
 ### 3. Verify task index entries (batch only)
 
