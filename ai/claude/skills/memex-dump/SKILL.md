@@ -1,5 +1,5 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
 last_updated: 2026-05-30
 updated_by: human
@@ -48,6 +48,10 @@ Lite user story + `*Captured via brain-dump — needs triage.*`
 
 ### 1. Extract title, Linear project, domain, priority per idea
 
+**URL splitting rule (SR-881):** If a brain dump item contains multiple URLs — whether listed under a header, inline in a paragraph, or grouped by topic — create **one ticket per URL**. The topic or category becomes context in the body, not a reason to merge. A single item may produce N tickets if it contains N URLs.
+
+**Batch pre-flight (SR-880):** Before starting a batch of more than 3 items, verify the `append-task-index.sh` command is in the session allowlist. If it is not, either run it once manually to prompt approval first, or warn the user that an unattended batch may stall. Do not start a large unattended batch with unprimed permissions.
+
 ### 2. Route and create
 
 **Path L — Linear (default)**
@@ -72,7 +76,18 @@ bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
 
 See `issue-create` Path A.
 
-### 3. Confirm
+### 3. Verify task index entries (batch only)
+
+After a batch run, verify each created ID is present in the index. Do **not** use `tail -n <COUNT>` — prior appends in the same session will corrupt the count. Instead filter by the specific IDs created in this run:
+
+```bash
+jq -r 'select(.id == "SR-NNN" or .id == "SR-NNN2") | .id' \
+  ~/Projects/personal/memex/Raw/_task-index.jsonl
+```
+
+All created IDs must appear. If any are missing, re-run the append step for those IDs before confirming.
+
+### 4. Confirm
 
 Single: one-line with SR-id and project. Batch: summary table.
 
