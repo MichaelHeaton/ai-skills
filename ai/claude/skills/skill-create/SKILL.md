@@ -1,10 +1,10 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
-updated_by: human
+last_updated: 2026-06-12
+updated_by: claude
 name: skill-create
-description: Create a new Claude Code skill from scratch using a guided interview. Handles the full lifecycle — capturing intent, naming, writing SKILL.md, testing, iterating, and saving the skill to the repo. Use this whenever the user wants to build a new skill, capture a workflow as a skill, or says "make a skill for X", "turn this into a skill", or "new skill".
+description: Create a new Claude Code skill from scratch using a guided interview. Handles the full lifecycle — capturing intent, naming, writing SKILL.md, testing, iterating, and saving the skill to the repo. Use this whenever the user wants to build a new skill, capture a workflow as a skill, or says "make a skill for X", "turn this into a skill", "new skill", "adapt this into a skill", "make our own version of", "build a skill based on", "port this skill", or "create a version of [X skill]".
 compatibility: Requires git. Deploy skills with `make install-system` in ai-skills (copy-only; see principles/deployment.md).
 ---
 
@@ -121,6 +121,8 @@ If the skill produces complex structured output (reports, audits, multi-section 
 ## 5. Create the Skill File
 
 Once the user approves the draft:
+
+> **Supporting scripts or tools discovered during skill development?** Create a ticket for that work via `issue-create` before starting — keeps implementation traceable even when the work is done and closed in the same session.
 
 1. Create the directory under the ai-skills repo:
 

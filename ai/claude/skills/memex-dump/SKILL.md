@@ -1,8 +1,8 @@
 ---
-version: 1.2.1
+version: 1.2.2
 principles_version: 1.0.0
-last_updated: 2026-05-30
-updated_by: human
+last_updated: 2026-06-12
+updated_by: claude
 name: memex-dump
 description: Quickly capture raw ideas before they're lost. Creates a Linear issue by default (SpecterRealm), tagged for triage. Workstation ideas → Linear Workstation DevOps; skill/AI-workflow → Linear AI Skills. Work Jira suppressed unless a named epic was mentioned. Use for brain dump, quick capture, "dump this to memex", etc.
 compatibility: Requires Linear MCP. GitHub path only for player/tester reports.
@@ -95,9 +95,9 @@ Draft a lite user story body (same format as Path L). Create via Atlassian MCP:
 
 Append task index with `--system jira --domain work-primary`. Report: ticket key and URL.
 
-### 3. Verify task index entries (batch only)
+### 3. Verify task index entries
 
-After a batch run, verify each created ID is present in the index. Do **not** use `tail -n <COUNT>` — prior appends in the same session will corrupt the count. Instead filter by the specific IDs created in this run:
+After every creation (single or batch), verify the created ID(s) are present in the index. Do **not** use `tail -n <COUNT>` — prior appends in the same session will corrupt the count. Filter by the specific IDs created in this run:
 
 ```bash
 jq -r 'select(.id == "SR-NNN" or .id == "SR-NNN2") | .id' \
