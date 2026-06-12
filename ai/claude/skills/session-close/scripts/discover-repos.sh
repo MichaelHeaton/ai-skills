@@ -2,7 +2,11 @@
 # Scans git repos for open work before closing a session.
 # When a .code-workspace file exists in $PWD, scans those workspace folders explicitly.
 # Always also scans ~/Projects/ (up to 4 levels deep) to catch repos not listed in the workspace.
-# Output: REPO:<path>|BRANCH:<branch>|CHANGES:<n>|WORKTREES:<n>|AHEAD_BRANCHES:<n>
+# Output: REPO:<path>|BRANCH:<branch>|CHANGES:<n>|WORKTREES:<n>|AHEAD_BRANCHES:<n>|RECENT:<y|n>
+#
+# RECENT_HOURS: env var controlling the "recently active" threshold in hours (default: 8)
+
+RECENT_HOURS="${RECENT_HOURS:-8}"
 
 check_repo() {
   local repo="$1"
@@ -40,8 +44,20 @@ check_repo() {
   local not_main=0
   [[ ! "${branch,,}" =~ ^(main|master)$ ]] && not_main=1
 
+  # RECENT: did this repo have a commit within the last RECENT_HOURS hours?
+  local recent="n"
+  local cutoff_ts recent_commit_ts
+  cutoff_ts=$(date -d "-${RECENT_HOURS} hours" +%s 2>/dev/null \
+    || date -v "-${RECENT_HOURS}H" +%s 2>/dev/null)  # GNU vs BSD date
+  if [[ -n "$cutoff_ts" ]]; then
+    recent_commit_ts=$(git -C "$repo" log -1 --format="%ct" 2>/dev/null)
+    if [[ -n "$recent_commit_ts" && "$recent_commit_ts" -ge "$cutoff_ts" ]]; then
+      recent="y"
+    fi
+  fi
+
   if [[ "$not_main" -eq 1 || "$changes" -gt 0 || "$extra_worktrees" -gt 0 || "$ahead_branches" -gt 0 ]]; then
-    echo "REPO:${repo}|BRANCH:${branch}|CHANGES:${changes}|WORKTREES:${extra_worktrees}|AHEAD_BRANCHES:${ahead_branches}"
+    echo "REPO:${repo}|BRANCH:${branch}|CHANGES:${changes}|WORKTREES:${extra_worktrees}|AHEAD_BRANCHES:${ahead_branches}|RECENT:${recent}"
   fi
 }
 

@@ -1,5 +1,5 @@
 ---
-version: 1.5.4
+version: 1.6.0
 principles_version: 1.0.0
 last_updated: 2026-06-12
 updated_by: claude
@@ -25,12 +25,18 @@ For each line, extract:
 - `CHANGES` — count of uncommitted files
 - `WORKTREES` — count of active extra worktrees
 - `AHEAD_BRANCHES` — count of remote branches ahead of main/master where the tip commit author matches `git config user.email`; team branches from other contributors are excluded
+- `RECENT` — `y` if the repo had a commit within the last 8 hours (configurable via `RECENT_HOURS` env var); `n` otherwise
+
+**Prioritise recently-active repos**: Sort results so `RECENT:y` repos appear first. If all flagged repos are recent (or none are), present them in the order returned by the script.
+
+**If no repos have `RECENT:y`**, present the full flagged list with a note: _"No repos had commits in the last 8 hours — showing all repos with open work."_
 
 **If only one repo is flagged, or the session was clearly scoped to a single repo** (e.g. the workspace contains only one folder, or the entire conversation was in one project context), skip the question and proceed automatically. When multiple unrelated repos are flagged and context is ambiguous, ask with labeled options — not an open-ended question:
 > **Which of these repos did you work in this session?**
 >
 > - **All of them**
-> - **[list each repo as its own option]**
+> - **[list each recently-active repo as its own option]** _(RECENT:y repos listed first)_
+> - **Show all repos** _(if some were filtered out as not recent)_
 > - **None — just clean up noise**
 
 ### Branch hygiene check
