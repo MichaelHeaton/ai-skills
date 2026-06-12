@@ -109,7 +109,15 @@ For each repo with `WORKTREES > 0`:
      git -C <worktree-path> push -u origin <branch>
      ```
 
-   - After pushing, check whether a PR already exists before creating one (a branch that looked "ahead" in Step 1 may have had its PR merged since the scan):
+   - Before creating a PR, verify the branch actually exists on the remote — a stale local tracking ref can make it appear pushed when it isn't:
+
+     ```bash
+     git ls-remote --heads origin <branch>
+     ```
+
+     If the output is empty, the branch is not on the remote. Push it now before proceeding. If the push fails, stop and surface the error — do not attempt PR creation against a missing branch.
+
+   - After confirming the branch is on the remote, check whether a PR already exists (a branch that looked "ahead" in Step 1 may have had its PR merged since the scan):
 
      ```bash
      GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}") \
@@ -137,7 +145,7 @@ If notes are on a branch that hasn't merged, flag this prominently — the next 
 For each repo where `BRANCH != main` and `BRANCH != master` and `WORKTREES == 0`:
 
 1. Show what's on the branch vs main: `git -C <repo> log main..HEAD --oneline`
-2. Push any unpushed commits before checking PR state — the `AHEAD_BRANCHES` count from Step 1 may be stale
+2. Push any unpushed commits before checking PR state — the `AHEAD_BRANCHES` count from Step 1 may be stale. After pushing, verify with `git ls-remote --heads origin <branch>` that the branch is actually on the remote before attempting PR creation.
 3. If it's a feature branch: check whether a PR already exists (`gh pr list --head <branch> --state all`) before creating one
 4. If it's a capture branch (e.g. `captures-2026-05-15`): this is expected for Memex — but verify commits are pushed
 5. If the branch should be on main: guide through merge or PR creation
