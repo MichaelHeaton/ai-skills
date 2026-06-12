@@ -337,6 +337,6 @@ bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
   --title "<title>" --domain "<domain>"
 ```
 
-3. Verify all IDs appear in the index before confirming to the user.
+1. Verify all IDs appear in the index before confirming to the user.
 
 Even when the full per-issue skill flow is skipped for parallelism, the task index step is never optional. A missing entry means the issue won't surface in session-close or open-ticket reviews.
