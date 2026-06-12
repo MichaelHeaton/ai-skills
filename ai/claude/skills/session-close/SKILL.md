@@ -36,7 +36,21 @@ Before Steps 2–4, invoke the `git-ops` skill _(personal — ai-skills repo)_ �
 
 **SSH port-22 fallback**: For all GitHub/GitLab SSH remote operations, use `scripts/git-ssh-fallback.sh <repo-path> <subcommand> [args...]` instead of raw `git`. It auto-detects port-22 blocks, switches to HTTPS, and retries transparently.
 
-**GH auth pre-flight (personal repos):** Before processing any GitHub.com repo, verify the active account matches the repo owner. Run this once now — don't wait for a push failure:
+**GH auth pre-flight (personal repos):** Before processing any GitHub.com repo, verify the active account matches the repo owner. Run this once now — don't wait for a push failure.
+
+First, ensure `GITHUB_PERSONAL_USER` is set — it must be exported before any `gh` call. If it's not in the environment, read it from local config:
+
+```bash
+if [[ -z "${GITHUB_PERSONAL_USER:-}" ]]; then
+  GITHUB_PERSONAL_USER=$(jq -r '.accounts.personal.github_user // empty' \
+    ~/.config/ai-skills/local.json 2>/dev/null)
+fi
+export GITHUB_PERSONAL_USER
+```
+
+If still empty after this, stop and ask the user to set `GITHUB_PERSONAL_USER` in their shell profile or `~/.config/ai-skills/local.json` — all personal GitHub operations depend on it.
+
+Then verify the active account:
 
 ```bash
 gh auth status 2>&1 | grep "Logged in to github.com account"
