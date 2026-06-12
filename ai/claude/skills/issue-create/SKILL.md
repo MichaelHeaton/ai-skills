@@ -1,5 +1,5 @@
 ---
-version: 1.5.3
+version: 1.6.0
 principles_version: 1.0.0
 last_updated: 2026-06-12
 updated_by: claude
@@ -37,6 +37,12 @@ The output tells you which path to follow:
 **Personal GitHub orgs → Linear:** To force Linear routing for personal GitHub orgs (rather than GitHub Issues), set `PERSONAL_GITHUB_ORGS=org1,org2` in your shell or add `"personal_github_orgs": ["org1"]` to `~/.config/ai-skills/local.json`. Any repo whose GitHub org matches routes to `linear:<heuristic_project>`.
 
 **Voice transcription aliases**: If the repo name sounds like a voice transcription artifact, confirm with the user before routing.
+
+**De-dupe check (SR-928):** Before drafting, run a quick keyword search in the target system using the proposed title. If 1–3 close matches are found, show them and ask: "Create new, or update an existing one?" If no matches, proceed silently. Skip the check when the user explicitly says "create a new ticket" or has already confirmed uniqueness.
+
+- **Jira (Path A):** `jira_search_issues(jql="project=<key> AND summary ~ \"<keywords>\" AND status != Done ORDER BY created DESC")`
+- **GitHub (Path B/C):** `gh issue list --repo <owner/repo> --search "<keywords>" --state open --json number,title,url`
+- **Linear (Path D):** Linear MCP `list_issues` with `query: "<keywords>"`
 
 ---
 
@@ -100,7 +106,16 @@ Report: ticket key, URL, epic it was linked to, and predecessor link (if applica
 ## Path B — GitHub Issue in current repo
 
 > Use only when `detect-context` returns `github-current:*` or the user explicitly requests a GitHub issue / player report.
+>
 > **Account:** `export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")`
+
+### B0. Public repo check
+
+```bash
+gh repo view <owner/repo> --json isPrivate -q '.isPrivate'
+```
+
+If output is `false` (public repo): print `⚠️ Public repo — no internal hostnames, Jira keys, or sensitive details in ticket content.` before proceeding to B1. No blocking gate — just a visible reminder before drafting starts.
 
 ### B1. Gather information
 
@@ -303,3 +318,25 @@ bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
 ### D5. Confirm
 
 Report: Linear identifier, URL, project, and priority.
+
+---
+
+## Batch creation (SR-910)
+
+When creating 3+ issues at once, parallel `gh issue create` calls are fine for speed — but the task index must be updated for every issue. Skipping this leaves the next session blind.
+
+**Pattern:**
+
+1. Run all `gh issue create` calls in parallel, capturing each returned URL and number.
+2. After all issues are created, run the task index append for each one sequentially:
+
+```bash
+bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
+  --system github --repo "<owner/repo>" \
+  --id "<NUMBER>" --url "<url>" \
+  --title "<title>" --domain "<domain>"
+```
+
+1. Verify all IDs appear in the index before confirming to the user.
+
+Even when the full per-issue skill flow is skipped for parallelism, the task index step is never optional. A missing entry means the issue won't surface in session-close or open-ticket reviews.
