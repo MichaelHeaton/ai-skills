@@ -1,7 +1,7 @@
 ---
-version: 1.4.0
+version: 1.4.1
 principles_version: 1.0.0
-last_updated: 2026-06-11
+last_updated: 2026-06-12
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
@@ -211,6 +211,12 @@ For Jira: call `jira_get_transitions` first to get valid transition IDs (never g
 ## Step 10 — Session summary
 
 Produce a brief close-out summary using the template in [references/session-summary-template.md](references/session-summary-template.md). Save to `~/Projects/personal/memex/Outputs/Session/session-close-[date].md` if non-trivial.
+
+Before writing the file, ensure the output directory exists:
+
+```bash
+mkdir -p ~/Projects/personal/memex/Outputs/Session
+```
 
 After writing the new file, prune files older than 14 days — they've been consumed by at least one subsequent session and have no remaining handoff value:
 
