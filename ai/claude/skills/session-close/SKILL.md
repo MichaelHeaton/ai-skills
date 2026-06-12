@@ -28,6 +28,7 @@ For each line, extract:
 
 **If only one repo is flagged, or the session was clearly scoped to a single repo** (e.g. the workspace contains only one folder, or the entire conversation was in one project context), skip the question and proceed automatically. When multiple unrelated repos are flagged and context is ambiguous, ask with labeled options — not an open-ended question:
 > **Which of these repos did you work in this session?**
+>
 > - **All of them**
 > - **[list each repo as its own option]**
 > - **None — just clean up noise**
@@ -168,6 +169,7 @@ git -C <repo> worktree prune
 
 Before running, ask with labeled options:
 > **Prune stale worktree dirs in `<repo-name>`?**
+>
 > - **Yes, prune** — run `git worktree prune` now
 > - **Skip** — leave worktrees as-is
 
@@ -184,6 +186,7 @@ The `-d` flag only deletes fully-merged branches — unmerged ones are left alon
 
 When more than 3 branches would be deleted, show the list and ask with labeled options before proceeding:
 > **Delete these `N` merged local branches in `<repo-name>`?**
+>
 > - **Yes, delete all** — run the cleanup now
 > - **Let me pick** — list each branch for individual confirmation
 > - **Skip** — leave local branches as-is
