@@ -1,12 +1,13 @@
 ---
-version: 1.2.0
+version: 1.3.0
 principles_version: 1.0.0
-last_updated: 2026-06-12
+last_updated: 2026-06-13
 updated_by: claude
 name: skill-create
 description: Create a new Claude Code extensibility artifact — skill, subagent, hook, or MCP server — from scratch using a guided interview. Handles the full lifecycle: capturing intent, selecting the right artifact type, naming, writing the config/SKILL.md, testing, iterating, and saving to the repo. Use this whenever the user wants to build or capture a workflow, or says "make a skill for X", "turn this into a skill", "new skill", "make a subagent for X", "create a hook for X", "add an MCP server", "set up MCP for X", "adapt this into a skill", "make our own version of", "build a skill based on", "port this skill", "create a version of [X skill]", or "automate X with a hook".
 compatibility: Requires git. Deploy skills with `make install-system` in ai-skills (copy-only; see principles/deployment.md).
 ---
+
 
 
 
@@ -149,6 +150,16 @@ compatibility: [only if needed]
 ## Sections as needed
 ```
 
+### Progressive disclosure
+
+Skills load in three stages. Understanding this helps you decide what goes where:
+
+- **Level 1 — frontmatter `description`**: always in Claude's context for *all* installed skills. Keep it tight: one paragraph, ≤1024 chars. This is what Claude reads to decide whether to activate.
+- **Level 2 — SKILL.md body**: loaded only when the skill activates. Full instructions go here. Target ≤200 lines; the body enters context only once triggered, so it can be detailed.
+- **Level 3 — `references/` files**: loaded on-demand when Claude navigates to them. Put deep reference, templates, and large examples here — they cost zero context until accessed.
+
+Practical rule: if removing a section from SKILL.md wouldn't break the happy path, move it to `references/`.
+
 ### Writing the description
 
 The description is the primary trigger mechanism — Claude decides whether to activate a skill almost entirely based on it. Write it to answer two questions:
@@ -159,6 +170,26 @@ The description is the primary trigger mechanism — Claude decides whether to a
 Lean slightly pushy: Claude tends to undertrigger skills, so err toward listing more situations where the skill applies rather than fewer. Include natural-language trigger phrases the user would actually type.
 
 Max 1024 characters.
+
+**Good descriptions — front-load the action and include a "when" clause:**
+
+```
+✅ "Create Linear tickets from rough notes or brain-dumps. Use when capturing
+   tasks, logging ideas, turning meeting notes into tickets, or when the user
+   says 'make a ticket for this' or 'log this as an issue'."
+
+✅ "Debug React performance issues using profiling and memoization patterns.
+   Use when components re-render unnecessarily, investigating slow UI updates,
+   or optimizing bundle size."
+```
+
+**Bad descriptions — too vague or missing the trigger context:**
+
+```
+✗ "A comprehensive guide to ticket creation." (no "when" clause)
+✗ "Helps with performance." (too generic — won't trigger reliably)
+✗ "Use this skill to create tickets in Linear." (passive; no trigger phrases)
+```
 
 ### Writing the body
 
@@ -214,6 +245,37 @@ Once the user approves the draft:
 2. If the server requires local installation, run it now (e.g. `npm install -g @example/mcp-server`).
 3. **Restart required** — Claude Code must be fully restarted to pick up new MCP servers.
 4. Verify: confirm the server appears in the Claude Code status bar after restart.
+
+---
+
+## 5b. Pre-test Checklist
+
+Before handing over for testing, run through this quickly:
+
+**Frontmatter**
+
+- [ ] `name` matches the directory name exactly
+- [ ] `description` includes both *what* and *when*; ≤1024 chars
+- [ ] `version`, `last_updated`, `updated_by` filled in
+
+**File structure**
+
+- [ ] Skill directory is directly under `ai/claude/skills/{name}/` (not nested further)
+- [ ] `references/`, `scripts/`, or `assets/` created only if actually needed
+
+**Content**
+
+- [ ] SKILL.md body ≤200 lines (or overflow moved to `references/`)
+- [ ] Instructions are imperative ("Do X", not "You should X")
+- [ ] Non-obvious *why* is explained; obvious commentary omitted
+
+**For subagents**
+
+- [ ] `tools` list is minimal — only what the task requires
+
+**For hooks**
+
+- [ ] Command exits non-zero only when it should block; fast (<2 s)
 
 ---
 
