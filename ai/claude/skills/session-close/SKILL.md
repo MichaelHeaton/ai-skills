@@ -39,6 +39,21 @@ For each line, extract:
 > - **Show all repos** _(if some were filtered out as not recent)_
 > - **None — just clean up noise**
 
+### Branch hygiene check
+
+For each repo where `BRANCH != main` and `BRANCH != master`, check whether the current branch already has a merged or open PR — the session may have ended without switching back to main:
+
+```bash
+gh pr list --head <branch> --state all --json number,state,title \
+  --repo <owner>/<repo>
+```
+
+- **Merged PR found** → flag this repo: _"Branch `<branch>` in `<repo>` has a merged PR — you are still checked out on a stale branch. Switch to `main` before starting the next session."_ Include in Step 10 summary under a "Branch hygiene" header.
+- **Open PR found** → no action; this is expected while the PR is in review.
+- **No PR found** → no action; the branch is actively in progress.
+
+Run this check for GitHub repos only. Skip GitLab, Bitbucket, or repos with no `gh`-reachable remote. Do not block on errors — if `gh` fails for a repo, skip it silently and note it in the Step 10 summary.
+
 ---
 
 Before Steps 2–4, invoke the `git-ops` skill _(personal — ai-skills repo)_ — it covers branching rules, commit format, PR format, and pre-commit checks. The short version: work GitHub and GitLab repos always get a branch + PR; personal KB uses branch + PR like work repos. Full rules in `~/.claude/references/branching.md`.
@@ -221,6 +236,8 @@ Pass the annotated list as SA1 context. Then invoke the `skill-review` skill —
 ## Step 7 — Permission-prompt hygiene
 
 Invoke the `fewer-permission-prompts` skill _(built-in — Claude Code)_ automatically — no confirmation needed. It scans recent transcripts and adds an allowlist to reduce repetitive approval prompts. Takes about a minute and always safe to run.
+
+**Pre-allowed commands**: The transcript-scanning commands (`find`, `jq`, `cat` against `~/.claude/projects/`) are pre-allowed in `.claude/settings.json` in this repo so the skill runs without triggering permission prompts during its own analysis. If you see prompts for those commands, confirm once — they are read-only operations on local transcript files.
 
 ---
 

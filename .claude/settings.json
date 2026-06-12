@@ -1,0 +1,10 @@
+{
+  "allowedTools": [
+    "Bash(find ~/.claude/projects*)",
+    "Bash(find ~/.claude/projects -name*)",
+    "Bash(ls ~/.claude/projects*)",
+    "Bash(jq * ~/.claude/projects*)",
+    "Bash(cat ~/.claude/projects*)",
+    "Bash(wc * ~/.claude/projects*)"
+  ]
+}
