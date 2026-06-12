@@ -1,5 +1,5 @@
 ---
-version: 1.5.2
+version: 1.5.3
 principles_version: 1.0.0
 last_updated: 2026-06-12
 updated_by: claude
@@ -215,6 +215,8 @@ Pass the annotated list as SA1 context. Then invoke the `skill-review` skill —
 ## Step 7 — Permission-prompt hygiene
 
 Invoke the `fewer-permission-prompts` skill _(built-in — Claude Code)_ automatically — no confirmation needed. It scans recent transcripts and adds an allowlist to reduce repetitive approval prompts. Takes about a minute and always safe to run.
+
+**Pre-allowed commands**: The transcript-scanning commands (`find`, `jq`, `cat` against `~/.claude/projects/`) are pre-allowed in `.claude/settings.json` in this repo so the skill runs without triggering permission prompts during its own analysis. If you see prompts for those commands, confirm once — they are read-only operations on local transcript files.
 
 ---
 
