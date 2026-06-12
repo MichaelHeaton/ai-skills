@@ -34,6 +34,8 @@ Ask: "Which of these repos were you working in this session?" If the user says "
 
 Before Steps 2–4, invoke the `git-ops` skill _(personal — ai-skills repo)_ — it covers branching rules, commit format, PR format, and pre-commit checks. The short version: work GitHub and GitLab repos always get a branch + PR; personal KB uses branch + PR like work repos. Full rules in `~/.claude/references/branching.md`.
 
+**Do not ask for confirmation before invoking git-ops.** It is a required pre-flight for every session-close run.
+
 **SSH port-22 fallback**: For all GitHub/GitLab SSH remote operations, use `scripts/git-ssh-fallback.sh <repo-path> <subcommand> [args...]` instead of raw `git`. It auto-detects port-22 blocks, switches to HTTPS, and retries transparently.
 
 **GH auth pre-flight (personal repos):** Before processing any GitHub.com repo, verify the active account matches the repo owner. Run this once now — don't wait for a push failure:
@@ -153,7 +155,7 @@ ls ~/.claude/skills/<name>/   # present → global: ai-skills
 find ~/Projects -maxdepth 4 -path "*/.claude/skills/<name>" -type d 2>/dev/null  # project
 ```
 
-Pass the annotated list as SA1 context. Then invoke the `skill-review` skill.
+Pass the annotated list as SA1 context. Then invoke the `skill-review` skill — **do not ask for confirmation before invoking; it runs automatically as part of session-close.**
 
 **After skill-review returns:** Any Tier 1 findings (clear bugs, broken flows, skill missed entirely) must become tickets via `issue-create` Path B targeting `${GITHUB_PERSONAL_USER}/ai-skills` **before moving to Step 7**. Do not defer Tier 1 items silently — a ticket preserves context even if not worked this session. Tier 2/3 findings can be ticketed or deferred at your discretion.
 
