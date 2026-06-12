@@ -1,5 +1,5 @@
 ---
-version: 1.4.2
+version: 1.5.0
 principles_version: 1.0.0
 last_updated: 2026-06-12
 updated_by: claude
@@ -84,16 +84,25 @@ For each repo with `WORKTREES > 0`:
    ```
 
 3. For worktrees with committed but unpushed work:
-   - Push the branch (use the wrapper for GitLab repos; raw git for others):
+   - Push the branch first — **always push before checking for or creating a PR**. The `AHEAD_BRANCHES` count from Step 1 is a point-in-time snapshot; the actual remote state takes precedence.
 
      ```bash
-     # GitHub or GitLab SSH remotes:
+     # GitHub SSH remotes:
      bash ~/.claude/skills/session-close/scripts/git-ssh-fallback.sh <worktree-path> push -u origin <branch>
      # HTTPS remotes or other hosts:
      git -C <worktree-path> push -u origin <branch>
      ```
 
-   - Create a PR (use `gh pr create` for GitHub repos, `glab mr create` for GitLab)
+   - After pushing, check whether a PR already exists before creating one (a branch that looked "ahead" in Step 1 may have had its PR merged since the scan):
+
+     ```bash
+     GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}") \
+       gh pr list --head <branch> --state all --json number,state,title
+     ```
+
+     If a merged PR is returned, skip PR creation and go straight to branch cleanup. If none exists, create the PR.
+
+   - Create a PR (use `gh pr create` for GitHub repos)
 4. For worktrees with uncommitted changes: handle via Step 2 flow first, then push + PR
 5. For worktrees with no new commits (already merged or empty): skip — handled by prune in Step 5
 
@@ -112,9 +121,10 @@ If notes are on a branch that hasn't merged, flag this prominently — the next 
 For each repo where `BRANCH != main` and `BRANCH != master` and `WORKTREES == 0`:
 
 1. Show what's on the branch vs main: `git -C <repo> log main..HEAD --oneline`
-2. If it's a feature branch with a PR: confirm the PR exists and is up to date
-3. If it's a capture branch (e.g. `captures-2026-05-15`): this is expected for Memex — but verify commits are pushed
-4. If the branch should be on main: guide through merge or PR creation
+2. Push any unpushed commits before checking PR state — the `AHEAD_BRANCHES` count from Step 1 may be stale
+3. If it's a feature branch: check whether a PR already exists (`gh pr list --head <branch> --state all`) before creating one
+4. If it's a capture branch (e.g. `captures-2026-05-15`): this is expected for Memex — but verify commits are pushed
+5. If the branch should be on main: guide through merge or PR creation
 
 ---
 
