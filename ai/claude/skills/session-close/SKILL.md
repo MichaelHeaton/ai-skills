@@ -130,15 +130,24 @@ For each repo where `BRANCH != main` and `BRANCH != master` and `WORKTREES == 0`
 
 ---
 
-## Step 5 — Prune dead worktrees
+## Step 5 — Prune dead worktrees and merged branches
 
-For each repo that had `WORKTREES > 0`, clean up stale dirs:
+**Worktree cleanup** — for each repo that had `WORKTREES > 0`:
 
 ```bash
 git -C <repo> worktree prune
 ```
 
 Confirm before running. After pruning, verify: `git -C <repo> worktree list` should show only the main worktree (plus any you intentionally kept open).
+
+**Local branch cleanup** — for each repo worked in this session, delete local branches whose remote tracking ref is gone (i.e., the remote branch was deleted after merge):
+
+```bash
+git -C <repo> fetch --prune origin
+git -C <repo> branch -vv | grep ': gone]' | awk '{print $1}' | xargs -r git -C <repo> branch -d
+```
+
+The `-d` flag only deletes fully-merged branches — unmerged ones are left alone. If a branch shows as gone but wasn't merged (e.g., force-deleted remote), use `-D` only after confirming the work is captured elsewhere. Confirm the list before deleting if there are many.
 
 ---
 
