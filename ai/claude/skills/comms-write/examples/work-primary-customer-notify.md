@@ -6,6 +6,8 @@ updated_by: human
 ---
 
 
+
+
 # [work-primary] — Customer notification (public stub)
 
 External or customer-facing notification after an event or change.

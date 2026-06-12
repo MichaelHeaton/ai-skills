@@ -1,7 +1,11 @@
 ---
 version: 1.0.0
+principles_version: 1.0.0
 last_updated: 2026-06-10
+updated_by: human
 ---
+
+
 
 # Session summary template
 

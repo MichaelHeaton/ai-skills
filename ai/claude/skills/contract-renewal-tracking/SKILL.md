@@ -8,6 +8,8 @@ description: Structured workflow for capturing and tracking contractor or employ
 compatibility: Requires gh CLI (Memex issues), Obsidian vault at path from local.json, ~/.config/ai-skills/local.json.
 ---
 
+
+
 # Contract Renewal Tracking
 
 Capture a contract or compensation renewal in one pass: vault note → tracking note → Memex issue → outbound message. All artifacts are cross-linked.

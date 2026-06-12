@@ -12,6 +12,8 @@ compatibility: Live mode requires Confluence MCP. Staged mode requires ${repos.w
 
 
 
+
+
 # Doc Co-Author
 
 Guide the user through writing a well-structured work team documentation page. Two delivery modes are supported — ask which one applies before starting:

@@ -6,6 +6,8 @@ updated_by: human
 ---
 
 
+
+
 # [work-primary] — 3P update (public stub)
 
 3P = Progress, Plans, Problems. Weekly team status for a **work-primary** domain context.

@@ -11,6 +11,8 @@ description: Write internal communications for work-primary or client-contract d
 
 
 
+
+
 # Comms Write
 
 Write polished internal communications. Before writing, identify:
