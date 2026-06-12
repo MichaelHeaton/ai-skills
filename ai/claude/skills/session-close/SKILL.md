@@ -1,5 +1,5 @@
 ---
-version: 1.5.1
+version: 1.5.2
 principles_version: 1.0.0
 last_updated: 2026-06-12
 updated_by: claude
@@ -26,7 +26,11 @@ For each line, extract:
 - `WORKTREES` — count of active extra worktrees
 - `AHEAD_BRANCHES` — count of remote branches ahead of main/master where the tip commit author matches `git config user.email`; team branches from other contributors are excluded
 
-**If only one repo is flagged, or the session was clearly scoped to a single repo** (e.g. the workspace contains only one folder, or the entire conversation was in one project context), skip the question and proceed automatically. Only ask "Which of these repos were you working in this session?" when multiple unrelated repos are flagged and context doesn't make it obvious.
+**If only one repo is flagged, or the session was clearly scoped to a single repo** (e.g. the workspace contains only one folder, or the entire conversation was in one project context), skip the question and proceed automatically. When multiple unrelated repos are flagged and context is ambiguous, ask with labeled options — not an open-ended question:
+> **Which of these repos did you work in this session?**
+> - **All of them**
+> - **[list each repo as its own option]**
+> - **None — just clean up noise**
 
 ---
 
@@ -78,7 +82,11 @@ For each repo with `CHANGES > 0`:
    If only noise files remain after filtering, skip this repo — no action needed. Do not surface noise-only repos in the ask loop.
 
 2. Show the filtered diff: remaining files only, via `git -C <repo> diff --stat`
-3. Ask: commit these changes, discard them, or leave for next session?
+3. Ask with labeled options — do not use an open-ended question:
+   > **`<repo-name>` has uncommitted changes. What would you like to do?**
+   > - **Commit** — stage and commit now, then push
+   > - **Leave for next session** — note in summary as pending
+   > - **Discard** — revert all changes (confirm destructive)
 4. If committing: run the standard commit flow (stage relevant files, write message, push)
 5. If leaving: note it in the session summary as "pending"
 
@@ -158,7 +166,12 @@ For each repo where `BRANCH != main` and `BRANCH != master` and `WORKTREES == 0`
 git -C <repo> worktree prune
 ```
 
-Confirm before running. After pruning, verify: `git -C <repo> worktree list` should show only the main worktree (plus any you intentionally kept open).
+Before running, ask with labeled options:
+> **Prune stale worktree dirs in `<repo-name>`?**
+> - **Yes, prune** — run `git worktree prune` now
+> - **Skip** — leave worktrees as-is
+
+After pruning, verify: `git -C <repo> worktree list` should show only the main worktree (plus any you intentionally kept open).
 
 **Local branch cleanup** — for each repo worked in this session, delete local branches whose remote tracking ref is gone (i.e., the remote branch was deleted after merge):
 
@@ -167,7 +180,13 @@ git -C <repo> fetch --prune origin
 git -C <repo> branch -vv | grep ': gone]' | awk '{print $1}' | xargs -r git -C <repo> branch -d
 ```
 
-The `-d` flag only deletes fully-merged branches — unmerged ones are left alone. If a branch shows as gone but wasn't merged (e.g., force-deleted remote), use `-D` only after confirming the work is captured elsewhere. Confirm the list before deleting if there are many.
+The `-d` flag only deletes fully-merged branches — unmerged ones are left alone. If a branch shows as gone but wasn't merged (e.g., force-deleted remote), use `-D` only after confirming the work is captured elsewhere.
+
+When more than 3 branches would be deleted, show the list and ask with labeled options before proceeding:
+> **Delete these `N` merged local branches in `<repo-name>`?**
+> - **Yes, delete all** — run the cleanup now
+> - **Let me pick** — list each branch for individual confirmation
+> - **Skip** — leave local branches as-is
 
 ---
 
