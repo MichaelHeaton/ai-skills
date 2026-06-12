@@ -1,5 +1,5 @@
 ---
-version: 1.5.1
+version: 1.5.2
 principles_version: 1.0.0
 last_updated: 2026-06-12
 updated_by: claude
@@ -192,10 +192,7 @@ Pass the annotated list as SA1 context. Then invoke the `skill-review` skill —
 
 ## Step 7 — Permission-prompt hygiene
 
-Ask: "Want to run a permission-prompt hygiene pass? It scans recent transcripts and adds an allowlist to reduce repetitive approval prompts — takes about a minute."
-
-- If **yes** → invoke the `fewer-permission-prompts` skill _(built-in — Claude Code)_
-- If **no** → move on without friction
+Invoke the `fewer-permission-prompts` skill _(built-in — Claude Code)_ automatically — no confirmation needed. It scans recent transcripts and adds an allowlist to reduce repetitive approval prompts. Takes about a minute and always safe to run.
 
 ---
 
