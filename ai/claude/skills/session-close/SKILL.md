@@ -1,7 +1,7 @@
 ---
-version: 1.6.0
+version: 1.7.0
 principles_version: 1.0.0
-last_updated: 2026-06-12
+last_updated: 2026-06-23
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
@@ -105,14 +105,19 @@ For each repo with `CHANGES > 0`:
 
    If only noise files remain after filtering, skip this repo — no action needed. Do not surface noise-only repos in the ask loop.
 
-2. Show the filtered diff: remaining files only, via `git -C <repo> diff --stat`
-3. Ask with labeled options — do not use an open-ended question:
+2. **Check for gitignore candidates.** If `git status --short` shows any `??` (untracked) files, ask before treating them as commit candidates:
+   > **`<repo-name>` has untracked files. Do any of these belong in `.gitignore`?**
+   > - **Yes — add to .gitignore** — add paths/patterns now, then commit `.gitignore`; re-run status to see what remains
+   > - **No — treat as normal changes** — continue to step 3
+
+3. Show the filtered diff: remaining files only, via `git -C <repo> diff --stat`
+4. Ask with labeled options — do not use an open-ended question:
    > **`<repo-name>` has uncommitted changes. What would you like to do?**
    > - **Commit** — stage and commit now, then push
    > - **Leave for next session** — note in summary as pending
    > - **Discard** — revert all changes (confirm destructive)
-4. If committing: run the standard commit flow (stage relevant files, write message, push)
-5. If leaving: note it in the session summary as "pending"
+5. If committing: run the standard commit flow (stage relevant files, write message, push)
+6. If leaving: note it in the session summary as "pending"
 
 ---
 
@@ -231,7 +236,7 @@ find ~/Projects -maxdepth 4 -path "*/.claude/skills/<name>" -type d 2>/dev/null 
 
 Pass the annotated list as SA1 context. Then invoke the `skill-review` skill — **do not ask for confirmation before invoking; it runs automatically as part of session-close.**
 
-**After skill-review returns:** Any Tier 1 findings (clear bugs, broken flows, skill missed entirely) must become tickets via `issue-create` Path B targeting `${GITHUB_PERSONAL_USER}/ai-skills` **before moving to Step 7**. Do not defer Tier 1 items silently — a ticket preserves context even if not worked this session. Tier 2/3 findings can be ticketed or deferred at your discretion.
+**After skill-review returns:** Automatically create an ai-skills ticket for **every finding** — existing skills to improve and new skill ideas alike — without prompting for confirmation. Use `issue-create` Path B targeting `${GITHUB_PERSONAL_USER}/ai-skills`. Each ticket body must include: the finding description, proposed change, skill name + source (`global: ai-skills` or `project: <repo>`), and a one-line session context note. Run the security scrub before writing any ticket content. After all tickets are created, report: "Created N ai-skills tickets — [list with #IDs]" and continue to Step 7. If skill-review returns no findings, note "no skill changes identified — nothing to ticket" and continue.
 
 ---
 
