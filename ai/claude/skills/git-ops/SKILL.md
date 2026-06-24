@@ -82,6 +82,28 @@ fix: scope terraform fmt to modified files only
 
 ---
 
+## Before opening a PR — AGENT.md check
+
+Before running `gh pr create`, invoke the `agent-md-sync` skill in check mode to verify that component-level AGENT.md files are up to date with the changes in this branch.
+
+```bash
+bash ~/.claude/skills/agent-md-sync/scripts/check-pr-diff.sh
+```
+
+**If the script reports only `OK:` lines or no output**, proceed silently — no prompt needed.
+
+**If the script reports any `STALE:` or `MISSING:` lines**, pause and present the warning prompt defined in the `agent-md-sync` skill (check mode, Step 2). Wait for the user's response before continuing.
+
+**Response handling:**
+
+- **Update/create now** — generate and stage the AGENT.md update(s); they become part of this PR
+- **Skip for now** — add a `## Documentation` note to the PR description; proceed with PR creation
+- **Doesn't warrant an AGENT.md** — append to `.agent-md-ignore`, stage the file, proceed
+
+Do not skip this check. It is lightweight (pure git diff + file stat) and runs in under a second. The goal is that documentation and code travel together in the same PR.
+
+---
+
 ## PR / MR descriptions
 
 **Title**: same format as the commit subject — conventional prefix, imperative, ≤70 chars.
