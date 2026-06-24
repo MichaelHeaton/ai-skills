@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-06-10
+last_updated: 2026-06-23
 updated_by: claude
 name: skill-review
 description: Review and improve skills — either a single skill or all skills used in the current session. Single-skill mode: audits a SKILL.md against conventions, incorporates session learnings, and tunes triggering. Session-audit mode: reflects on the current conversation to find skill friction, missed triggers, and workflow gaps worth turning into new skills — meant to be called at the end of every session to make skills a little better each time. Also invoked programmatically by a parent session passing pre-collected session context (sub-agent mode: SA1 done by parent, SA2–SA4 run in sub-agent with fresh skill files). Triggers on: "review this skill", "improve skill X", "this skill isn't working well", "update skill based on what we learned", "skill feels off", "tune skill description", "review skills from this session", "what skills need updating", "session skill review", "audit skills", or when session-close reaches its skill hygiene step.
@@ -161,7 +161,7 @@ Get the user to agree on the changes before applying them.
 Once the user approves:
 
 1. **Determine the skill's source** — global or project — then edit the repo source file, never `~/.claude/skills/` (the installed copy is a deployment artifact overwritten by the next install):
-   - **Global skill** → `~/Projects/personal/ai/claude/skills/{name}/SKILL.md`
+   - **Global skill** → `~/Projects/personal/ai-skills/ai/claude/skills/{name}/SKILL.md`
 
      ```bash
      ls ~/.claude/skills/{name}/   # confirms global
