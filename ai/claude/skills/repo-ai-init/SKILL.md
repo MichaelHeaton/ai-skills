@@ -1,8 +1,8 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
-updated_by: human
+last_updated: 2026-06-26
+updated_by: claude
 name: repo-ai-init
 description: Analyze an existing git repository and apply AI best practices — creating AGENT.md (provider-agnostic context), CLAUDE.md (Claude-specific overlay), and identifying documentation gaps. Makes old repos understandable to any AI agent, not just Claude. Use when pointed at a repo that has no AI context files, when AI tools feel "blind" to a codebase, or when onboarding a repo to Claude Code. Triggers on: "set up AI support for this repo", "add AI context to this project", "make this repo AI-ready", "create an AGENT.md", "this repo has no CLAUDE.md", "AI doesn't understand this codebase".
 compatibility: Requires git.
