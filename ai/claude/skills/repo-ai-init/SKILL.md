@@ -129,6 +129,16 @@ After writing both files, do a final pass and report:
 
 ---
 
+## Phase 6: Offer component-level AGENT.md generation
+
+After writing the root AGENT.md and CLAUDE.md, offer to continue with the `agent-md-sync` skill in scan mode:
+
+> "Root AGENT.md written. Would you like to also generate component-level AGENT.md files for the roles/modules in this repo? I can scan for Ansible roles, Terraform modules, Helm charts, and other components."
+
+This is optional — offer it, don't force it. If the repo has many components, the user may prefer to generate them incrementally as they work in each one.
+
+---
+
 ## Maintenance note
 
 Tell the user: AGENT.md is a living document. The best time to update it is right after something surprised an AI — that surprise is evidence of a gap. A one-sentence addition to the Gotchas section prevents the same confusion from happening again.

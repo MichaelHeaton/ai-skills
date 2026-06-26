@@ -1,0 +1,149 @@
+---
+version: 1.0.0
+principles_version: 1.0.0
+last_updated: 2026-06-24
+updated_by: claude
+name: agent-md-sync
+description: Generate and maintain component-level AGENT.md files — either for a single component (focused mode) or across an entire repo (scan mode). Keeps AI context co-located with code so agents can navigate specific roles, modules, or components without scanning the whole repo. Called automatically by git-ops before PR creation to catch stale or missing component AGENT.md files. Trigger on: "generate agent md for this role", "create component AGENT.md", "scan repo for components", "check which AGENT.md files are stale", "document this module", "add AI context to this role", or when git-ops invokes it before PR creation.
+compatibility: Requires git. Scan mode requires a repo with recognizable component structure (Ansible roles, Terraform modules, Helm charts, or README-bearing subdirectories).
+---
+
+Component-level AGENT.md files give AI agents focused context without scanning the whole repo. They live alongside the component — `roles/nginx/AGENT.md`, `modules/vpc/AGENT.md` — and link back to the root `AGENT.md` for repo-wide conventions.
+
+This skill operates in two modes:
+
+- **Scan mode** — discover all components in a repo and generate missing AGENT.md files
+- **Check mode** — given a branch diff, identify which component AGENT.md files are stale or missing, warn the user, and offer to update them before PR creation
+
+> Read `references/component-agent-md-spec.md` before writing any component AGENT.md file.
+
+---
+
+## Scan mode
+
+Use scan mode when:
+
+- Setting up a repo for the first time (called by `repo-ai-init` after the root AGENT.md is written)
+- Auditing a repo where components have been added since the last scan
+- User explicitly asks to scan or document all components
+
+### Step 1 — Discover components
+
+Run the discovery script from the repo root:
+
+```bash
+bash <path-to-skill>/scripts/discover-components.sh [repo-path]
+```
+
+The script identifies:
+
+- **Ansible roles**: directories under `roles/` containing `tasks/main.yml` or `tasks/main.yaml`
+- **Ansible playbooks directory**: `playbooks/` if present
+- **Terraform modules**: directories under `modules/` containing `main.tf`
+- **Helm charts**: directories under `charts/` containing `Chart.yaml`
+- **Generic components**: first-level subdirectories containing a `README.md` not already caught above
+
+Output is one line per component: `TYPE:PATH:HAS_AGENT_MD`
+
+### Step 2 — Prioritize gaps
+
+After reading discovery output, focus on components that:
+
+1. Have no AGENT.md (completely blind to AI — highest priority)
+2. Are large or frequently modified (check `git log --oneline -- <path>` depth)
+3. Have complex inputs, non-obvious behavior, or known gotchas
+
+If there are many gaps, ask the user which to document now vs. defer. Don't generate everything at once without confirmation.
+
+### Step 3 — Read the component
+
+For each component to document, read its key files before drafting anything:
+
+**Ansible role** — read `tasks/main.yml`, `defaults/main.yml`, `vars/main.yml`, `README.md` (if present). Understand: what the role configures, required vs. optional variables, idempotency behavior, what it deploys.
+
+**Terraform module** — read `main.tf`, `variables.tf`, `outputs.tf`. Understand: what infrastructure it provisions, required vs. optional inputs, what it outputs, provider requirements.
+
+**Helm chart** — read `Chart.yaml`, `values.yaml`, 2–3 key templates. Understand: what it deploys, configurable values, chart dependencies.
+
+**Generic component** — read `README.md` and 2–3 key source files. Understand: purpose, interfaces, dependencies.
+
+Also check the root `AGENT.md` to confirm what's already documented repo-wide — do not repeat it in the component file.
+
+### Step 4 — Draft and confirm
+
+Draft the component AGENT.md using the spec in `references/component-agent-md-spec.md`. Show the draft to the user before writing. Apply feedback, then write to `<component-path>/AGENT.md`.
+
+Report the full list of components documented and any that were skipped.
+
+---
+
+## Check mode (invoked by git-ops before PR creation)
+
+Check mode runs automatically as part of the git-ops PR creation flow. It requires no arguments — it operates on the current repo and branch.
+
+### Step 1 — Get the diff
+
+```bash
+bash <path-to-skill>/scripts/check-pr-diff.sh [base-branch]
+```
+
+Default base branch is `main` (falls back to `master`). The script walks all files changed in this branch and reports, per component directory:
+
+- `STALE:<path>` — directory has an AGENT.md, code files changed, but the AGENT.md was not modified in this branch
+- `MISSING:<path>` — directory matches a known component pattern but has no AGENT.md at all
+- `OK:<path>` — AGENT.md was updated alongside its code (no action needed)
+
+The script respects `.agent-md-ignore` in the repo root — paths listed there are silently skipped.
+
+### Step 2 — Warn and prompt
+
+If any `STALE` or `MISSING` findings exist, pause before `gh pr create` and present:
+
+> **AGENT.md check — documentation may be out of date**
+>
+> These components were modified in this branch but their AGENT.md files were not updated:
+>
+> - `roles/nginx/` — AGENT.md exists but not updated **(stale)**
+> - `modules/vpc/` — no AGENT.md exists **(missing)**
+>
+> **What would you like to do?**
+>
+> - **Update/create now** — generate AGENT.md content and include it in this PR
+> - **Skip for now** — continue with PR creation; note the gap in the PR description
+> - **This component doesn't warrant an AGENT.md** — skip and suppress future warnings (adds to `.agent-md-ignore`)
+
+If no findings exist (all `OK` or no components touched), proceed silently — no prompt needed.
+
+### Step 3 — Handle the response
+
+**"Update/create now"**: Use the read-and-draft flow from scan mode Step 3. Show draft, get confirmation, write the file, stage it alongside the existing changes. The AGENT.md update becomes part of the same PR as the code change.
+
+**"Skip for now"**: Add a `## Documentation` section to the PR description:
+
+```
+## Documentation
+⚠️ Component AGENT.md files not updated in this PR: `roles/nginx/`, `modules/vpc/`.
+Update before or after merging if context changed significantly.
+```
+
+**"This component doesn't warrant an AGENT.md"**: Append the path to `.agent-md-ignore` (create the file if it doesn't exist). Stage the file so it goes into the PR.
+
+### Step 4 — Return to git-ops
+
+After resolving all findings, return control to git-ops and proceed with PR creation.
+
+---
+
+## Integration with repo-ai-init
+
+After `repo-ai-init` writes the root AGENT.md and CLAUDE.md, offer to continue with scan mode:
+
+> "Root AGENT.md written. Would you like to also generate component-level AGENT.md files for the roles/modules in this repo?"
+
+This is optional — offer it, don't force it. If the repo has many components, the user may prefer to generate them incrementally as they work in each one.
+
+---
+
+## Maintenance note
+
+Component AGENT.md files should evolve with their components. The check mode enforces this at PR time. The best time to update a component AGENT.md is immediately after an AI gets something wrong in that component — that's a gap, and a one-sentence addition to the Gotchas section closes it permanently.
