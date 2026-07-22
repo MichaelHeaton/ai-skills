@@ -1,8 +1,8 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
-updated_by: human
+last_updated: 2026-07-22
+updated_by: claude
 name: memex-decide
 description: Log a finalized decision into the Memex wiki as a persistent ADR-style document. Use when a decision has been reached through a structured process (decision council, research, discussion) and needs a permanent home — not a ticket. Writes to Wiki/Concepts/{Topic}-Decision.md, updates Wiki/log.md, Wiki/index.md, Wiki/Concepts/README.md, and Wiki/overview.md. Does NOT create a ticket — that's memex-dump's job. Trigger on: "log this decision", "document this decision", "write this up as a decision", "save this to the wiki", "archive this decision", "memex this decision", "create a decision doc", "add this to the wiki", at the end of a decision-council run when the user says to save or archive the output. SKIP when the user wants to capture a raw thought, idea, or unresolved question — use memex-dump for those.
 ---
@@ -35,6 +35,12 @@ Gather from context (don't ask for things already in the conversation):
 - **Source** — how the decision was reached (decision council, research, discussion, etc.)
 
 If any required field is missing and can't be inferred from context, ask once before proceeding.
+
+---
+
+## Step 1.5 — Humanize the drafted prose
+
+Before filling in the template, invoke the `humanizer` skill on the Decision/Context/Rationale/Alternatives/Consequences text — this is a permanent wiki record, and it's exactly the register (synthesis prose summarizing a discussion) where AI tells accumulate. Every fact and the decision itself must survive unchanged.
 
 ---
 
