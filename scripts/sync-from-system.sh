@@ -153,6 +153,19 @@ else
   done
 
   log ""
+  log "Agents:"
+  if [[ -d "$AGENTS_DST" ]]; then
+    shopt -s nullglob
+    for agent in "$AGENTS_DST"/*.md; do
+      base="$(basename "$agent")"
+      sync_file "$agent" "$AGENTS_SRC/$base" "agents/$base"
+    done
+    shopt -u nullglob
+  else
+    log "  skip (missing system path): ~/.claude/agents/"
+  fi
+
+  log ""
   log "CLAUDE.md:"
   sync_file "$CLAUDE_MD_DST" "$CLAUDE_MD_SRC" "ai/claude/CLAUDE.md"
 

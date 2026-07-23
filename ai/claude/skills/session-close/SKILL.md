@@ -1,7 +1,7 @@
 ---
-version: 1.8.0
+version: 1.9.0
 principles_version: 1.0.0
-last_updated: 2026-06-23
+last_updated: 2026-07-23
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
@@ -13,6 +13,8 @@ compatibility: Requires gh CLI, glab CLI, git. Atlassian MCP needed only if Jira
 Close out this session safely. The goal: nothing stranded in branches, all tickets reflect current state, next session starts with complete context.
 
 > **Setup dependencies** — Steps 1–5 (git hygiene) work in any repo. Steps 6–7 require ai-skills installed (`make install-system`). Steps 9–10 assume a personal memex vault at `~/Projects/personal/memex/` with `_task-index.jsonl` — adapt those paths to your own notes setup if different.
+
+**Context check before starting**: session-close runs at the tail of what's often an already-long session — the multi-repo scan and Step 6's skill review add real weight on top of that. If this has been a long conversation (many tool calls, multiple tasks), say so before beginning: *"This has been a long session — want me to `/compact` first? A controlled compact now gives the checklist headroom, instead of an automatic compaction firing partway through it."* Proceed with whatever they answer — don't block on it.
 
 ## Step 1 — Discover repos with open work
 
@@ -33,14 +35,14 @@ For each line, extract:
 
 **Prioritise recently-active repos**: Sort results so `RECENT:y` repos appear first. If all flagged repos are recent (or none are), present them in the order returned by the script.
 
-**If no repos have `RECENT:y`**, present the full flagged list with a note: _"No repos had commits in the last 8 hours — showing all repos with open work."_
+**If no repos have `RECENT:y`**, present the full flagged list with a note: *"No repos had commits in the last 8 hours — showing all repos with open work."*
 
 **If only one repo is flagged, or the session was clearly scoped to a single repo** (e.g. the workspace contains only one folder, or the entire conversation was in one project context), skip the question and proceed automatically. When multiple unrelated repos are flagged and context is ambiguous, ask with labeled options — not an open-ended question:
 > **Which of these repos did you work in this session?**
 >
 > - **All of them**
-> - **[list each recently-active repo as its own option]** _(RECENT:y repos listed first)_
-> - **Show all repos** _(if some were filtered out as not recent)_
+> - **[list each recently-active repo as its own option]** *(RECENT:y repos listed first)*
+> - **Show all repos** *(if some were filtered out as not recent)*
 > - **None — just clean up noise**
 
 ### Branch hygiene check
@@ -52,7 +54,7 @@ gh pr list --head <branch> --state all --json number,state,title \
   --repo <owner>/<repo>
 ```
 
-- **Merged PR found** → flag this repo: _"Branch `<branch>` in `<repo>` has a merged PR — you are still checked out on a stale branch. Switch to `main` before starting the next session."_ Include in Step 10 summary under a "Branch hygiene" header.
+- **Merged PR found** → flag this repo: *"Branch `<branch>` in `<repo>` has a merged PR — you are still checked out on a stale branch. Switch to `main` before starting the next session."* Include in Step 10 summary under a "Branch hygiene" header.
 - **Open PR found** → no action; this is expected while the PR is in review.
 - **No PR found** → no action; the branch is actively in progress.
 
@@ -60,7 +62,7 @@ Run this check for GitHub repos only. Skip GitLab, Bitbucket, or repos with no `
 
 ---
 
-Before Steps 2–4, invoke the `git-ops` skill _(personal — ai-skills repo)_ — it covers branching rules, commit format, PR format, and pre-commit checks. The short version: work GitHub and GitLab repos always get a branch + PR; personal KB uses branch + PR like work repos. Full rules in `~/.claude/references/branching.md`.
+Before Steps 2–4, invoke the `git-ops` skill *(personal — ai-skills repo)* — it covers branching rules, commit format, PR format, and pre-commit checks. The short version: work GitHub and GitLab repos always get a branch + PR; personal KB uses branch + PR like work repos. Full rules in `~/.claude/references/branching.md`.
 
 **Do not ask for confirmation before invoking git-ops.** It is a required pre-flight for every session-close run.
 
@@ -225,26 +227,28 @@ When more than 3 branches would be deleted, show the list and ask with labeled o
 
 ## Step 6 — Skill hygiene review
 
-Invoke `skill-review` _(personal — ai-skills repo)_ in session-audit mode. It will reflect on the current conversation to find skill friction, missed triggers, and ungapped workflows worth turning into new skills. Findings always become tickets before being worked or deferred.
+This is the heaviest step in session-close — reviewing every skill that fired means reading each one's SKILL.md and reference files fresh, on top of a session that's often already long. Run it in the `skill-reviewer` subagent instead of the main session, so none of that reading competes with this conversation's context window.
 
-**Reminder**: ai-skills is a public repo. Ticket content must be scrubbed of Employer-internal hostnames, internal ticket keys used as examples, security details, and anything sensitive. skill-review enforces this — but flag it here so it's visible without reading that skill.
-
-Before invoking, annotate each skill with its source (`global: ai-skills` or `project: <repo>`) using:
+Before delegating, annotate each skill used this session with its source (`global: ai-skills` or `project: <repo>`) using:
 
 ```bash
 ls ~/.claude/skills/<name>/   # present → global: ai-skills
 find ~/Projects -maxdepth 4 -path "*/.claude/skills/<name>" -type d 2>/dev/null  # project
 ```
 
-Pass the annotated list as SA1 context. Then invoke the `skill-review` skill — **do not ask for confirmation before invoking; it runs automatically as part of session-close.**
+Invoke `skill-session-handoff` *(personal — ai-skills repo)* with this annotated list to assemble the SA1 context block. Then delegate that block to the **`skill-reviewer` subagent** (Agent tool, `subagent_type: skill-reviewer`) to run skill-review's SA2–SA4 in isolation. **Do not ask for confirmation before doing either step; both run automatically as part of session-close.**
 
-**After skill-review returns:** Automatically create an ai-skills ticket for **every finding** — existing skills to improve and new skill ideas alike — without prompting for confirmation. Use `issue-create` Path B targeting `${GITHUB_PERSONAL_USER}/ai-skills`. Each ticket body must include: the finding description, proposed change, skill name + source (`global: ai-skills` or `project: <repo>`), and a one-line session context note. Run the security scrub before writing any ticket content. After all tickets are created, report: "Created N ai-skills tickets — [list with #IDs]" and continue to Step 7. If skill-review returns no findings, note "no skill changes identified — nothing to ticket" and continue.
+The subagent returns only a findings table, a new-skill-ideas table, and a short summary — it does not create tickets or edit anything. **If `skill-reviewer` isn't available** (not deployed on this machine), fall back to invoking the `skill-review` skill directly in-session with the same annotated list as SA1 context.
+
+**Reminder**: ai-skills is a public repo. Ticket content must be scrubbed of Employer-internal hostnames, internal ticket keys used as examples, security details, and anything sensitive. This scrub is the parent session's responsibility (SA5) — it does not happen inside the subagent.
+
+**After the subagent returns:** Automatically create an ai-skills ticket for **every finding** — existing skills to improve and new skill ideas alike — without prompting for confirmation. Use `issue-create` Path B targeting `${GITHUB_PERSONAL_USER}/ai-skills`. Each ticket body must include: the finding description, proposed change, skill name + source (`global: ai-skills` or `project: <repo>`), and a one-line session context note. Run the security scrub before writing any ticket content. After all tickets are created, report: "Created N ai-skills tickets — [list with #IDs]" and continue to Step 7. If the subagent returns no findings, note "no skill changes identified — nothing to ticket" and continue.
 
 ---
 
 ## Step 7 — Permission-prompt hygiene
 
-Invoke the `fewer-permission-prompts` skill _(built-in — Claude Code)_ automatically — no confirmation needed. It scans recent transcripts and adds an allowlist to reduce repetitive approval prompts. Takes about a minute and always safe to run.
+Invoke the `fewer-permission-prompts` skill *(built-in — Claude Code)* automatically — no confirmation needed. It scans recent transcripts and adds an allowlist to reduce repetitive approval prompts. Takes about a minute and always safe to run.
 
 **Pre-allowed commands**: The transcript-scanning commands (`find`, `jq`, `cat` against `~/.claude/projects/`) are pre-allowed in `.claude/settings.json` in this repo so the skill runs without triggering permission prompts during its own analysis. If you see prompts for those commands, confirm once — they are read-only operations on local transcript files.
 

@@ -1,7 +1,7 @@
 ---
-version: 1.3.0
+version: 1.4.0
 principles_version: 1.0.0
-last_updated: 2026-06-13
+last_updated: 2026-07-22
 updated_by: claude
 name: skill-create
 description: Create a new Claude Code extensibility artifact — skill, subagent, hook, or MCP server — from scratch using a guided interview. Handles the full lifecycle: capturing intent, selecting the right artifact type, naming, writing the config/SKILL.md, testing, iterating, and saving to the repo. Use this whenever the user wants to build or capture a workflow, or says "make a skill for X", "turn this into a skill", "new skill", "make a subagent for X", "create a hook for X", "add an MCP server", "set up MCP for X", "adapt this into a skill", "make our own version of", "build a skill based on", "port this skill", "create a version of [X skill]", or "automate X with a hook".
@@ -43,7 +43,8 @@ Before anything else, determine which of the four Claude Code extensibility type
 
 **Key tradeoffs:**
 
-- **Skill vs. subagent** — Use a skill when Claude needs expertise loaded into context. Use a subagent when the work is long, potentially destructive, or benefits from a clean slate (no prior conversation context leaking in).
+- **Skill vs. subagent** — Use a skill when Claude needs expertise loaded into the *current* context. Use a subagent when the work should run somewhere else entirely: a cheaper/stronger model (cost), a locked-down tool or MCP set (safety), its own git worktree (isolation), or in the background while the main session keeps going (throughput). A concrete signal worth watching for: if you notice yourself writing nearly the same one-off `Agent` tool prompt for the third time — same bounded task, same tool restrictions, same shape — that's the point to promote it into a named subagent instead of re-writing the prompt each time.
+- **Sizing a subagent's config** — a valid subagent needs only `name` + `description`. Reach for the other fields (`model`/`effort`, `maxTurns`, `isolation`, `mcpServers`, `tools`/`disallowedTools`, `memory`) to solve one specific cost, safety, or state problem each — not as a checklist to fill out by default. See [references/subagent-schema.md](references/subagent-schema.md) for the full verified field list, what the field names actually mean, and a worked example.
 - **Hook vs. skill** — Use a hook for things that must happen automatically (e.g. run linter on every file save). Use a skill for things the user consciously invokes.
 - **MCP vs. hook** — MCP exposes tools Claude can call. Hooks run shell commands in response to events. MCP is right when Claude needs to query or act on an external system mid-conversation; hooks are right for fire-and-forget side effects.
 
@@ -61,10 +62,10 @@ Once the type is confirmed, follow the type-specific guidance below, then contin
 
 #### Subagent
 
-- Placement: `ai/claude/subagents/{name}.md` (global) or `<repo>/.claude/agents/{name}.md` (project-scoped)
-- Required frontmatter fields: `name`, `description`, `model` (optional — defaults to current), `tools` (list of tools the subagent may use)
+- Placement: `ai/claude/agents/{name}.md` in ai-skills (deploys to `~/.claude/agents/`, global) or `<repo>/.claude/agents/{name}.md` (project-scoped). Real Claude Code subagent directories are always named `agents/`, never `subagents/` — a training-deck or memory reference to `~/.claude/subagents/` is wrong.
+- Only `name` and `description` are required. Everything else — `model`, `effort`, `maxTurns`, `isolation`, `background`, `memory`, `mcpServers`, `tools`/`disallowedTools`, `skills`, `initialPrompt`, `permissionMode`, `color` — is optional; add each one to solve a specific problem for this agent, not by default. Full field-by-field detail, what's real vs. commonly misremembered, and a worked example: [references/subagent-schema.md](references/subagent-schema.md).
 - The `description` tells Claude when to delegate to this subagent — same principle as skill descriptions
-- Keep the subagent's tool list minimal: only what it needs for its bounded task
+- `disallowedTools` is the actual safety rail (a reviewer that's *physically incapable* of editing) — don't rely on prompt instructions alone for anything the agent shouldn't be able to do
 - See `references/sub-agent-pattern.md` in skill-review for patterns
 
 #### Hook
@@ -226,9 +227,9 @@ Once the user approves the draft:
 
 **For subagents:**
 
-1. Create the file: `ai/claude/subagents/{name}.md` (or `<repo>/.claude/agents/{name}.md` for project-scoped).
-2. Write the frontmatter (`name`, `description`, `tools`) and the body (the subagent's instructions).
-3. Deploy: `make install-system` or copy manually to `~/.claude/subagents/`.
+1. Create the file: `ai/claude/agents/{name}.md` in ai-skills (or `<repo>/.claude/agents/{name}.md` for project-scoped).
+2. Write the frontmatter — `name` + `description` at minimum, plus whichever optional fields solve a real cost/safety/state problem for this agent (see [references/subagent-schema.md](references/subagent-schema.md)) — and the body (the subagent's instructions).
+3. Deploy: `make install-system` (copies to `~/.claude/agents/`) or copy manually.
 4. Branch + PR in ai-skills — do not commit to `main` directly.
 5. **Reload required** — new conversation or ⌘R.
 
@@ -271,7 +272,9 @@ Before handing over for testing, run through this quickly:
 
 **For subagents**
 
-- [ ] `tools` list is minimal — only what the task requires
+- [ ] `tools`/`disallowedTools` is minimal — only what the task requires
+- [ ] If the agent runs autonomously or in the background, `maxTurns` is set as a runaway guard
+- [ ] If the agent does git/file work that shouldn't touch the working tree, `isolation: worktree` is set
 
 **For hooks**
 

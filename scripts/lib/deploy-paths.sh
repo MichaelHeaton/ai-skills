@@ -5,6 +5,7 @@ CLAUDE_SRC="$REPO_DIR/ai/claude"
 SKILLS_SRC="$CLAUDE_SRC/skills"
 HOOKS_SRC="$CLAUDE_SRC/hooks"
 MEMORY_SRC="$CLAUDE_SRC/memory"
+AGENTS_SRC="$CLAUDE_SRC/agents"
 CLAUDE_MD_SRC="$CLAUDE_SRC/CLAUDE.md"
 CLOG_SRC="$SKILLS_SRC/log-clip/scripts/clog.py"
 
@@ -13,6 +14,7 @@ CURSOR_RULES_DST="$HOME/.cursor/rules"
 
 SKILLS_DST="$HOME/.claude/skills"
 HOOKS_DST="$HOME/.claude/hooks"
+AGENTS_DST="$HOME/.claude/agents"
 CLAUDE_MD_DST="$HOME/.claude/CLAUDE.md"
 CLOG_DST="$HOME/.local/bin/clog"
 
