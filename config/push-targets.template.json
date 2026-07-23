@@ -1,0 +1,8 @@
+{
+  "$schema": "ai-skills-push-targets-v1",
+  "comment": "Copy to ~/.config/ai-skills/push-targets.json and fill in real paths. Never commit the filled file.",
+  "targets": [
+    { "path": "~/code/my-sre-repo", "bundle": "sre" },
+    { "path": "~/code/docs-repo", "bundle": "engineering" }
+  ]
+}

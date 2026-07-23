@@ -31,3 +31,10 @@ repos:
         entry: python3 scripts/hooks/check-tier-a-version.py
         language: system
         files: ^(principles/.*\.md|ai/claude/skills/[^/]+/SKILL\.md|ai/cursor/rules/.*\.mdc)$
+      - id: reconcile-symlinks
+        name: Reconcile ai-skills symlinks after merge/commit
+        entry: bash scripts/reconcile-symlinks.sh
+        language: system
+        stages: [post-commit, post-merge]
+        always_run: true
+        pass_filenames: false

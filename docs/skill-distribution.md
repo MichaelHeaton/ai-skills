@@ -33,23 +33,24 @@ The script copies skills and commits but does **not** push. The push is left to 
 
 A `--push` flag could be added in the future if the workflow proves burdensome, but the safe default is no auto-push.
 
-### Bulk sync: `push-skills-all` with a manifest
+### Bulk sync: `push-skills-all` — implemented
 
-A `make push-skills-all` target should be added alongside a `skill-sets/repo-manifest.txt` file listing known repos and their bundles:
+`make push-skills-all` reads target repos from `~/.config/ai-skills/push-targets.json` (template: `config/push-targets.template.json`) and re-runs `push-skills.sh` for each:
 
-```
-# repo-manifest.txt — known repos for push-skills-all
-# format: <path> <bundle>
-~/Projects/personal/ai-skills  universal
-~/code/sre-repo                 sre
-~/code/docs-repo                engineering
+```json
+{ "targets": [
+  { "path": "~/code/my-sre-repo", "bundle": "sre" },
+  { "path": "~/code/docs-repo", "bundle": "engineering" }
+] }
 ```
 
 ```bash
-make push-skills-all   # syncs all repos in repo-manifest.txt
+make push-skills-all   # syncs all repos in push-targets.json
 ```
 
-This is the right answer for keeping multiple repos in sync after a skill update. **Not yet implemented in PR #45 — tracked as a follow-on.**
+This deviates from the originally sketched `skill-sets/repo-manifest.txt` (plain-text `<path> <bundle>` lines) in favor of JSON under `~/.config/ai-skills/`. Reason: `skill-sets/*.txt` is a **skill-set definition** convention (which skills belong to a bundle, committed, shared) — not a **per-machine target list** (which real repos exist on this machine, private, never committed). `config/*.template.json` → `~/.config/ai-skills/*.json` is already the repo's established convention for exactly that kind of value (same pattern as `local.template.json` → `local.json`), so target repos reuse it instead of inventing a second, incompatible private-config convention under `skill-sets/`.
+
+Unreachable targets (missing path, not a git repo) are skipped with a warning, not an abort — a fresh machine with no config yet, or a target repo that's been moved, shouldn't break the whole run. `make status` also reports per-target drift (whether a target's installed bundle is behind the source).
 
 ### Mobile Claude app (non-Code)
 
@@ -65,6 +66,6 @@ Plain copy+commit via `rsync` is simpler, auditable in git history, and requires
 
 ## Status
 
-- PR #45: draft — bundle files, `push-skills.sh`, Makefile targets. Ready to review and merge.
-- `push-skills-all` + manifest: not in PR #45 — tracked as a follow-on once the base is merged.
+- PR #45: bundle files, `push-skills.sh`, Makefile targets. Merged.
+- `push-skills-all` + target list: implemented. Config lives at `~/.config/ai-skills/push-targets.json` (JSON, `config/push-targets.template.json` template) rather than the originally sketched `skill-sets/repo-manifest.txt` — see "Bulk sync" above.
 - Projects-based workflow for mobile: out of scope for the bundle system.

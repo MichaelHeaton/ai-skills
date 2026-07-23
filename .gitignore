@@ -6,6 +6,9 @@ config/local.yaml
 .deploy/system-manifest.json
 .deploy/last-sync.json
 
+# Desktop/claude.ai packaging build output (local, not tracked state)
+.deploy/packages/
+
 # Session audit trail (optional tooling)
 .audit.log
 
