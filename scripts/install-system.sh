@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# Copy-only deploy: ai/claude/ → ~/.claude/ (and related paths). No symlinks.
+# Symlink-only deploy: ai/claude/ -> ~/.claude/ (and related paths), per item.
+# Each skill/hook/agent/rule/CLAUDE.md is its own symlink into this repo —
+# never a whole-directory symlink, never a copy. See principles/deployment.md.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/deploy-paths.sh
 . "$SCRIPT_DIR/lib/deploy-paths.sh"
+# shellcheck source=lib/link-items.sh
+. "$SCRIPT_DIR/lib/link-items.sh"
 
 DRY_RUN=false
 FORCE=false
@@ -17,49 +21,30 @@ for arg in "$@"; do
       cat <<'EOF'
 Usage: install-system.sh [--dry-run] [--force]
 
-  Deploys ai/claude/ to ~/.claude/ and ai/cursor/rules/*.mdc to ~/.cursor/rules/ (copy only).
+  Deploys ai/claude/ to ~/.claude/ and ai/cursor/rules/*.mdc to ~/.cursor/rules/
+  as per-item symlinks (skills, hooks, agents, CLAUDE.md, cursor rules).
+  memory/ and local.json remain copies — see principles/deployment.md.
 
   --dry-run  Show what would change
-  --force    Install even if system files look newer than repo (unsynced edits)
+  --force    Link even if a real (non-symlink) destination differs from the
+             repo (an unsynced edit made directly under ~/.claude/)
 
-  After install: run from this repo when skills change. Prefer editing the repo,
-  then install-system. Use sync-from-system if you edited under ~/.claude/ first.
+  After install: run from this repo when items are added or retired.
+  Existing symlinked items update live via `git pull` — no redeploy needed.
+  Use `make sync-from-system` if you edited under ~/.claude/ first.
 EOF
       exit 0
       ;;
   esac
 done
 
-log() { echo "$*"; }
-
-install_file() {
-  local src="$1" dst="$2" label="${3:-$(basename "$dst")}"
-  [[ -e "$src" ]] || { log "skip (missing source): $label"; return; }
-
-  if [[ -L "$dst" ]]; then
-    if $DRY_RUN; then log "  → replace symlink with copy: $label"; return; fi
-    rm -f "$dst"
-  elif [[ -f "$dst" ]] && diff -q "$src" "$dst" &>/dev/null 2>&1; then
-    log "skip (up to date): $label"
-    return
-  fi
-
-  if $DRY_RUN; then
-    log "  → copy: $label"
-    return
-  fi
-  mkdir -p "$(dirname "$dst")"
-  cp "$src" "$dst"
-  log "copied: $label"
-}
-
-install_dir() {
+install_dir() {  # kept only for memory/ — a genuine copy, not a symlink
   local src="$1" dst="$2" label="${3:-$(basename "$dst")}"
   [[ -d "$src" ]] || { log "skip (missing source): $label/"; return; }
 
   if [[ -L "$dst" ]]; then
     if $DRY_RUN; then log "  → replace symlink with copy: $label/"; return; fi
-    rm -rf "$dst"
+    rm -f "$dst"
   elif [[ -d "$dst" ]] && diff -rq "$src" "$dst" &>/dev/null 2>&1; then
     log "skip (up to date): $label/"
     return
@@ -72,34 +57,6 @@ install_dir() {
   rm -rf "$dst" 2>/dev/null || true
   cp -R "${src%/}/" "$dst"
   log "copied: $label/"
-}
-
-check_unsynced() {
-  if $FORCE || $DRY_RUN; then
-    return 0
-  fi
-  if [[ ! -d "$SKILLS_DST" ]]; then
-    return 0
-  fi
-  local found=false
-  while IFS= read -r skill_dir; do
-    local skill repo_skill sys rep
-    skill="$(basename "$skill_dir")"
-    repo_skill="$SKILLS_SRC/$skill"
-    [[ -d "$repo_skill" ]] || continue
-    local sys="$SKILLS_DST/$skill/SKILL.md" rep="$repo_skill/SKILL.md"
-    [[ -f "$sys" && -f "$rep" ]] || continue
-    if ! diff -q "$sys" "$rep" &>/dev/null && [[ "$sys" -nt "$rep" ]]; then
-      log "warning: ~/.claude/skills/$skill differs from repo and looks newer on disk"
-      log "  → run: make sync-from-system   (or make install-system --force)"
-      found=true
-    fi
-  done < <(find "$SKILLS_DST" -mindepth 1 -maxdepth 1 -type d 2>/dev/null)
-  if $found; then
-    log ""
-    log "Aborting install (use --force to overwrite unsynced system edits)."
-    exit 1
-  fi
 }
 
 write_system_manifest() {
@@ -158,44 +115,76 @@ log "  repo:   $REPO_DIR"
 log "  target: $SKILLS_DST"
 log ""
 
-check_unsynced
+# ── pre-flight: scan every category for real, differing destinations ───────
+UNSYNCED=()
+
+for skill_dir in "$SKILLS_SRC"/*/; do
+  skill="$(basename "$skill_dir")"
+  scan_unsynced "$skill_dir" "$SKILLS_DST/$skill" "skills/$skill" dir
+done
+for hook in "$HOOKS_SRC"/*.py; do
+  [[ -e "$hook" ]] || continue
+  base="$(basename "$hook")"
+  scan_unsynced "$hook" "$HOOKS_DST/$base" "hooks/$base" file
+done
+if [[ -d "$AGENTS_SRC" ]]; then
+  shopt -s nullglob
+  for agent in "$AGENTS_SRC"/*.md; do
+    base="$(basename "$agent")"
+    scan_unsynced "$agent" "$AGENTS_DST/$base" "agents/$base" file
+  done
+  shopt -u nullglob
+fi
+scan_unsynced "$CLAUDE_MD_SRC" "$CLAUDE_MD_DST" "CLAUDE.md" file
+if [[ -d "$CURSOR_RULES_SRC" ]]; then
+  shopt -s nullglob
+  for rule in "$CURSOR_RULES_SRC"/*.mdc; do
+    base="$(basename "$rule")"
+    scan_unsynced "$rule" "$CURSOR_RULES_DST/$base" "cursor: $base" file
+  done
+  shopt -u nullglob
+fi
+
+if [[ ${#UNSYNCED[@]} -gt 0 ]]; then
+  log "warning: the following look like unsynced edits made directly under ~/.claude/:"
+  for note in "${UNSYNCED[@]}"; do
+    log "  - $note"
+  done
+  log ""
+  log "  → run: make sync-from-system   (or make install-system --force)"
+  log ""
+  if ! $FORCE && ! $DRY_RUN; then
+    log "Aborting install (use --force to overwrite unsynced system edits)."
+    exit 1
+  fi
+fi
 
 if ! $DRY_RUN; then
   mkdir -p "$SKILLS_DST" "$HOOKS_DST" "$AGENTS_DST" "$HOME/.local/bin" "$HOME/.claude/logs" "$CONFIG_DST_DIR" "$CURSOR_RULES_DST"
   mkdir -p "$(dirname "$MEMORY_DST")"
 fi
 
-log "1. Skills"
+log "1. Skills (symlinks)"
 for skill_dir in "$SKILLS_SRC"/*/; do
   skill="$(basename "$skill_dir")"
-  install_dir "$skill_dir" "$SKILLS_DST/$skill" "$skill"
+  link_item "${skill_dir%/}" "$SKILLS_DST/$skill" "$skill" dir
 done
 
 log ""
-log "2. Retired skills (remove from system)"
+log "2. Retired skills (remove symlink, if ours)"
 for retired in "${RETIRED_SKILLS[@]}"; do
-  dst="$SKILLS_DST/$retired"
-  if [[ -e "$dst" ]]; then
-    if $DRY_RUN; then
-      log "  → remove: $retired"
-    else
-      rm -rf "$dst"
-      log "  removed: $retired"
-    fi
-  else
-    log "  skip (not installed): $retired"
-  fi
+  remove_retired "$SKILLS_DST/$retired" "$retired"
 done
 
 log ""
-log "3. Hooks (*.py)"
+log "3. Hooks (*.py, symlinks)"
 for hook in "$HOOKS_SRC"/*.py; do
   [[ -e "$hook" ]] || continue
-  install_file "$hook" "$HOOKS_DST/$(basename "$hook")" "hook: $(basename "$hook")"
+  link_item "$hook" "$HOOKS_DST/$(basename "$hook")" "hook: $(basename "$hook")" file
 done
 
 log ""
-log "3b. Subagents (*.md)"
+log "3b. Subagents (*.md, symlinks)"
 if [[ -d "$AGENTS_SRC" ]]; then
   shopt -s nullglob
   agents=("$AGENTS_SRC"/*.md)
@@ -204,7 +193,7 @@ if [[ -d "$AGENTS_SRC" ]]; then
     log "skip (no .md files): ai/claude/agents/"
   else
     for agent in "${agents[@]}"; do
-      install_file "$agent" "$AGENTS_DST/$(basename "$agent")" "agent: $(basename "$agent")"
+      link_item "$agent" "$AGENTS_DST/$(basename "$agent")" "agent: $(basename "$agent")" file
     done
   fi
 else
@@ -212,11 +201,11 @@ else
 fi
 
 log ""
-log "4. CLAUDE.md (formatting overlay)"
-install_file "$CLAUDE_MD_SRC" "$CLAUDE_MD_DST" "CLAUDE.md"
+log "4. CLAUDE.md (symlink, formatting overlay)"
+link_item "$CLAUDE_MD_SRC" "$CLAUDE_MD_DST" "CLAUDE.md" file
 
 log ""
-log "5. Cursor rules (*.mdc)"
+log "5. Cursor rules (*.mdc, symlinks)"
 if [[ -d "$CURSOR_RULES_SRC" ]]; then
   shopt -s nullglob
   rules=("$CURSOR_RULES_SRC"/*.mdc)
@@ -226,7 +215,7 @@ if [[ -d "$CURSOR_RULES_SRC" ]]; then
   else
     for rule in "${rules[@]}"; do
       base="$(basename "$rule")"
-      install_file "$rule" "$CURSOR_RULES_DST/$base" "cursor: $base"
+      link_item "$rule" "$CURSOR_RULES_DST/$base" "cursor: $base" file
     done
   fi
 else
@@ -236,26 +225,22 @@ fi
 log ""
 log "5b. Retired Cursor rules"
 for retired in "${RETIRED_CURSOR_RULES[@]}"; do
-  dst="$CURSOR_RULES_DST/$retired"
-  [[ -e "$dst" ]] || continue
-  if $DRY_RUN; then
-    log "  → remove: $retired"
-  else
-    rm -f "$dst"
-    log "  removed: $retired"
-  fi
+  remove_retired "$CURSOR_RULES_DST/$retired" "$retired"
 done
 
 log ""
-log "6. Memory (copy to project path)"
+log "6. Memory (copy to project path — not symlinked, see principles/deployment.md)"
 install_dir "$MEMORY_SRC" "$MEMORY_DST" "memory"
 
 log ""
-log "7. clog"
-[[ -f "$CLOG_SRC" ]] && { $DRY_RUN || chmod +x "$CLOG_SRC"; install_file "$CLOG_SRC" "$CLOG_DST" "clog"; }
+log "7. clog (symlink)"
+if [[ -f "$CLOG_SRC" ]]; then
+  $DRY_RUN || chmod +x "$CLOG_SRC"
+  link_item "$CLOG_SRC" "$CLOG_DST" "clog" file
+fi
 
 log ""
-log "8. Private config (create-if-missing)"
+log "8. Private config (create-if-missing, never symlinked)"
 if [[ -f "$CONFIG_DST" ]]; then
   log "skip (exists): $CONFIG_DST"
 elif [[ -f "$CONFIG_TEMPLATE" ]]; then
@@ -331,9 +316,9 @@ log ""
 if $DRY_RUN; then
   log "Dry run complete."
 else
-  count="$(find "$SKILLS_DST" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')"
+  count="$(find "$SKILLS_DST" -mindepth 1 -maxdepth 1 -type l 2>/dev/null | wc -l | tr -d ' ')"
   write_system_manifest
-  log "Done. $count skills in $SKILLS_DST"
-  log "Reload Claude Code (new conversation) to pick up changes."
+  log "Done. $count skills linked in $SKILLS_DST"
+  log "Reload Claude Code (new conversation) to pick up new/removed items."
 fi
 log ""
