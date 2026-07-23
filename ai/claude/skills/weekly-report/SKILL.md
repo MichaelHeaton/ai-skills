@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-06-11
+last_updated: 2026-07-22
 updated_by: claude
 name: weekly-report
 description: Generate paste-ready weekly status files for two standing rhythms defined in local.json — typically a client-contract deck update and an employer team wiki (PPP). Routes by user intent and weekly_reports.* keys in ~/.config/ai-skills/local.json. Triggers on weekly report, client deck update, slides 8-10, dedicated defense update, team wiki weekly, PPP, Thursday meeting prep, weekly repost, PPP update, weekly PPP, problems plans people, write my weekly, problems and plans, team week update, or when the user names either rhythm from their private config labels.
@@ -47,6 +47,10 @@ If ambiguous, ask using their **`label`** fields from local.json (e.g. *"client 
 ## Step 2 — Execute
 
 Follow the reference file for the chosen key.
+
+## Step 2.5 — Humanize
+
+Before writing the output file, invoke the `humanizer` skill on the drafted report text — strips AI-writing tells (puffery, canned phrasing, formulaic "challenges" closers) while preserving every fact, number, and status exactly. This is leadership/client-facing prose; it's the register where AI tells stand out most.
 
 ## Step 3 — Confirm
 

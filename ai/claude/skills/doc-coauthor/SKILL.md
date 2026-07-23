@@ -1,8 +1,8 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
-updated_by: human
+last_updated: 2026-07-22
+updated_by: claude
 name: doc-coauthor
 description: Co-author work team documentation — either directly to the live Confluence wiki or staged through the git repo for team review. Handles the full workflow: template selection, context gathering, section-by-section drafting, frontmatter generation, and delivery. Use when writing or updating any team wiki page, runbook, how-to guide, customer guide, or architecture decision record. Triggers on: "write a runbook", "draft a how-to", "create a wiki page", "update the docs for X", "write an ADR", "document this process", "new Confluence page", "doc for vault", "work team documentation", "update Confluence".
 compatibility: Live mode requires Confluence MCP. Staged mode requires ${repos.work_docs} (local.json) to be cloned — run repo-setup if missing.
@@ -99,6 +99,12 @@ Apply the DRY rule: if something is documented elsewhere in the repo or wiki, li
 ### Filename (staged mode only)
 
 Lowercase, hyphenated, descriptive. Examples: `approle-cidr-binding-mismatch.md`, `how-to-use-kv2-secrets.md`
+
+---
+
+## Stage 2.5: Humanize
+
+Once the full draft is assembled, invoke the `humanizer` skill on it before reader testing — strips AI-writing tells (puffery, canned phrasing, formatting artifacts) while preserving every step, command, and fact exactly. Run reader testing against the humanized version, not the raw draft.
 
 ---
 

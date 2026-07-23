@@ -1,7 +1,7 @@
 ---
-version: 1.3.0
+version: 1.4.0
 principles_version: 1.0.0
-last_updated: 2026-06-26
+last_updated: 2026-07-22
 updated_by: claude
 name: git-ops
 description: Universal git hygiene guide — fires on any git commit, push, PR, or MR operation in any repo. Covers branching rules, commit message format, PR/MR description format, and pre-commit checks scoped to modified files (including terraform fmt). Applies regardless of which other skills are active. Trigger on: any request to commit, push, open a PR or MR, "git commit", "create a PR", "push this", "open a pull request", "submit a MR", "ready to merge", or any variation of committing or sharing code changes.
@@ -130,6 +130,7 @@ Do not skip this check. It is lightweight (pure git diff + file stat) and runs i
 - Test plan must have at least one checkable item; "tested manually" is not enough
 - Link the ticket; if there is no ticket, say so explicitly rather than omitting the section
 - Keep the title short — details belong in the body
+- **Before running `gh pr create` / `glab mr create`**, invoke the `humanizer` skill on the composed Summary and Test plan bullets — same "check before creation" pattern as the AGENT.md step above. Strips AI-writing tells while every fact, ticket ref, and checklist item survives unchanged.
 - Always `cd` into the repo before running `gh pr create` — the `--repo` flag handles routing but `gh` still needs local git context to resolve the remote
 - **SSH alias remotes**: if `origin` uses an SSH config alias (e.g. `git@github.com-personal:owner/repo`) rather than the literal `github.com` hostname, `gh pr create` may fail with "must first push branch" even when the branch is already pushed. **Default**: always pass `--repo owner/repo --head branch-name` — don't attempt without these flags first
 - **Multi-account pre-flight**: before running `gh pr create` on an org repo, verify the active `gh` account has access:
