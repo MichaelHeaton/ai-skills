@@ -119,7 +119,7 @@ def add(p: Path):
         paths[rel] = hashlib.md5(p.read_bytes()).hexdigest()
 
 claude = repo / "ai" / "claude"
-for sub in ("skills", "hooks", "memory"):
+for sub in ("skills", "hooks", "memory", "agents"):
     root = claude / sub
     if root.is_dir():
         for f in root.rglob("*"):
@@ -161,7 +161,7 @@ log ""
 check_unsynced
 
 if ! $DRY_RUN; then
-  mkdir -p "$SKILLS_DST" "$HOOKS_DST" "$HOME/.local/bin" "$HOME/.claude/logs" "$CONFIG_DST_DIR" "$CURSOR_RULES_DST"
+  mkdir -p "$SKILLS_DST" "$HOOKS_DST" "$AGENTS_DST" "$HOME/.local/bin" "$HOME/.claude/logs" "$CONFIG_DST_DIR" "$CURSOR_RULES_DST"
   mkdir -p "$(dirname "$MEMORY_DST")"
 fi
 
@@ -193,6 +193,23 @@ for hook in "$HOOKS_SRC"/*.py; do
   [[ -e "$hook" ]] || continue
   install_file "$hook" "$HOOKS_DST/$(basename "$hook")" "hook: $(basename "$hook")"
 done
+
+log ""
+log "3b. Subagents (*.md)"
+if [[ -d "$AGENTS_SRC" ]]; then
+  shopt -s nullglob
+  agents=("$AGENTS_SRC"/*.md)
+  shopt -u nullglob
+  if [[ ${#agents[@]} -eq 0 ]]; then
+    log "skip (no .md files): ai/claude/agents/"
+  else
+    for agent in "${agents[@]}"; do
+      install_file "$agent" "$AGENTS_DST/$(basename "$agent")" "agent: $(basename "$agent")"
+    done
+  fi
+else
+  log "skip (missing source): ai/claude/agents/"
+fi
 
 log ""
 log "4. CLAUDE.md (formatting overlay)"

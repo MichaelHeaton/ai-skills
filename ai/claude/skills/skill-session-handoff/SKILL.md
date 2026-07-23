@@ -1,8 +1,8 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
-updated_by: human
+last_updated: 2026-07-23
+updated_by: claude
 name: skill-session-handoff
 description: Package the current session's skill activity and friction notes into a structured context block ready to pass to a sub-agent. Produces the SA1 output block that skill-review's sub-agent invocation pattern requires — run this in the parent session before spawning a sub-agent to run skill-review SA2–SA4. Triggers on: "package session skills for sub-agent", "build handoff block", "prepare skill context", "summarize session skills", "I'm about to spawn a skill-review sub-agent", "build the sub-agent context", "prep the handoff", "wrap up skills", "skill hygiene", "prep for skill review", "let's do skills before we close", "end of session skill stuff", or when skill-review's sub-agent pattern calls for an SA1 context block from the parent.
 ---
@@ -59,6 +59,6 @@ Ungapped workflows:
 
 After outputting the block, ask:
 
-> → Ready to spawn a skill-review sub-agent with this context. Want me to do that now?
+> → Ready to delegate this to the `skill-reviewer` subagent. Want me to do that now?
 
-If yes: use the Agent tool with the block above as the context section, following the prompt template in skill-review's "Sub-agent invocation pattern" section. The Agent tool is a primary tool and should be available without any schema loading step. If it's not responding, tell the user and ask them to copy the block into a new conversation manually.
+If yes: use the Agent tool with `subagent_type: skill-reviewer` and the block above as the task prompt — it already has `skills: [skill-review]` preloaded and runs SA2–SA4 in its own isolated context. The Agent tool is a primary tool and should be available without any schema loading step. If `skill-reviewer` isn't deployed on this machine, fall back to a general-purpose Agent following the prompt template in skill-review's "Sub-agent invocation pattern" section. If neither responds, tell the user and ask them to copy the block into a new conversation manually.
