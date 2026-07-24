@@ -10,6 +10,12 @@
 - Open PR with `gh pr create` — do not merge; owner reviews
 - No force-push without explicit instruction
 
+**When the user says a PR merged**, do this automatically without being asked each time:
+
+1. Pull `main` (fast-forward) in the primary checkout
+2. Remove the worktree and delete the local feature branch (skip remote branch deletion if GitHub already auto-deleted it)
+3. Run `make install-system` to redeploy
+
 ## Content caution
 
 Public repo. No employer names, Jira keys, or internal URLs in commits. Placeholder definitions: [categories/tags.yaml](categories/tags.yaml).
