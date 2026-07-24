@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-24T18:49:20Z",
+  "generated_at": "2026-07-24T21:56:19Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
@@ -67,6 +67,7 @@
     "ai/claude/skills/memex-decide/SKILL.md": "d9c133271a7e282b28b73c23c04298f6",
     "ai/claude/skills/memex-dump/SKILL.md": "41be45123b2c875d2c5fc811cdc9ebaa",
     "ai/claude/skills/model-route/SKILL.md": "76149dbcf8aaee8d8faf193522e7d552",
+    "ai/claude/skills/prompt-draft/SKILL.md": "09c0ced350caaec5efece47493c003fb",
     "ai/claude/skills/repo-ai-init/SKILL.md": "d6d160759dcc81cf6124f01aff615709",
     "ai/claude/skills/repo-ai-init/references/agent-md-spec.md": "c376bd6c938155a5de195af532c4d91e",
     "ai/claude/skills/repo-ai-init/scripts/discover.sh": "d4ecb39aaff966fa4019f7824b847a85",
