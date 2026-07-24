@@ -1,9 +1,10 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
 last_updated: 2026-07-24
 updated_by: claude
 ---
+
 
 
 
@@ -121,6 +122,17 @@ If a skill documents CLI commands for the user to run (a runbook, a setup sequen
 - **One step per code block** — never combine a login/auth/privilege step (`vault login`, `aws sso login`, `sudo -i`, etc.) with commands that depend on it. A multi-line block pasted all at once after a login/sudo prompt doesn't reliably run every line — the user ends up editing or re-running one line at a time.
 - **Number or label steps** so the reader can track progress without re-reading the whole doc.
 - A single command, or one tightly-coupled unit (e.g. `cd /path && make thing`, always run together), may share a block — but never a step that depends on a preceding auth step succeeding.
+
+## Attribution (adapting external skills)
+
+When a skill, subagent, hook, or MCP config is adapted from something external — a public repo, marketplace listing, gist, or blog post the user pointed at — record where it came from so a later review can check whether the original moved on.
+
+- Add `metadata: {adapted_from: <url>}` to frontmatter — the existing free-form `metadata` field already supports this, no schema change needed
+- If the adaptation is substantial (rewritten body, different mechanism, merged with an existing convention), add a short note in the body or a `references/provenance.md` covering what was kept vs. changed and why
+- If the source has a license that requires credit, also set the `license` field
+- `skill-review`'s periodic tune-up checks any skill with `metadata.adapted_from` set and offers to diff against upstream
+
+This isn't optional bookkeeping — it's the difference between "we made our own version" and "we forked and lost the map back."
 
 ## Git operations
 
