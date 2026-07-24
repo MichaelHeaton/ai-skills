@@ -1,11 +1,11 @@
 ---
-version: 1.2.0
+version: 1.3.0
 principles_version: 1.0.0
-last_updated: 2026-06-23
+last_updated: 2026-07-24
 updated_by: claude
 name: skill-review
 description: Review and improve skills — either a single skill or all skills used in the current session. Single-skill mode: audits a SKILL.md against conventions, incorporates session learnings, and tunes triggering. Session-audit mode: reflects on the current conversation to find skill friction, missed triggers, and workflow gaps worth turning into new skills — meant to be called at the end of every session to make skills a little better each time. Also invoked programmatically by a parent session passing pre-collected session context (sub-agent mode: SA1 done by parent, SA2–SA4 run in sub-agent with fresh skill files). Triggers on: "review this skill", "improve skill X", "this skill isn't working well", "update skill based on what we learned", "skill feels off", "tune skill description", "review skills from this session", "what skills need updating", "session skill review", "audit skills", or when session-close reaches its skill hygiene step.
-compatibility: Requires git. Skills deployed via `make install-system` (copy-only).
+compatibility: Requires git. Skills deployed via `make install-system` (per-item symlinks; see principles/deployment.md).
 ---
 
 
@@ -142,6 +142,7 @@ Read the skill's SKILL.md. Full audit dimensions are in `references/conventions.
 - **Description**: states what + when; includes natural-language trigger phrases; pushy enough (≤1024 chars)
 - **Output formatting**: don't duplicate rules already in `~/.claude/CLAUDE.md`
 - **Body**: imperative form; explains non-obvious *why*; no dead weight; ≤200 lines or moved to `references/`; skill invocations include source label (`_(global: ai-skills)_`, `_(project: <repo>)_`, `_(built-in)_`)
+- **CLI/runbook steps**: login/auth commands (`vault login`, `sudo -i`, etc.) are in their own code block, never combined with dependent commands (see `references/conventions.md`)
 - **Freshness**: no stale tool refs; not scaffolding what Claude handles natively
 
 ---

@@ -24,6 +24,12 @@ Responses should be scannable and low-friction by default. Chunked, explicit, vi
 - When there's nothing to do, say "no action needed" — silence is ambiguous
 - Avoid idioms and metaphors where plain language works just as well
 
+### CLI commands (copy-paste blocks)
+
+- **One step per code block** — never combine a login/auth/privilege step (`vault login`, `aws sso login`, `sudo -i`, etc.) with the commands that depend on it. Copying a multi-line block all at once is unreliable after a login/sudo prompt — later lines don't always run, forcing an edit-and-retry.
+- **Number or label steps** so progress is trackable without re-reading the whole response.
+- A single command, or one tightly-coupled unit (e.g. `cd /path && make thing`, always run together), can share a block — but nothing that depends on an auth step succeeding first.
+
 ### Status and actions
 
 - `✓` done — `✗` missing/failed — `⚠️` warning — `→` next step
