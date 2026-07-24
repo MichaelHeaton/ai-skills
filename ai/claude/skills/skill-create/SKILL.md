@@ -1,5 +1,5 @@
 ---
-version: 1.5.0
+version: 1.6.0
 principles_version: 1.0.0
 last_updated: 2026-07-24
 updated_by: claude
@@ -7,6 +7,7 @@ name: skill-create
 description: Create a new Claude Code extensibility artifact — skill, subagent, hook, or MCP server — from scratch using a guided interview. Handles the full lifecycle: capturing intent, selecting the right artifact type, naming, writing the config/SKILL.md, testing, iterating, and saving to the repo. Use this whenever the user wants to build or capture a workflow, or says "make a skill for X", "turn this into a skill", "new skill", "make a subagent for X", "create a hook for X", "add an MCP server", "set up MCP for X", "adapt this into a skill", "make our own version of", "build a skill based on", "port this skill", "create a version of [X skill]", or "automate X with a hook".
 compatibility: Requires git. Deploy skills with `make install-system` in ai-skills (per-item symlinks; see principles/deployment.md).
 ---
+
 
 
 
@@ -109,6 +110,7 @@ Before writing anything, dig into edge cases and specifics. Good questions to ex
 - What are the 2–3 most common things that could go wrong or be misunderstood?
 - Are there existing skills this overlaps with? (Check `~/.claude/skills/` for names)
 - Does the skill need bundled scripts, reference docs, or assets?
+- **Is this adapted from an existing published skill, subagent, or tool** (a repo, marketplace listing, gist, or blog post the user pointed at)? Capture the source URL and what's being kept vs. changed now — don't leave it for later. See [Attribution](references/conventions.md#attribution-adapting-external-skills).
 
 Check available MCP tools — if any are relevant to the skill's domain, note them for the `compatibility` field.
 
@@ -260,6 +262,7 @@ Before handing over for testing, run through this quickly:
 - [ ] `name` matches the directory name exactly
 - [ ] `description` includes both *what* and *when*; ≤1024 chars
 - [ ] `version`, `last_updated`, `updated_by` filled in
+- [ ] If adapted from an external source, `metadata.adapted_from: <url>` is set (see [Attribution](references/conventions.md#attribution-adapting-external-skills))
 
 **File structure**
 
