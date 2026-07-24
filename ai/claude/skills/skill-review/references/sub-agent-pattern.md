@@ -5,8 +5,6 @@ last_updated: 2026-07-23
 updated_by: claude
 ---
 
-
-
 # Sub-agent invocation pattern
 
 Run SA2–SA4 inside a sub-agent when you want fresh skill file reads mid-session (sub-agents reload all SKILL.md files from disk at startup) or when the accumulated session context would distort the audit.

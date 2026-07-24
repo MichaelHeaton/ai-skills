@@ -7,10 +7,6 @@ description: Read the AI workspace source of truth before acting in this repo or
 alwaysApply: true
 ---
 
-
-
-
-
 # AI workspace entry
 
 This repository is a **portable AI workspace** (skills, hooks, conventions) — not Claude-only.

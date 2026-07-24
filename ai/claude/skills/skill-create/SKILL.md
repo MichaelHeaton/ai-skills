@@ -8,12 +8,6 @@ description: Create a new Claude Code extensibility artifact — skill, subagent
 compatibility: Requires git. Deploy skills with `make install-system` in ai-skills (per-item symlinks; see principles/deployment.md).
 ---
 
-
-
-
-
-
-
 # Skill Creator
 
 Your job is to guide the user from a rough idea to a working, well-crafted Claude Code extensibility artifact. The process is:

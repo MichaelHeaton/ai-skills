@@ -5,8 +5,6 @@ last_updated: 2026-06-10
 updated_by: human
 ---
 
-
-
 # Slack Auto-Intake
 
 When the Slack token is configured (`SLACK_TOKEN`, `SLACK_CHANNEL_ID`, `SUPPORT_BOT_ID` in `.env`), use the intake script to pull unprocessed threads instead of waiting for a paste:

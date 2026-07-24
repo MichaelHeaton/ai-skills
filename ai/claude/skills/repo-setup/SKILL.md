@@ -8,12 +8,6 @@ description: Verify and set up project repositories on the current workstation. 
 compatibility: Requires git, direnv (brew install direnv), jq, and ~/.config/ai-skills/local.json filled from config/local.template.json.
 ---
 
-
-
-
-
-
-
 # Repo setup
 
 Check that repos needed for AI-assisted workflows exist and are configured. Covers: repos present, correct git identity, correct `gh` account (via direnv).

@@ -8,8 +8,6 @@ description: Quickly capture raw ideas before they're lost. Creates a Linear iss
 compatibility: Requires Linear MCP. GitHub path only for player/tester reports.
 ---
 
-
-
 # Memex Dump
 
 Get the thought down first, triage later.

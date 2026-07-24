@@ -8,8 +8,6 @@ description: Post-interview debrief and decision capture — analyze interview n
 compatibility: Optional vault paths from local.json; candidate-pre-screen skill for prior context.
 ---
 
-
-
 # Interview Debrief
 
 Post-interview analysis in three phases. Run the phases the user requests; default to **A + B + C** when they say "debrief" without specifying.

@@ -5,7 +5,6 @@ last_updated: 2026-07-22
 updated_by: human
 ---
 
-
 # Signs of AI writing — full pattern reference
 
 Condensed and adapted from Wikipedia's [WP:Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing) field guide (CC BY-SA). That page documents patterns observed in real AI-generated Wikipedia edits; this file reorganizes them into a working checklist for rewriting text. Read the source page directly if you need a specific dated example or citation for a pattern.

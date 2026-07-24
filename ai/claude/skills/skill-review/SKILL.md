@@ -8,13 +8,6 @@ description: Review and improve skills — either a single skill or all skills u
 compatibility: Requires git. Skills deployed via `make install-system` (per-item symlinks; see principles/deployment.md).
 ---
 
-
-
-
-
-
-
-
 # Skill Review
 
 This skill has two modes. Read the user's request to determine which to run:

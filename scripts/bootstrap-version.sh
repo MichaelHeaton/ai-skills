@@ -59,8 +59,7 @@ def parse_frontmatter(text: str) -> tuple[dict[str, str], str, bool]:
         return {}, text, False
     fm_text = text[3:end]
     body = text[end + 4 :]
-    if body.startswith("\n"):
-        body = body[1:]
+    body = body.lstrip("\n")
     data: dict[str, str] = {}
     for line in fm_text.splitlines():
         parsed = parse_fm_line(line)

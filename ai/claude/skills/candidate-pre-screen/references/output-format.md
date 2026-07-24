@@ -5,9 +5,6 @@ last_updated: 2026-05-29
 updated_by: cursor
 ---
 
-
-
-
 # Pre-screen output format
 
 Use this structure for Phase A + B. Phase C replaces **Verdict preview** with **Final verdict** and adds the scorecard.

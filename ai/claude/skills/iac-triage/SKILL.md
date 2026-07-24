@@ -8,12 +8,6 @@ description: SRE / IaC investigation mode for Terraform, Ansible, Kubernetes, CI
 compatibility: Any repo or workspace. Integrates with log-clip / clog if installed.
 ---
 
-
-
-
-
-
-
 # IaC Triage Mode
 
 Raw CLI output is hostile to context. A full `terraform apply` or `ansible-playbook -vvv` run can be 2000+ lines; the signal is usually under 20. Your job is to diagnose infrastructure failures with the smallest useful evidence set.

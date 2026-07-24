@@ -8,8 +8,6 @@ description: Add or remove allowed tools and permissions in Claude Code settings
 compatibility: Requires write access to ~/.claude/settings.json and/or .claude/settings.json.
 ---
 
-
-
 # Update Config
 
 Add or remove Claude Code permissions in the right settings file. Routing matters — skill and global tool permissions written to a project's `.claude/settings.json` accumulate silently across sessions and end up in the wrong repo.

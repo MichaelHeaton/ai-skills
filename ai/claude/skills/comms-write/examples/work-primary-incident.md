@@ -5,9 +5,6 @@ last_updated: 2026-05-27
 updated_by: human
 ---
 
-
-
-
 # [work-primary] — Incident report (public stub)
 
 Post-incident or operational event summary for **work-primary** context.

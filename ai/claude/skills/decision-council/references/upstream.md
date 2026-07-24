@@ -5,9 +5,6 @@ last_updated: 2026-05-27
 updated_by: human
 ---
 
-
-
-
 # Upstream Reference — Decision Council
 
 ## Design lineage
