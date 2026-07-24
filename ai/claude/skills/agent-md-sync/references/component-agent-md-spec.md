@@ -1,6 +1,8 @@
 ---
 version: 1.0.0
+principles_version: 1.0.0
 last_updated: 2026-06-24
+updated_by: human
 ---
 
 # Component AGENT.md Specification

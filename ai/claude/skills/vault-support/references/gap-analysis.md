@@ -5,8 +5,6 @@ last_updated: 2026-06-10
 updated_by: human
 ---
 
-
-
 # Gap analysis format
 
 ## Team questions format (TEAM-QUESTIONS.md entry)

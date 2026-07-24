@@ -7,8 +7,6 @@ name: vault-support
 description: "Analyze vault support content — Slack threads, Jira tickets, direct research questions, or documentation gap sessions — to fact-check the team bot, identify documentation gaps, and generate knowledge-extraction questions. Use when the user pastes a Slack thread, references a vault ticket, asks a vault behavior/config question directly, or wants to identify what's missing in the wiki. Triggers on: vault questions, bot responses, AppRole, policy PRs, KV2, seal, onboarding pasted from Slack, vault ticket, vault runbook, vault restore procedure, vault behavior, researching vault, how does vault handle, look at this vault ticket, wiki gaps, documentation backlog, doc backlog, what's missing in the wiki, identify documentation gaps, audit our docs, build a doc backlog, find wiki gaps, what are we missing in the docs."
 ---
 
-
-
 # Vault Support Analyzer
 
 ## Configuration (required)

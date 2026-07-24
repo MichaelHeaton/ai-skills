@@ -8,9 +8,6 @@ description: Manager pre-screen for contractor or FTE candidates — resume auth
 compatibility: Optional resume PDF or vault paths; ~/.config/ai-skills/local.json for hiring context routing.
 ---
 
-
-
-
 # Candidate Pre-Screen
 
 Support a **manager pre-screen** before forwarding a candidate to a client hiring manager. Three phases — run the phases the user asks for; default to **A + B** when they say "pre-screen" without specifying.

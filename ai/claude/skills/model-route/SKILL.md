@@ -8,12 +8,6 @@ description: Route tasks and sub-agents to the cheapest model that can reliably 
 compatibility: Any context. Applies to Agent tool calls and model selection guidance.
 ---
 
-
-
-
-
-
-
 # Model Routing
 
 Use the cheapest model that can reliably complete the task. Escalation is a last resort, not a default.

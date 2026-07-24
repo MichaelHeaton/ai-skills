@@ -8,7 +8,6 @@ description: Rewrite an article or draft to strip out AI-writing tells — puffe
 compatibility: none
 ---
 
-
 # Humanizer
 
 Rewrite text so it no longer reads as AI-generated, without changing what it says. This is a **style edit, not a content edit**: every fact, number, citation, and claim in the input must survive unchanged in the output. The full pattern list this skill is built from lives in [references/signs-of-ai-writing.md](references/signs-of-ai-writing.md) — read it when a passage doesn't obviously match anything below.

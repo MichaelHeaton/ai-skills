@@ -8,8 +8,6 @@ description: Safely close out a Claude Code session across all active repos. Che
 compatibility: Requires gh CLI, glab CLI, git. Atlassian MCP needed only if Jira tickets were worked on.
 ---
 
-
-
 Close out this session safely. The goal: nothing stranded in branches, all tickets reflect current state, next session starts with complete context.
 
 > **Setup dependencies** — Steps 1–5 (git hygiene) work in any repo. Steps 6–7 require ai-skills installed (`make install-system`). Steps 9–10 assume a personal memex vault at `~/Projects/personal/memex/` with `_task-index.jsonl` — adapt those paths to your own notes setup if different.

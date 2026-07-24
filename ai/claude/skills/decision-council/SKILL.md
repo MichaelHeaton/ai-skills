@@ -7,12 +7,6 @@ name: decision-council
 description: Run any decision, plan, or tradeoff through 5 AI advisors with distinct thinking styles, a blind peer review round, and a final chairman synthesis. Based on Karpathy's LLM Council methodology. TRIGGERS: "council this", "decision council", "run the council", "war room this", "pressure-test this", "stress-test this", "debate my options", "gut check this", "get a second opinion on this", "talk me out of this". STRONG TRIGGERS when combined with a real decision: "should I X or Y", "which option", "I can't decide", "I'm torn between", "validate this decision". Do NOT trigger on: factual lookups, creation tasks (write me X), or casual questions without a meaningful tradeoff.
 ---
 
-
-
-
-
-
-
 # Decision Council
 
 Runs your question through 5 parallel advisors, a blind peer review round, and a chairman synthesis. Best for decisions where being wrong is expensive.

@@ -5,11 +5,6 @@ last_updated: 2026-07-24
 updated_by: claude
 ---
 
-
-
-
-
-
 # Skill conventions
 
 ## Naming

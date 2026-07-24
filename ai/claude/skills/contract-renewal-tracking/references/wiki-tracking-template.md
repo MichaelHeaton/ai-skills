@@ -5,8 +5,6 @@ last_updated: 2026-06-12
 updated_by: human
 ---
 
-
-
 # Wiki tracking note template
 
 Use when creating a new `Contracts/<LastName-FirstName>-renewal-<YYYY>.md` vault note.

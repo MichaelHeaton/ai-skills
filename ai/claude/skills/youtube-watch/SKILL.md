@@ -7,12 +7,6 @@ name: youtube-watch
 description: Create a GitHub Issue for a YouTube video to watch later. Fetches the real title, channel, duration, and description via yt-dlp. Creates the issue with the user story template, routes it to the correct project, and logs it. Use when the user shares a YouTube URL and wants to track it as a watch task, or says "add this to my watch list", "I want to watch this later", or pastes a youtube.com URL.
 ---
 
-
-
-
-
-
-
 Create a "Watch:" GitHub Issue for a YouTube video with full metadata fetched from yt-dlp.
 
 ## Steps

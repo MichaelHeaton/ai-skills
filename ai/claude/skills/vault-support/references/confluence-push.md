@@ -5,8 +5,6 @@ last_updated: 2026-06-10
 updated_by: human
 ---
 
-
-
 # Confluence push instructions
 
 All commands run from the work docs repo with credentials loaded (page IDs in that repo's `.env`):

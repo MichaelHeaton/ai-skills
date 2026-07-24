@@ -8,8 +8,6 @@ description: Audit an oversized ticket, surface overlapping child issues, propos
 compatibility: Requires gh CLI (GitHub path) or Atlassian MCP (Jira path).
 ---
 
-
-
 Audit a ticket's scope, identify overlaps, split into focused child tickets, then close the original.
 
 ## Steps

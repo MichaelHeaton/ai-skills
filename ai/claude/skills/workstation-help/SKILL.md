@@ -7,8 +7,6 @@ name: workstation-help
 description: "Quick reference for workstation-devops shell shortcuts, aliases, and make commands. Use when the user asks what a shortcut does, forgets a command, asks how to connect to AWS/Vault/Teleport, or asks what make targets are available. Triggers on: 'what was that command', 'how do I connect to', 'workstation shortcuts', 'ces_prd', 'ces_dev', 'vault login', 'vl command', 'klam', 'make targets', 'workstation commands', 'how do I run the playbook', 'how do I disconnect from AWS', 'what does vssh do'."
 ---
 
-
-
 # Workstation Help
 
 Quick reference for shortcuts and commands installed by [workstation-devops](~/Projects/personal/workstation-devops). These live in your shell after `make apply` — they are not repo commands.

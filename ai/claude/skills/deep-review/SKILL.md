@@ -7,7 +7,6 @@ name: deep-review
 description: Multi-lens code review that runs four sequential specialist passes — security, performance, architecture, and style — then produces a consolidated findings table ranked by severity. Use when you want more than a general review, need targeted coverage across dimensions, or say "deep review", "multi-pass review", "review for security and performance", "thorough review", "comprehensive code review", "check this for security issues and performance", or "specialist review". Complements /security-review (which does a focused security audit only) and /code-review (which reviews a diff at adjustable effort). Use deep-review when you want all four lenses in one pass.
 ---
 
-
 # Deep Review
 
 Run four sequential specialist passes over the target code, then merge findings into a single prioritised table.

@@ -5,9 +5,6 @@ last_updated: 2026-05-29
 updated_by: cursor
 ---
 
-
-
-
 # ATS and keyword-stuffing signals
 
 Separate from AI-authorship detection. Candidates increasingly keyword-load resumes to pass automated HR filters — **expected behavior**, not inherently dishonest. Report **severity** and context.

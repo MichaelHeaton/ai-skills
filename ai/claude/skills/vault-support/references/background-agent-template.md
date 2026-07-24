@@ -5,8 +5,6 @@ last_updated: 2026-06-10
 updated_by: human
 ---
 
-
-
 # Background agent template
 
 Use this prompt template when spawning a background agent for Case B threads (already resolved, no discussion needed before logging). The prompt must be fully self-contained — the agent has no session context.

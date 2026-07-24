@@ -5,8 +5,6 @@ last_updated: 2026-06-12
 updated_by: human
 ---
 
-
-
 # CRM Person note template
 
 Use when creating a new `People/<LastName-FirstName>.md` vault note.

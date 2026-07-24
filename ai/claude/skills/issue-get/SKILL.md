@@ -7,12 +7,6 @@ name: issue-get
 description: Fetch the full details of a specific task or ticket by ID. Works across Linear, GitHub Issues, and Jira. Use when the user references SR-42, #94, PROJ-12345, or similar — or pastes a bare ticket URL (GitHub, Jira, or Linear).
 ---
 
-
-
-
-
-
-
 Fetch full details for a specific task from its source system and present them clearly.
 
 ## Steps

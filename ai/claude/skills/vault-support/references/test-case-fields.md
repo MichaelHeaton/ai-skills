@@ -5,8 +5,6 @@ last_updated: 2026-06-10
 updated_by: human
 ---
 
-
-
 # Test case frontmatter fields
 
 Add these five fields after the `tags:` line in the frontmatter created by `add_test_case.py`:

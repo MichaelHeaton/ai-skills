@@ -7,12 +7,6 @@ name: issue-list
 description: Get a list of open tasks/tickets — across all systems (Linear, GitHub, Jira) or scoped to a project, label, or priority. Always syncs status back to the task index.
 ---
 
-
-
-
-
-
-
 Fetch open tasks from all active systems, sync any status changes back to the task index, then present results.
 
 ## Steps

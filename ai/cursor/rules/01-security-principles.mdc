@@ -7,10 +7,6 @@ description: Security-first defaults for all generated and edited code.
 alwaysApply: true
 ---
 
-
-
-
-
 # Security principles
 
 Read **`principles/security.md`** and **`principles/domains.md`** in the ai-skills repo before writing or reviewing code.

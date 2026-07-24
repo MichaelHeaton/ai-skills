@@ -8,12 +8,6 @@ description: Generate paste-ready weekly status files for two standing rhythms d
 compatibility: Vault paths in Memex; Jira MCP when work_team path needs it; requires ~/.config/ai-skills/local.json.
 ---
 
-
-
-
-
-
-
 # Weekly Report
 
 Two formats, configured in **`local.json`** under `weekly_reports` — keys are generic (`client_contract`, `work_team`); your private file holds real names, URLs, and paths.

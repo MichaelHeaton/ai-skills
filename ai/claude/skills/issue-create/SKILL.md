@@ -8,8 +8,6 @@ description: Create a new task, issue, or story in the right system — GitHub I
 compatibility: Requires gh CLI, Atlassian MCP (Jira path only).
 ---
 
-
-
 Create a new task in the right system based on where you're working. See `references/routing.md` for routing rules. Once created, the description is frozen — all updates go in comments (see description edit policy in `issue-update`).
 
 **Always use this skill for issue creation — user-initiated or autonomous.** If Claude is about to call `gh issue create` or `glab issue create` directly for any reason (triage, research, session-close, batch work), route through this skill instead. Direct CLI calls bypass routing, label seeding, task index, and project assignment.

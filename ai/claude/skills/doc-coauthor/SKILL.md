@@ -8,12 +8,6 @@ description: Co-author work team documentation — either directly to the live C
 compatibility: Live mode requires Confluence MCP. Staged mode requires ${repos.work_docs} (local.json) to be cloned — run repo-setup if missing.
 ---
 
-
-
-
-
-
-
 # Doc Co-Author
 
 Guide the user through writing a well-structured work team documentation page. Two delivery modes are supported — ask which one applies before starting:

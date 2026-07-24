@@ -5,9 +5,6 @@ last_updated: 2026-05-29
 updated_by: cursor
 ---
 
-
-
-
 # Resume authenticity signals
 
 Informational heuristics — not proof of ChatGPT use and not grounds for auto-rejection. Assign **confidence** (High / Medium / Low) and cite specific resume evidence.
