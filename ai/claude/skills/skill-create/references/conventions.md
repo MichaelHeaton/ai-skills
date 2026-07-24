@@ -1,8 +1,8 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
-updated_by: human
+last_updated: 2026-07-24
+updated_by: claude
 ---
 
 
@@ -113,6 +113,14 @@ Brief orientation paragraph.
 - Write instructions in imperative form ("Do X", not "You should do X")
 - Explain *why* behind non-obvious steps
 - No comments in code blocks that only restate the code
+
+### CLI/runbook steps (copy-paste friendly)
+
+If a skill documents CLI commands for the user to run (a runbook, a setup sequence, anything involving login/auth):
+
+- **One step per code block** — never combine a login/auth/privilege step (`vault login`, `aws sso login`, `sudo -i`, etc.) with commands that depend on it. A multi-line block pasted all at once after a login/sudo prompt doesn't reliably run every line — the user ends up editing or re-running one line at a time.
+- **Number or label steps** so the reader can track progress without re-reading the whole doc.
+- A single command, or one tightly-coupled unit (e.g. `cd /path && make thing`, always run together), may share a block — but never a step that depends on a preceding auth step succeeding.
 
 ## Git operations
 
