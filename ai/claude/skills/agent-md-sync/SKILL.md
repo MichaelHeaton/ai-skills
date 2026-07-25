@@ -40,6 +40,7 @@ The script identifies:
 - **Ansible roles**: directories under `roles/` containing `tasks/main.yml` or `tasks/main.yaml`
 - **Ansible playbooks directory**: `playbooks/` if present
 - **Terraform modules**: directories under `modules/` containing `main.tf`
+- **Terraform roots**: directories 2+ levels deep (outside `modules/`) containing `main.tf` — catches per-environment deployments like `networking_infra/prod_va6/`
 - **Helm charts**: directories under `charts/` containing `Chart.yaml`
 - **Generic components**: first-level subdirectories containing a `README.md` not already caught above
 
@@ -147,3 +148,15 @@ This is optional — offer it, don't force it. If the repo has many components, 
 ## Maintenance note
 
 Component AGENT.md files should evolve with their components. The check mode enforces this at PR time. The best time to update a component AGENT.md is immediately after an AI gets something wrong in that component — that's a gap, and a one-sentence addition to the Gotchas section closes it permanently.
+
+---
+
+## Auditing discover-components.sh itself
+
+`discover-components.sh`'s category rules (ansible roles under `roles/`, terraform modules under `modules/`, first-level README dirs, etc.) are pattern-matched against known layouts — a new repo can have a layout none of them anticipate. Before trusting scan-mode output on an unfamiliar repo, or after changing detection rules, run:
+
+```bash
+bash <path-to-skill>/scripts/check-coverage.sh <repo-path> [repo-path...]
+```
+
+It independently scans the same repo(s) for known marker files (`tasks/main.yml`, `main.tf`, `Chart.yaml`, first-level `README.md`) at any depth and reports any directory `discover-components.sh` didn't pick up, as `MISSED:<type>:<path>`. Takes multiple repo paths in one call, so a set of repos in a workspace can be checked in one pass. A `MISSED` line is evidence a detection rule needs widening — not a reason to widen it preemptively.
