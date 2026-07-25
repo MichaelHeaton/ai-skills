@@ -6,5 +6,10 @@
     "Bash(jq * ~/.claude/projects*)",
     "Bash(cat ~/.claude/projects*)",
     "Bash(wc * ~/.claude/projects*)"
-  ]
+  ],
+  "permissions": {
+    "allow": [
+      "Bash(bash ~/.claude/skills/agent-md-sync/scripts/check-pr-diff.sh*)"
+    ]
+  }
 }
