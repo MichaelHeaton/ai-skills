@@ -9,7 +9,7 @@ updated_by: human
 
 ## Source of truth
 
-**Notion `Repositories` database** holds `Ticket System` and `Linear Project` per repo. Edit repos there only.
+**Notion `Repositories` database** holds `Ticket System`, `Linear Project`, `Projects dest`, and `Clone scope` per repo. Ticket/routing fields: edit in Notion. Clone paths: exported from workstation-devops (see that repo’s `docs/repo-registry-notion.md`).
 
 `detect-context.sh` cannot call Notion MCP. It reads an optional **private cache**:
 
