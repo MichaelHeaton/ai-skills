@@ -62,6 +62,12 @@ Manager does two things, not one:
 
 If Manager escalates, it reports back to you and to the Architect step (this session) — not a silent loop. **Hard cap**: after 2 rounds of flag → replan → recode, stop and escalate to the user regardless of Manager's verdict.
 
+## Step 6 — Hand off to git-ops for the PR
+
+Once Manager clears (or Manager was skipped and Tester found nothing), open the PR through the `git-ops` skill as normal — do not call `gh pr create` directly. This matters specifically because `git-ops` runs a mandatory `agent-md-sync` check before every PR: it diffs the branch against component directories (Ansible roles, Terraform modules, Helm charts, README-bearing dirs) in whatever repo Coder just touched, and flags any component whose `AGENT.md` is stale or missing.
+
+No role in this pipeline owns AGENT.md staleness directly — not Coder, not Docs, not Manager. It's `git-ops`'s job, enforced at PR time, on every PR regardless of which skill produced the diff. Don't duplicate that check into Manager; just don't skip the `git-ops` handoff to get there.
+
 ## Known limitations (carried from design review, not solved by this pipeline)
 
 - **SCP/policy enforcement invisible at plan time** — infra changes that fail only at `apply` time due to AWS Service Control Policies won't be caught by any review step here. No agent fixes this; it needs an apply-time check or a maintained allowlist, out of scope for this skill.
