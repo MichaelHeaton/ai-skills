@@ -17,7 +17,13 @@
       "mcp__atlassian__confluence_get_page",
       "mcp__atlassian__confluence_search",
       "Bash(bash -n *)",
-      "Bash(bash scripts/install-system.sh --dry-run*)"
+      "Bash(bash scripts/install-system.sh --dry-run*)",
+      "Bash(gh auth token --user *)",
+      "Bash(gh auth switch --user *)",
+      "Bash(gh auth switch --hostname * --user *)",
+      "Bash(git fetch *)",
+      "Bash(bash ~/.claude/skills/agent-md-sync/scripts/discover-components.sh*)",
+      "Bash(bash ~/.claude/skills/agent-md-sync/scripts/check-coverage.sh*)"
     ]
   }
 }
