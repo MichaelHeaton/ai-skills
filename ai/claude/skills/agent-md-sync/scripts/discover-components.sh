@@ -45,6 +45,20 @@ if [[ -d "charts" ]]; then
   done < <(find charts -mindepth 1 -maxdepth 1 -type d -print0 2>/dev/null | sort -z)
 fi
 
+# Terraform roots — main.tf nested 2+ levels deep outside modules/ (common in infra
+# repos for per-environment deployments, e.g. networking_infra/prod_va6/main.tf).
+# mindepth 3 = dir depth >= 2, so first-level dirs stay with the generic README check
+# below and don't get double-reported. maxdepth bounds the recursion cost.
+while IFS= read -r -d '' tf_file; do
+  tf_dir=$(dirname "$tf_file")
+  echo "terraform-root:${tf_dir#./}:$(has_agent_md "$tf_dir")"
+done < <(find . -mindepth 3 -maxdepth 6 -type f -name main.tf \
+            -not -path '*/.*/*' \
+            -not -path './modules/*' \
+            -not -path './node_modules/*' \
+            -not -path './vendor/*' \
+            -print0 2>/dev/null | sort -z)
+
 # Generic — first-level subdirs with a README.md not already caught above
 # Excludes known non-component dirs and hidden dirs
 SKIP_RE="^(roles|modules|charts|playbooks|node_modules|vendor|\.git|\.github|\.claude|\.cursor)$"
