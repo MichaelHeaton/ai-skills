@@ -2,7 +2,7 @@
 	import-legacy bootstrap-version manifest-update unlink-legacy unlink-legacy-dry-run \
 	lint lint-fix hooks-install \
 	push-skills list-bundles push-skills-all \
-	status package-skill mark-uploaded
+	status package-skill package-all mark-uploaded
 
 .DEFAULT_GOAL := help
 
@@ -22,6 +22,7 @@ help:
 	@echo "    make status                    Report all deploy drift (links, git, Desktop, push-skills targets)"
 	@echo "    make package-skill SKILL=<n>   Build a folder-at-root zip for Desktop/claude.ai upload"
 	@echo "    make package-skill BUNDLE=<n>  Build one zip per skill in a bundle"
+	@echo "    make package-all               Package every skill, batched into batch-NN/ folders of <=20 zips"
 	@echo "    make mark-uploaded SKILL=<n>   Record that a skill was manually uploaded to Desktop/claude.ai"
 	@echo ""
 	@echo "  Cross-repo skill sync (for web/mobile access):"
@@ -104,6 +105,9 @@ status:
 package-skill:
 	@test -n "$(SKILL)" -o -n "$(BUNDLE)" || { echo "Usage: make package-skill SKILL=<name>  or  make package-skill BUNDLE=<name>"; exit 1; }
 	@bash scripts/package-skill.sh $(if $(SKILL),--skill "$(SKILL)") $(if $(BUNDLE),--bundle "$(BUNDLE)")
+
+package-all:
+	@bash scripts/package-skill.sh --all $(if $(BATCH_SIZE),--batch-size "$(BATCH_SIZE)")
 
 mark-uploaded:
 	@test -n "$(SKILL)" -o -n "$(BUNDLE)" || { echo "Usage: make mark-uploaded SKILL=<name>  or  make mark-uploaded BUNDLE=<name>"; exit 1; }
