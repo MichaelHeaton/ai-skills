@@ -9,7 +9,15 @@
   ],
   "permissions": {
     "allow": [
-      "Bash(bash ~/.claude/skills/agent-md-sync/scripts/check-pr-diff.sh*)"
+      "Bash(bash ~/.claude/skills/agent-md-sync/scripts/check-pr-diff.sh*)",
+      "Bash(export *)",
+      "mcp__atlassian__jira_get_issue",
+      "Bash(bash ~/.claude/skills/session-close/scripts/discover-repos.sh*)",
+      "mcp__atlassian__jira_search",
+      "mcp__atlassian__confluence_get_page",
+      "mcp__atlassian__confluence_search",
+      "Bash(bash -n *)",
+      "Bash(bash scripts/install-system.sh --dry-run*)"
     ]
   }
 }
