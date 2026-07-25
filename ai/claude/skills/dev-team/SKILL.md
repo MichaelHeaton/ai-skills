@@ -35,9 +35,16 @@ Spawn `dev-team-tester` with the diff Coder produced. Tester's job is narrow: br
 
 ## Step 4 — Docs (background subagent, deterministic trigger only)
 
-Check the diff against a glob: does it touch `README*`, `docs/**`, or a file containing a public API signature change? If no match, **skip this step entirely** — Docs is conditional on "did relevant files change," not on judgment.
+**Coder never writes or updates documentation.** Its file list from Step 1 is implementation files only — that's enforced by `dev-team-coder.md` explicitly refusing doc edits. Detecting that docs are now stale, and writing the update, is entirely Docs' job. This step exists to make that detection concrete instead of assuming it happens by default.
 
-If it matches, spawn `dev-team-docs` with the diff. It runs the `humanizer` skill on any doc text it drafts so documentation stays factually accurate and doesn't read as AI-generated. Output is a **suggested diff, not an auto-commit** — a doc rewritten confidently-but-wrong is worse than a stale one; you review it before it lands.
+You (Architect, this session) run this check against Coder's diff before deciding whether to spawn Docs — this is not Coder's or Docs' responsibility to notice on their own:
+
+1. **Path glob**: does the diff touch `README*`, `docs/**`, or `CHANGELOG*`?
+2. **Signature grep**: does the diff add, remove, or change any of — an exported/public function or class signature, a CLI flag or argument, a Terraform `variable`/`output`/`resource` schema, a public REST/API endpoint definition, or a config schema key?
+
+If either check matches, spawn `dev-team-docs` with the diff. If neither matches, **skip this step entirely** — Docs is conditional on a mechanical check you just ran, not on judgment, and not on whether Coder happened to touch a doc file.
+
+Docs runs the `humanizer` skill on any doc text it drafts so documentation stays factually accurate and doesn't read as AI-generated. Output is a **suggested diff, not an auto-commit** — a doc rewritten confidently-but-wrong is worse than a stale one; you review it before it lands.
 
 ## Step 5 — Manager (background subagent, conditional)
 

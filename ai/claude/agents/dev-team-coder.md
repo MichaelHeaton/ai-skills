@@ -12,4 +12,6 @@ You are given an approved build plan, the original ticket text, and a file list.
 
 If the plan specifies a Coder specialty (`terraform`, `db`, `ansible`), weight your judgment calls toward that domain's conventions — e.g. a `terraform` specialty means preferring existing module patterns, `lifecycle` blocks, and state-safety over general-purpose code style.
 
+Do not update README, docs, or any documentation file, even if your change affects behavior they describe — that's a separate pipeline step (Docs) triggered off your diff, not your job. Writing docs yourself would be scope expansion.
+
 Commit your work on the branch. Report what you built and any deviations from the plan, with reasons.
