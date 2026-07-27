@@ -1,15 +1,15 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
-updated_by: human
+last_updated: 2026-07-27
+updated_by: claude
 name: decision-council
-description: Run any decision, plan, or tradeoff through 5 AI advisors with distinct thinking styles, a blind peer review round, and a final chairman synthesis. Based on Karpathy's LLM Council methodology. TRIGGERS: "council this", "decision council", "run the council", "war room this", "pressure-test this", "stress-test this", "debate my options", "gut check this", "get a second opinion on this", "talk me out of this". STRONG TRIGGERS when combined with a real decision: "should I X or Y", "which option", "I can't decide", "I'm torn between", "validate this decision". Do NOT trigger on: factual lookups, creation tasks (write me X), or casual questions without a meaningful tradeoff.
+description: Run any decision, plan, or tradeoff through 7 AI advisors with distinct thinking styles, a blind peer review round, and a final chairman synthesis. Based on Karpathy's LLM Council methodology. TRIGGERS: "council this", "decision council", "run the council", "war room this", "pressure-test this", "stress-test this", "debate my options", "gut check this", "get a second opinion on this", "talk me out of this". STRONG TRIGGERS when combined with a real decision: "should I X or Y", "which option", "I can't decide", "I'm torn between", "validate this decision". Do NOT trigger on: factual lookups, creation tasks (write me X), or casual questions without a meaningful tradeoff.
 ---
 
 # Decision Council
 
-Runs your question through 5 parallel advisors, a blind peer review round, and a chairman synthesis. Best for decisions where being wrong is expensive.
+Runs your question through 7 parallel advisors, a blind peer review round, and a chairman synthesis. Best for decisions where being wrong is expensive.
 
 **Complement:** `grill-me` interrogates a plan interactively — this stress-tests a decision asynchronously through independent perspectives.
 
@@ -38,21 +38,23 @@ If the question is too vague to frame, ask one clarifying question, then proceed
 
 ---
 
-## Step 2 — Convene the council (5 sub-agents in parallel)
+## Step 2 — Convene the council (7 sub-agents in parallel)
 
-Tell the user: "Running the decision council — spawning 5 advisors in parallel. This takes 2–4 minutes."
+Tell the user: "Running the decision council — spawning 7 advisors in parallel. This takes 2–4 minutes."
 
-Spawn all 5 advisors simultaneously. Each gets their identity, the framed question, and this instruction:
+Spawn all 7 advisors simultaneously. Each gets their identity, the framed question, and this instruction:
 
 > Respond independently. Do not hedge. Lean fully into your assigned perspective. State your strongest take — the synthesis comes later. 150–300 words, no preamble.
 
-**The five advisors:**
+**The seven advisors:**
 
 - **The Contrarian** — actively looks for what's wrong, what's missing, what will fail. Assumes a fatal flaw exists and tries to find it. Not a pessimist — the friend who saves you from a bad deal.
 - **The First Principles Thinker** — strips assumptions and rebuilds from the ground up. Often surfaces "you're asking the wrong question entirely."
 - **The Expansionist** — looks for upside and adjacent opportunity everyone else is missing. Not concerned with risk — that's the Contrarian's job.
 - **The Outsider** — zero context about you or your field. Responds purely to what's in front of them. Catches the curse of knowledge: what's obvious to you but confusing to everyone else.
 - **The Executor** — only cares about "can this actually be done, and what's the fastest path?" Translates every idea into: what do you do Monday morning?
+- **The Investor** — asks whether this makes money or is worth the resources it costs. Strategic and financial: ROI, opportunity cost, what this displaces. Not concerned with feasibility — that's the Executor's job.
+- **The Customer** — asks whether anyone actually wants this. Represents the end user's indifference, not the builder's enthusiasm. A clever solution to a problem nobody has is still a failure from this seat.
 
 Sub-agent prompt template:
 
@@ -73,18 +75,18 @@ Respond from your perspective. Be direct and specific. Do not hedge. Lean fully 
 
 ## Step 3 — Peer review (5 sub-agents in parallel)
 
-Collect all 5 advisor responses. Anonymize as Response A–E (randomize the mapping — no positional bias).
+Collect all 7 advisor responses. Anonymize as Response A–G (randomize the mapping — no positional bias).
 
-Spawn 5 new sub-agents. Each sees all 5 anonymized responses and answers three questions:
+Spawn 5 new sub-agents. Each sees all 7 anonymized responses and answers three questions:
 
 1. Which response is strongest and why? (pick one)
 2. Which has the biggest blind spot? What is it missing?
-3. What did ALL five miss that the council should consider?
+3. What did ALL seven miss that the council should consider?
 
 Reviewer prompt template:
 
 ```
-You are reviewing the outputs of a Decision Council. Five advisors independently answered this question:
+You are reviewing the outputs of a Decision Council. Seven advisors independently answered this question:
 ---
 [framed question]
 ---
@@ -96,26 +98,28 @@ Anonymized responses:
 **Response C:** [response]
 **Response D:** [response]
 **Response E:** [response]
+**Response F:** [response]
+**Response G:** [response]
 
 Answer these three questions. Be specific. Reference responses by letter. Under 200 words total.
 
 1. Which response is strongest? Why?
 2. Which has the biggest blind spot? What is it missing?
-3. What did ALL five miss?
+3. What did ALL seven miss?
 ```
 
 ---
 
 ## Step 4 — Chairman synthesis
 
-One final agent receives: the framed question, all 5 de-anonymized advisor responses, and all 5 peer reviews.
+One final agent receives: the framed question, all 7 de-anonymized advisor responses, and all 5 peer reviews.
 
 The chairman's job: produce a clear verdict. The chairman can dissent from the majority if the dissenting reasoning is stronger — that's the point.
 
 Chairman prompt template:
 
 ```
-You are the Chairman of a Decision Council. Synthesize the work of 5 advisors and their peer reviews into a final verdict.
+You are the Chairman of a Decision Council. Synthesize the work of 7 advisors and their peer reviews into a final verdict.
 
 Question:
 ---
@@ -128,6 +132,8 @@ ADVISOR RESPONSES:
 **The Expansionist:** [response]
 **The Outsider:** [response]
 **The Executor:** [response]
+**The Investor:** [response]
+**The Customer:** [response]
 
 PEER REVIEWS:
 [all 5 reviews]
