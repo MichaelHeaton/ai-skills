@@ -35,3 +35,9 @@ Karpathy's strength is genuine model diversity (different architectures, trainin
 - **`karpathy`:** core methodology changes — if he changes the ranking/review design, evaluate whether to adopt it
 
 GitHub issue [#103](https://github.com/YOUR_USER/ai-skills/issues/103) tracks this upstream relationship.
+
+## 2026-07-27: added Investor and Customer personas
+
+A third source surfaced this time: an AI-tip video proposing a 4-persona "board of advisors" (Elite Operator, Investor, Customer, Skeptic). Ran it through this skill's own decision-council process rather than adopting it wholesale. Diff result: Elite Operator and Skeptic duplicated the existing Executor and Contrarian; Investor and Customer were genuine gaps (no existing persona asked "does this make money" or "does anyone want this"). Added those two as a 6th/7th persona rather than swapping out any of the original 5.
+
+Deliberately **not** bundled with this change: a "council leader" routing/gating agent to conditionally select a subset of personas per question (the always-run-all-N behavior is unchanged). That's tracked separately in issue [#171](https://github.com/MichaelHeaton/ai-skills/issues/171), so a future regression is attributable to one change at a time.
