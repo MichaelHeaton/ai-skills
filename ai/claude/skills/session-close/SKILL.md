@@ -1,7 +1,7 @@
 ---
-version: 1.9.0
+version: 1.9.1
 principles_version: 1.0.0
-last_updated: 2026-07-23
+last_updated: 2026-07-28
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
@@ -58,6 +58,8 @@ gh pr list --head <branch> --state all --json number,state,title \
 
 Run this check for GitHub repos only. Skip GitLab, Bitbucket, or repos with no `gh`-reachable remote. Do not block on errors — if `gh` fails for a repo, skip it silently and note it in the Step 10 summary.
 
+**Hard gate — per repo, not a one-time audit.** Completing this check for one repo does not clear the gate for any other repo still pending. Do not begin Step 2 for a given repo until this check has completed for that specific repo. If the check flags a merged PR (stale branch) for a repo, switch that repo to `main` (`git checkout main && git pull`) before Step 2 treats any uncommitted changes in that repo as committable — do not commit to a branch whose PR is already merged.
+
 ---
 
 Before Steps 2–4, invoke the `git-ops` skill *(personal — ai-skills repo)* — it covers branching rules, commit format, PR format, and pre-commit checks. The short version: work GitHub and GitLab repos always get a branch + PR; personal KB uses branch + PR like work repos. Full rules in `~/.claude/references/branching.md`.
@@ -96,7 +98,7 @@ gh auth switch --user "${GITHUB_PERSONAL_USER}"
 
 ## Step 2 — Handle uncommitted changes (per repo)
 
-For each repo with `CHANGES > 0`:
+For each repo with `CHANGES > 0` **whose Step 1 branch-hygiene check has already completed for that repo**:
 
 1. **Filter noise files first.** Before showing the diff, strip known noise patterns from the changed-file list:
 
