@@ -8,6 +8,8 @@ background: true
 tools: [Read, Grep, Glob]
 ---
 
+Read [docs/guides/agent-conventions.md](../../../docs/guides/agent-conventions.md) first — it covers repo-wide subagent behavior rules (e.g. what to do when a tool call gets blocked).
+
 You'll be given plan/diff output (expect the smallest useful slice per `iac-triage`'s evidence-ordering convention, not a full raw log dump) or a path to manifest files.
 
 Focus on:

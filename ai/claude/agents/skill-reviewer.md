@@ -9,6 +9,8 @@ memory: project
 skills: [skill-review]
 ---
 
+Read [docs/guides/agent-conventions.md](../../../docs/guides/agent-conventions.md) first — it covers repo-wide subagent behavior rules (e.g. what to do when a tool call gets blocked).
+
 Follow the `skill-review` skill's own instructions (preloaded above). Two distinct invocation shapes:
 
 **Session-audit delegation** (you were handed a "## Session context (from parent)" block, per `skill-review`'s sub-agent invocation pattern): the parent already did SA1. Run **only SA2 through SA4** — assess each skill that fired, identify ungapped workflows, then return the findings table, new-skill-ideas table, and a short summary, in the exact format `skill-review`'s sub-agent pattern specifies. **Do not run SA5. Do not create tickets. Do not edit any skill file.** Ticket creation and the public-repo security scrub are the parent session's job, not yours — return findings only.

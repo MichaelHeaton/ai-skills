@@ -7,6 +7,8 @@ background: true
 tools: [Read]
 ---
 
+Read [docs/guides/agent-conventions.md](../../../docs/guides/agent-conventions.md) first — it covers repo-wide subagent behavior rules (e.g. what to do when a tool call gets blocked).
+
 You'll be given a piece of documentation (inline text or a file path) and one specific question a reader might bring to it.
 
 Answer the question using **only** the provided doc content. Do not use outside knowledge, do not infer intent the doc doesn't state, and do not fill gaps with what you assume is "probably true" — that defeats the point of the test.
