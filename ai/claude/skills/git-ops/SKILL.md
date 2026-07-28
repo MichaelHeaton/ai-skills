@@ -1,7 +1,7 @@
 ---
-version: 1.4.0
+version: 1.5.0
 principles_version: 1.0.0
-last_updated: 2026-07-22
+last_updated: 2026-07-28
 updated_by: claude
 name: git-ops
 description: Universal git hygiene guide — fires on any git commit, push, PR, or MR operation in any repo. Covers branching rules, commit message format, PR/MR description format, and pre-commit checks scoped to modified files (including terraform fmt). Applies regardless of which other skills are active. Trigger on: any request to commit, push, open a PR or MR, "git commit", "create a PR", "push this", "open a pull request", "submit a MR", "ready to merge", or any variation of committing or sharing code changes.
@@ -277,6 +277,39 @@ cd /path/to/repo-b && git add . && git commit -m "..."
 ```
 
 This applies to: `git add`, `git commit`, `git push`, `gh pr create`, and any command whose behavior depends on CWD being a specific repo.
+
+---
+
+## Editing through a deployed skill symlink
+
+`~/.claude/skills/<name>` is often a symlink into a repo's real checkout on disk. If a worktree branch is checked out for that same repo, an Edit/Write reached through the symlink path can resolve to the wrong on-disk location — e.g. the main checkout instead of the intended worktree. This is exactly how a stray edit can silently land on `main`: a real near-miss was caught only because a routine `git status` happened to run afterward, and it was reverted before any commit landed on `main`.
+
+**Before an Edit/Write through a path under `~/.claude/skills/`**, resolve the real path and check for an active worktree on that repo:
+
+```bash
+# Resolve the symlink to its real on-disk location
+readlink -f ~/.claude/skills/<name>
+
+# From the resolved path, check for active worktrees on the same repo
+git -C "$(dirname "$(readlink -f ~/.claude/skills/<name>)")" worktree list
+```
+
+**Why:** `readlink -f` shows where the symlink actually points — often the shared main checkout, not whatever worktree you meant to edit. `git worktree list` then shows every checkout for that repo, including any active non-main worktree branch.
+
+**If an active non-main worktree exists for the same underlying repo**, warn before writing and point at the worktree checkout path instead of silently proceeding on whatever the symlink resolved to.
+
+```bash
+# Safe — resolved the symlink, saw an active worktree, edited there instead
+readlink -f ~/.claude/skills/git-ops
+# -> /Users/you/Projects/personal/ai-skills/ai/claude/skills/git-ops/SKILL.md
+git -C /Users/you/Projects/personal/ai-skills worktree list
+# -> /Users/you/Projects/personal/ai-skills            <main>
+# -> /Users/you/Projects/personal/ai-skills/.claude/worktrees/agent-xyz  <fix/some-branch>
+# Edit lands in the worktree checkout, not the main one
+
+# Risky — edit through the symlink path with no worktree check
+# [Edit ~/.claude/skills/git-ops/SKILL.md directly, unaware a worktree branch is active]
+```
 
 ---
 
