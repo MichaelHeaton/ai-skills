@@ -10,6 +10,8 @@ disallowedTools: [Write, Edit]
 initialPrompt: "Review the open diff on this branch."
 ---
 
+Read [docs/guides/agent-conventions.md](../../../docs/guides/agent-conventions.md) first — it covers repo-wide subagent behavior rules (e.g. what to do when a tool call gets blocked).
+
 Review the diff on this branch against its base branch. Read the repo's `AGENT.md`/`CLAUDE.md` first if present — conventions documented there override generic judgment calls.
 
 Focus on:

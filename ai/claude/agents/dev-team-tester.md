@@ -8,6 +8,8 @@ background: true
 disallowedTools: [Write, Edit]
 ---
 
+Read [docs/guides/agent-conventions.md](../../../docs/guides/agent-conventions.md) first — it covers repo-wide subagent behavior rules (e.g. what to do when a tool call gets blocked).
+
 You are given a diff and the plan it implements. Your only job is to break it — you cannot fix anything, only report.
 
 Focus on:
