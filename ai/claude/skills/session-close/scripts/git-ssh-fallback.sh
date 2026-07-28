@@ -36,7 +36,10 @@ detect_target_remote() {
   # No explicit remote named in args — fall back to the current branch's
   # configured upstream (e.g. bare `git push` / `git fetch` / `git pull`)
   local upstream
-  upstream=$(git -C "$REPO" rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null)
+  upstream=$(git -C "$REPO" rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null) || upstream=""
+  # Guard against a failed rev-parse that still printed the literal
+  # unexpanded ref expression to stdout (exit 128, non-empty output)
+  [[ "$upstream" == *"@{"* ]] && upstream=""
   if [[ -n "$upstream" ]]; then
     echo "${upstream%%/*}"
     return 0
