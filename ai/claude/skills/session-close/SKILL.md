@@ -1,5 +1,5 @@
 ---
-version: 1.9.1
+version: 1.9.2
 principles_version: 1.0.0
 last_updated: 2026-07-28
 updated_by: claude
@@ -58,7 +58,7 @@ gh pr list --head <branch> --state all --json number,state,title \
 
 Run this check for GitHub repos only. Skip GitLab, Bitbucket, or repos with no `gh`-reachable remote. Do not block on errors — if `gh` fails for a repo, skip it silently and note it in the Step 10 summary.
 
-**Hard gate — per repo, not a one-time audit.** Completing this check for one repo does not clear the gate for any other repo still pending. Do not begin Step 2 for a given repo until this check has completed for that specific repo. If the check flags a merged PR (stale branch) for a repo, switch that repo to `main` (`git checkout main && git pull`) before Step 2 treats any uncommitted changes in that repo as committable — do not commit to a branch whose PR is already merged.
+**Hard gate — per repo, not a one-time audit.** Completing this check for one repo does not clear the gate for any other repo still pending. Do not begin Step 2 for a given repo until this check has completed for that specific repo. If the check flags a merged PR (stale branch) **and** the repo has uncommitted changes, resolve those changes first via Step 2's normal flow (commit+push to the stale branch, discard, or leave pending) **while still on the stale branch**. Only once the working tree is clean, switch to `main` (`git checkout main && git pull`). Never check out `main` while changes are uncommitted, and never commit directly on `main` — any further work after switching needs a new branch per git-ops first. A repo skipped due to a `gh` failure does not satisfy this gate — flag it in Step 10 as "branch state unverified" and treat it as if a stale branch were possible (don't let Step 2 silently assume it's clean).
 
 ---
 
