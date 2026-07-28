@@ -1,5 +1,5 @@
 ---
-version: 1.5.0
+version: 1.5.1
 principles_version: 1.0.0
 last_updated: 2026-07-28
 updated_by: claude
@@ -287,21 +287,27 @@ This applies to: `git add`, `git commit`, `git push`, `gh pr create`, and any co
 **Before an Edit/Write through a path under `~/.claude/skills/`**, resolve the real path and check for an active worktree on that repo:
 
 ```bash
-# Resolve the symlink to its real on-disk location
+# Resolve the symlink to its real on-disk location (a directory, not the SKILL.md file itself)
 readlink -f ~/.claude/skills/<name>
 
 # From the resolved path, check for active worktrees on the same repo
-git -C "$(dirname "$(readlink -f ~/.claude/skills/<name>)")" worktree list
+git -C "$(readlink -f ~/.claude/skills/<name>)" worktree list
 ```
 
 **Why:** `readlink -f` shows where the symlink actually points — often the shared main checkout, not whatever worktree you meant to edit. `git worktree list` then shows every checkout for that repo, including any active non-main worktree branch.
 
 **If an active non-main worktree exists for the same underlying repo**, warn before writing and point at the worktree checkout path instead of silently proceeding on whatever the symlink resolved to.
 
+**If `git worktree list` returns more than one non-main entry**, don't assume — disambiguate:
+
+- **Primary signal**: if the session's own current working directory (or the path it was invoked from) is itself inside one of the listed worktree paths, that's the relevant one — use it without asking.
+- **If cwd doesn't match any listed worktree** and multiple non-main worktrees exist, stop and ask the user which one is intended, listing the candidate paths and branches.
+- Do **not** fall back to "most recently modified" or "first in the list" — either would recreate the same false-confidence failure this check exists to prevent.
+
 ```bash
 # Safe — resolved the symlink, saw an active worktree, edited there instead
 readlink -f ~/.claude/skills/git-ops
-# -> /Users/you/Projects/personal/ai-skills/ai/claude/skills/git-ops/SKILL.md
+# -> /Users/you/Projects/personal/ai-skills/ai/claude/skills/git-ops
 git -C /Users/you/Projects/personal/ai-skills worktree list
 # -> /Users/you/Projects/personal/ai-skills            <main>
 # -> /Users/you/Projects/personal/ai-skills/.claude/worktrees/agent-xyz  <fix/some-branch>
