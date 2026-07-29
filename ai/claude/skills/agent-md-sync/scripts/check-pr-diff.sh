@@ -32,6 +32,22 @@ if [[ -f ".agent-md-ignore" ]]; then
   done < ".agent-md-ignore"
 fi
 
+# Resolve which AI context filename convention this repo actually uses.
+# Checks the repo root: AGENTS.md (plural, the community-standard default)
+# first, then AGENT.md (singular, legacy); defaults to AGENTS.md if neither
+# exists yet.
+resolve_agent_md_name() {
+  if [[ -f "AGENTS.md" ]]; then
+    echo "AGENTS.md"
+  elif [[ -f "AGENT.md" ]]; then
+    echo "AGENT.md"
+  else
+    echo "AGENTS.md"
+  fi
+}
+AGENT_MD_NAME="$(resolve_agent_md_name)"
+AGENT_MD_NAME_ESCAPED="${AGENT_MD_NAME//./\\.}"
+
 # Get all files changed in this branch vs base (three-dot diff for branch-only changes)
 mapfile -t ALL_CHANGED < <(git diff --name-only "${BASE}...HEAD" 2>/dev/null || git diff --name-only "${BASE}..HEAD" 2>/dev/null || true)
 
@@ -44,7 +60,7 @@ declare -A AGENT_UPDATED_DIRS
 while IFS= read -r -d '' f; do
   dir=$(dirname "$f")
   AGENT_UPDATED_DIRS["$dir"]=1
-done < <(printf '%s\0' "${ALL_CHANGED[@]}" | grep -z 'AGENT\.md$' || true)
+done < <(printf '%s\0' "${ALL_CHANGED[@]}" | grep -zE "${AGENT_MD_NAME_ESCAPED}\$" || true)
 
 # Is a directory a recognized component type?
 is_component_dir() {
@@ -73,7 +89,7 @@ find_component_boundary() {
       return 0
     fi
 
-    if [[ -f "$dir/AGENT.md" ]]; then
+    if [[ -f "$dir/$AGENT_MD_NAME" ]]; then
       echo "has-agent-md:$dir"
       return 0
     fi
@@ -91,8 +107,8 @@ find_component_boundary() {
 declare -A REPORTED_DIRS
 
 for file in "${ALL_CHANGED[@]}"; do
-  # Skip AGENT.md files themselves
-  [[ "$file" =~ (^|/)AGENT\.md$ ]] && continue
+  # Skip AGENT.md/AGENTS.md files themselves
+  [[ "$file" =~ (^|/)${AGENT_MD_NAME_ESCAPED}$ ]] && continue
 
   boundary=$(find_component_boundary "$file") || continue
   [[ -z "$boundary" ]] && continue

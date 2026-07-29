@@ -38,7 +38,19 @@ for f in package.json go.mod Cargo.toml requirements.txt Pipfile pyproject.toml 
 done
 
 section "AI CONTEXT FILES"
-for f in AGENT.md CLAUDE.md .cursorrules .aider.conf.yml .github/copilot-instructions.md; do
+# Root AI context file: report whichever of AGENTS.md (plural, community
+# standard default) / AGENT.md (singular, legacy) already exists in this
+# repo. If neither exists yet, report the new default (AGENTS.md) as missing.
+if [[ -f "AGENTS.md" ]]; then
+  lines=$(wc -l < "AGENTS.md" | tr -d ' ')
+  echo "FOUND:   AGENTS.md  ($lines lines)"
+elif [[ -f "AGENT.md" ]]; then
+  lines=$(wc -l < "AGENT.md" | tr -d ' ')
+  echo "FOUND:   AGENT.md  ($lines lines)"
+else
+  echo "MISSING: AGENTS.md"
+fi
+for f in CLAUDE.md .cursorrules .aider.conf.yml .github/copilot-instructions.md; do
   if [[ -f "$f" ]]; then
     lines=$(wc -l < "$f" | tr -d ' ')
     echo "FOUND:   $f  ($lines lines)"

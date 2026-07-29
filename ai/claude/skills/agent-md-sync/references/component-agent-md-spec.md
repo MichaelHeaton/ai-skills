@@ -1,31 +1,31 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-06-24
-updated_by: human
+last_updated: 2026-07-29
+updated_by: claude
 ---
 
-# Component AGENT.md Specification
+# Component AGENTS.md Specification
 
-Component AGENT.md files live alongside their component — `roles/nginx/AGENT.md`, `modules/vpc/AGENT.md`. They give AI agents focused context for working in a specific component without reading the whole repo.
+Component AGENTS.md files (or `AGENT.md`, if that's the repo's existing convention) live alongside their component — `roles/nginx/AGENTS.md`, `modules/vpc/AGENTS.md`. They give AI agents focused context for working in a specific component without reading the whole repo.
 
-## Relationship to root AGENT.md
+## Relationship to root AGENTS.md
 
-The root `AGENT.md` defines repo-wide conventions. Component AGENT.md files should:
+The root `AGENTS.md` (or `AGENT.md`, for repos already using the legacy singular convention) defines repo-wide conventions. Component-level files should:
 
 - Link back to the root for anything already documented there
 - Only document what is **specific** to this component
 - Not repeat repo-wide conventions unless the component deviates from them
 
-If the root AGENT.md covers naming conventions, don't restate them. If this component has a specific exception or extension to those conventions, document only that delta.
+If the root AGENTS.md covers naming conventions, don't restate them. If this component has a specific exception or extension to those conventions, document only that delta.
 
 ## Standard structure
 
 ```markdown
-# AGENT.md — [Component Name]
+# AGENTS.md — [Component Name]
 
 > [One sentence: what this component does.]
-> Repo context: see [root AGENT.md](../../AGENT.md).
+> Repo context: see [root AGENTS.md](../../AGENTS.md).
 
 ## Purpose
 
@@ -62,7 +62,7 @@ Add entries after real incidents — not preemptively.]
 
 ## Length target
 
-**30–80 lines.** If a component AGENT.md exceeds 80 lines, it is probably capturing things that belong in the root AGENT.md or in inline code comments. Keep it focused.
+**30–80 lines.** If a component AGENTS.md exceeds 80 lines, it is probably capturing things that belong in the root AGENTS.md or in inline code comments. Keep it focused.
 
 ## Writing guidelines
 
@@ -76,10 +76,10 @@ Add entries after real incidents — not preemptively.]
 
 ## Update trigger
 
-Update a component AGENT.md whenever:
+Update a component AGENTS.md (or AGENT.md, if that's the repo's existing convention) whenever:
 
 - An AI does something wrong in this component that the code didn't prevent
 - A variable or interface changes in a way that would surprise an AI reading the old file
 - A non-obvious convention is established or changes
 
-The git-ops skill checks for this at PR time and flags components whose AGENT.md wasn't updated alongside their code.
+The git-ops skill checks for this at PR time and flags components whose AGENTS.md (or AGENT.md) wasn't updated alongside their code.

@@ -8,9 +8,24 @@ set -euo pipefail
 REPO="${1:-.}"
 cd "$REPO" || { echo "ERROR: cannot cd to $REPO" >&2; exit 1; }
 
+# Resolve which AI context filename convention this repo actually uses.
+# Checks the repo root (after the cd above): AGENTS.md (plural, the
+# community-standard default) first, then AGENT.md (singular, legacy);
+# defaults to AGENTS.md if neither exists yet.
+resolve_agent_md_name() {
+  if [[ -f "AGENTS.md" ]]; then
+    echo "AGENTS.md"
+  elif [[ -f "AGENT.md" ]]; then
+    echo "AGENT.md"
+  else
+    echo "AGENTS.md"
+  fi
+}
+AGENT_MD_NAME="$(resolve_agent_md_name)"
+
 has_agent_md() {
   local path="$1"
-  [[ -f "$path/AGENT.md" ]] && echo "yes" || echo "no"
+  [[ -f "$path/$AGENT_MD_NAME" ]] && echo "yes" || echo "no"
 }
 
 # Ansible roles — dirs under roles/ with a tasks/main.yml or tasks/main.yaml
