@@ -39,7 +39,25 @@ resolve_diff_base() {
       fi
     fi
   fi
-  echo "$base"
+  # Fetch didn't happen or didn't produce a usable origin/<base> — fall back,
+  # but don't just hand back the bare "$base" string blind: in a fresh
+  # clone/worktree where only origin/<base> exists (no local branch), that
+  # string wouldn't resolve to anything, the later diff would silently fail
+  # (swallowed by `2>/dev/null || true`), and the script would exit 0 with
+  # zero output — indistinguishable from "nothing to report." Prefer a local
+  # ref if one genuinely resolves, then an already-cached origin/<base> (no
+  # fresh fetch needed, the fetch attempt above already failed), and only
+  # give up loudly if neither exists.
+  if git rev-parse --verify "$base" &>/dev/null 2>&1; then
+    echo "$base"
+    return 0
+  fi
+  if git rev-parse --verify "origin/${base}" &>/dev/null 2>&1; then
+    echo "origin/${base}"
+    return 0
+  fi
+  echo "ERROR: cannot resolve diff base '$base' (no local ref, no origin/$base, fetch failed)" >&2
+  exit 1
 }
 
 DIFF_BASE="$(resolve_diff_base "$BASE")"
