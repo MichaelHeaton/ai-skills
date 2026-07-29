@@ -11,15 +11,56 @@ set -euo pipefail
 # Determine base branch
 BASE="${1:-}"
 if [[ -z "$BASE" ]]; then
-  if git rev-parse --verify main &>/dev/null 2>&1; then
+  if git rev-parse --verify main &>/dev/null 2>&1 || git rev-parse --verify origin/main &>/dev/null 2>&1; then
     BASE="main"
-  elif git rev-parse --verify master &>/dev/null 2>&1; then
+  elif git rev-parse --verify master &>/dev/null 2>&1 || git rev-parse --verify origin/master &>/dev/null 2>&1; then
     BASE="master"
   else
     echo "ERROR: cannot determine base branch (tried main, master)" >&2
     exit 1
   fi
 fi
+
+# Resolve the actual ref to diff against. A local base branch ref (e.g. "main")
+# isn't kept in sync with origin automatically — if it hasn't been fetched or
+# fast-forwarded recently, diffing against it can include commits that already
+# landed on origin but aren't reflected in the stale local ref, producing
+# false-positive STALE/MISSING findings. Prefer origin/<base> when reachable;
+# fall back to the local ref name as-is if there's no origin remote, the
+# fetch fails (e.g. offline), or the remote ref doesn't resolve. This must
+# never hard-fail the script on network issues.
+resolve_diff_base() {
+  local base="$1"
+  if git remote get-url origin &>/dev/null 2>&1; then
+    if git fetch origin "$base" &>/dev/null 2>&1; then
+      if git rev-parse --verify "origin/${base}" &>/dev/null 2>&1; then
+        echo "origin/${base}"
+        return 0
+      fi
+    fi
+  fi
+  # Fetch didn't happen or didn't produce a usable origin/<base> — fall back,
+  # but don't just hand back the bare "$base" string blind: in a fresh
+  # clone/worktree where only origin/<base> exists (no local branch), that
+  # string wouldn't resolve to anything, the later diff would silently fail
+  # (swallowed by `2>/dev/null || true`), and the script would exit 0 with
+  # zero output — indistinguishable from "nothing to report." Prefer a local
+  # ref if one genuinely resolves, then an already-cached origin/<base> (no
+  # fresh fetch needed, the fetch attempt above already failed), and only
+  # give up loudly if neither exists.
+  if git rev-parse --verify "$base" &>/dev/null 2>&1; then
+    echo "$base"
+    return 0
+  fi
+  if git rev-parse --verify "origin/${base}" &>/dev/null 2>&1; then
+    echo "origin/${base}"
+    return 0
+  fi
+  echo "ERROR: cannot resolve diff base '$base' (no local ref, no origin/$base, fetch failed)" >&2
+  exit 1
+}
+
+DIFF_BASE="$(resolve_diff_base "$BASE")"
 
 # Load ignore list
 declare -A IGNORED
@@ -44,7 +85,7 @@ has_either_agent_md() {
 }
 
 # Get all files changed in this branch vs base (three-dot diff for branch-only changes)
-mapfile -t ALL_CHANGED < <(git diff --name-only "${BASE}...HEAD" 2>/dev/null || git diff --name-only "${BASE}..HEAD" 2>/dev/null || true)
+mapfile -t ALL_CHANGED < <(git diff --name-only "${DIFF_BASE}...HEAD" 2>/dev/null || git diff --name-only "${DIFF_BASE}..HEAD" 2>/dev/null || true)
 
 if [[ ${#ALL_CHANGED[@]} -eq 0 ]]; then
   exit 0
