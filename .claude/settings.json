@@ -23,7 +23,15 @@
       "Bash(gh auth switch --hostname * --user *)",
       "Bash(git fetch *)",
       "Bash(bash ~/.claude/skills/agent-md-sync/scripts/discover-components.sh*)",
-      "Bash(bash ~/.claude/skills/agent-md-sync/scripts/check-coverage.sh*)"
+      "Bash(bash ~/.claude/skills/agent-md-sync/scripts/check-coverage.sh*)",
+      "Bash(bash ~/.claude/skills/issue-create/scripts/append-task-index.sh*)",
+      "Bash(terraform fmt -check*)",
+      "Bash(terraform validate*)",
+      "Bash(terraform init -backend=false*)",
+      "Bash(gh label list*)",
+      "Bash(aws sts get-caller-identity*)",
+      "mcp__atlassian__jira_get_transitions",
+      "Bash(bash ~/.claude/skills/issue-create/scripts/detect-context.sh*)"
     ]
   }
 }
