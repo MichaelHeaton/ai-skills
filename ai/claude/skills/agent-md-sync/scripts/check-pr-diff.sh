@@ -11,15 +11,38 @@ set -euo pipefail
 # Determine base branch
 BASE="${1:-}"
 if [[ -z "$BASE" ]]; then
-  if git rev-parse --verify main &>/dev/null 2>&1; then
+  if git rev-parse --verify main &>/dev/null 2>&1 || git rev-parse --verify origin/main &>/dev/null 2>&1; then
     BASE="main"
-  elif git rev-parse --verify master &>/dev/null 2>&1; then
+  elif git rev-parse --verify master &>/dev/null 2>&1 || git rev-parse --verify origin/master &>/dev/null 2>&1; then
     BASE="master"
   else
     echo "ERROR: cannot determine base branch (tried main, master)" >&2
     exit 1
   fi
 fi
+
+# Resolve the actual ref to diff against. A local base branch ref (e.g. "main")
+# isn't kept in sync with origin automatically — if it hasn't been fetched or
+# fast-forwarded recently, diffing against it can include commits that already
+# landed on origin but aren't reflected in the stale local ref, producing
+# false-positive STALE/MISSING findings. Prefer origin/<base> when reachable;
+# fall back to the local ref name as-is if there's no origin remote, the
+# fetch fails (e.g. offline), or the remote ref doesn't resolve. This must
+# never hard-fail the script on network issues.
+resolve_diff_base() {
+  local base="$1"
+  if git remote get-url origin &>/dev/null 2>&1; then
+    if git fetch origin "$base" &>/dev/null 2>&1; then
+      if git rev-parse --verify "origin/${base}" &>/dev/null 2>&1; then
+        echo "origin/${base}"
+        return 0
+      fi
+    fi
+  fi
+  echo "$base"
+}
+
+DIFF_BASE="$(resolve_diff_base "$BASE")"
 
 # Load ignore list
 declare -A IGNORED
@@ -44,7 +67,7 @@ has_either_agent_md() {
 }
 
 # Get all files changed in this branch vs base (three-dot diff for branch-only changes)
-mapfile -t ALL_CHANGED < <(git diff --name-only "${BASE}...HEAD" 2>/dev/null || git diff --name-only "${BASE}..HEAD" 2>/dev/null || true)
+mapfile -t ALL_CHANGED < <(git diff --name-only "${DIFF_BASE}...HEAD" 2>/dev/null || git diff --name-only "${DIFF_BASE}..HEAD" 2>/dev/null || true)
 
 if [[ ${#ALL_CHANGED[@]} -eq 0 ]]; then
   exit 0
