@@ -8,9 +8,13 @@ set -euo pipefail
 REPO="${1:-.}"
 cd "$REPO" || { echo "ERROR: cannot cd to $REPO" >&2; exit 1; }
 
+# Reports "yes" if EITHER convention's file exists at this path — a
+# mixed-migration repo may have some components on AGENTS.md (the
+# community-standard default) and others still on the legacy AGENT.md,
+# so this always checks both rather than assuming one.
 has_agent_md() {
   local path="$1"
-  [[ -f "$path/AGENT.md" ]] && echo "yes" || echo "no"
+  [[ -f "$path/AGENT.md" || -f "$path/AGENTS.md" ]] && echo "yes" || echo "no"
 }
 
 # Ansible roles — dirs under roles/ with a tasks/main.yml or tasks/main.yaml

@@ -1,10 +1,10 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-06-26
+last_updated: 2026-07-29
 updated_by: claude
 name: repo-ai-init
-description: Analyze an existing git repository and apply AI best practices — creating AGENT.md (provider-agnostic context), CLAUDE.md (Claude-specific overlay), and identifying documentation gaps. Makes old repos understandable to any AI agent, not just Claude. Use when pointed at a repo that has no AI context files, when AI tools feel "blind" to a codebase, or when onboarding a repo to Claude Code. Triggers on: "set up AI support for this repo", "add AI context to this project", "make this repo AI-ready", "create an AGENT.md", "this repo has no CLAUDE.md", "AI doesn't understand this codebase".
+description: Analyze an existing git repository and apply AI best practices — creating AGENTS.md (provider-agnostic context, or AGENT.md if that's the repo's existing convention), CLAUDE.md (Claude-specific overlay), and identifying documentation gaps. Makes old repos understandable to any AI agent, not just Claude. Use when pointed at a repo that has no AI context files, when AI tools feel "blind" to a codebase, or when onboarding a repo to Claude Code. Triggers on: "set up AI support for this repo", "add AI context to this project", "make this repo AI-ready", "create an AGENTS.md", "this repo has no CLAUDE.md", "AI doesn't understand this codebase".
 compatibility: Requires git.
 ---
 
@@ -14,10 +14,10 @@ Transform any git repository — including legacy codebases built before AI tool
 
 The core output is two files:
 
-- **`AGENT.md`** — provider-agnostic. Any AI from any company reads this and gets full context on the repo: what it is, how it works, its conventions, its gotchas. This is the single source of truth.
-- **`CLAUDE.md`** — Claude-specific overlay. References `AGENT.md` for general context. Adds Claude Code configuration (hooks, allowed tools) and explains *why* those choices exist — so another AI reading it can understand the reasoning rather than just the rules.
+- **`AGENTS.md`** — provider-agnostic. Any AI from any company reads this and gets full context on the repo: what it is, how it works, its conventions, its gotchas. This is the single source of truth. Write to `AGENTS.md` by default; if the repo already has a root `AGENT.md` (singular) in place, detect that existing convention and keep writing to it instead of forcing a rename.
+- **`CLAUDE.md`** — Claude-specific overlay. References the resolved AGENT.md/AGENTS.md file for general context. Adds Claude Code configuration (hooks, allowed tools) and explains *why* those choices exist — so another AI reading it can understand the reasoning rather than just the rules.
 
-Read `references/agent-md-spec.md` before writing any files — it defines the standard AGENT.md structure.
+Read `references/agent-md-spec.md` before writing any files — it defines the standard AGENTS.md structure.
 
 ---
 
@@ -60,7 +60,7 @@ Ask 5–8 targeted questions. Wait for answers before writing anything.
 
 ---
 
-## Phase 3: Write AGENT.md
+## Phase 3: Write AGENTS.md
 
 Use the structure defined in `references/agent-md-spec.md`.
 
@@ -72,13 +72,13 @@ Key principles:
 - DRY: if something is well-documented in a README or spec, link to it rather than restating it.
 - Be specific. "Use camelCase for functions" is useful. "Write clean code" is not.
 
-Show the draft to the user for review before saving. Apply feedback, then write to `AGENT.md` in the repo root.
+Show the draft to the user for review before saving. Apply feedback, then write to `AGENTS.md` in the repo root — unless discovery found an existing root `AGENT.md` (singular), in which case respect that convention and write there instead.
 
 ---
 
 ## Phase 4: Write CLAUDE.md
 
-CLAUDE.md has a specific relationship with AGENT.md: it's a thin overlay, not a standalone document.
+CLAUDE.md has a specific relationship with AGENTS.md: it's a thin overlay, not a standalone document.
 
 Structure:
 
@@ -86,7 +86,7 @@ Structure:
 # CLAUDE.md
 
 > Claude Code configuration for [Project Name].
-> For full project context, read AGENT.md first.
+> For full project context, read AGENTS.md first.
 
 ## Claude Code settings
 [Hooks, allowed tools, env vars — only what's actually configured]
@@ -103,7 +103,7 @@ The "why Claude does things this way" section matters more than it might seem. W
 - Why certain tools are pre-approved (e.g., "read-only git commands that are safe to run without prompting")
 - Why the model is set to Sonnet instead of Haiku (e.g., "this repo requires multi-file reasoning")
 
-If there's no existing `CLAUDE.md` and no Claude Code configuration to document, create a minimal one that just references `AGENT.md` and leaves the settings sections empty with comments.
+If there's no existing `CLAUDE.md` and no Claude Code configuration to document, create a minimal one that just references the resolved AGENTS.md/AGENT.md file and leaves the settings sections empty with comments.
 
 Show the draft to the user before saving.
 
@@ -115,19 +115,19 @@ After writing both files, do a final pass and report:
 
 **Undocumented areas**: What parts of the codebase are still opaque? What would an AI get wrong on first contact?
 
-**Missing conventions**: What patterns exist in the code that aren't captured in AGENT.md yet?
+**Missing conventions**: What patterns exist in the code that aren't captured in AGENTS.md yet?
 
 **Suggested follow-ups**: What should be added over time as the repo evolves? (e.g., "Add a section on deployment once the CI pipeline is documented")
 
-**Other AI tools**: If the user works with Cursor, Copilot, or Aider, offer to generate their config files too — each should reference AGENT.md as the source of truth and add only tool-specific configuration.
+**Other AI tools**: If the user works with Cursor, Copilot, or Aider, offer to generate their config files too — each should reference the resolved AGENTS.md/AGENT.md file as the source of truth and add only tool-specific configuration.
 
 ---
 
-## Phase 6: Offer component-level AGENT.md generation
+## Phase 6: Offer component-level AGENTS.md generation
 
-After writing the root AGENT.md and CLAUDE.md, offer to continue with the `agent-md-sync` skill in scan mode:
+After writing the root AGENTS.md (or AGENT.md, if that's the repo's existing convention) and CLAUDE.md, offer to continue with the `agent-md-sync` skill in scan mode:
 
-> "Root AGENT.md written. Would you like to also generate component-level AGENT.md files for the roles/modules in this repo? I can scan for Ansible roles, Terraform modules, Helm charts, and other components."
+> "Root AGENTS.md written. Would you like to also generate component-level AGENTS.md files for the roles/modules in this repo? I can scan for Ansible roles, Terraform modules, Helm charts, and other components."
 
 This is optional — offer it, don't force it. If the repo has many components, the user may prefer to generate them incrementally as they work in each one.
 
@@ -135,4 +135,4 @@ This is optional — offer it, don't force it. If the repo has many components, 
 
 ## Maintenance note
 
-Tell the user: AGENT.md is a living document. The best time to update it is right after something surprised an AI — that surprise is evidence of a gap. A one-sentence addition to the Gotchas section prevents the same confusion from happening again.
+Tell the user: AGENTS.md (or AGENT.md, if that's the repo's existing convention) is a living document. The best time to update it is right after something surprised an AI — that surprise is evidence of a gap. A one-sentence addition to the Gotchas section prevents the same confusion from happening again.

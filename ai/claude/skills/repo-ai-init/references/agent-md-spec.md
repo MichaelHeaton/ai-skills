@@ -1,13 +1,13 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
-updated_by: human
+last_updated: 2026-07-29
+updated_by: claude
 ---
 
-# AGENT.md Specification
+# AGENTS.md Specification
 
-This defines the standard structure for `AGENT.md` files. The goal is a document that:
+This defines the standard structure for `AGENTS.md` files. The goal is a document that:
 
 - Any AI agent from any provider can read and act on
 - Explains the *why* behind decisions, not just the *what*
@@ -18,25 +18,27 @@ This defines the standard structure for `AGENT.md` files. The goal is a document
 
 ## File location
 
-`AGENT.md` lives in the repository root, alongside `README.md`.
+`AGENTS.md` (plural) lives in the repository root, alongside `README.md`, and is the default filename this spec produces for new repos — matching the external community standard at [agents.md](https://agents.md).
+
+Some repos already use the singular `AGENT.md` as their established convention. When that's the case, detect and respect it rather than forcing a rename: keep writing to the existing `AGENT.md` for that repo. Only brand-new repos (with neither file yet) get seeded with `AGENTS.md`.
 
 ## Relationship to other AI context files
 
 ```
-AGENT.md                    ← source of truth, provider-agnostic
-CLAUDE.md                   ← Claude Code overlay, references AGENT.md
-.cursorrules                ← Cursor overlay, references AGENT.md
-.github/copilot-instructions.md  ← Copilot overlay, references AGENT.md
+AGENTS.md                   ← source of truth, provider-agnostic (or AGENT.md, if that's this repo's existing convention)
+CLAUDE.md                   ← Claude Code overlay, references AGENTS.md
+.cursorrules                ← Cursor overlay, references AGENTS.md
+.github/copilot-instructions.md  ← Copilot overlay, references AGENTS.md
 ```
 
-Provider-specific files should be thin. They add tool configuration and explain tool-specific behaviors. They do not duplicate AGENT.md content.
+Provider-specific files should be thin. They add tool configuration and explain tool-specific behaviors. They do not duplicate AGENTS.md content.
 
 ---
 
 ## Standard structure
 
 ```markdown
-# AGENT.md — [Project Name]
+# AGENTS.md — [Project Name]
 
 > AI agent context document. Read this before working in this repository.
 > Provider-specific configuration: see [CLAUDE.md](CLAUDE.md) (Claude Code), etc.
@@ -135,4 +137,4 @@ Confluence pages that cover things this file doesn't.]
 
 **Do**: Document the surprising things. Explain rejected alternatives. Call out the files that carry the most weight. Flag the things that have tripped up smart contributors before.
 
-**Update trigger**: Update AGENT.md whenever an AI (or a new contributor) does something wrong that the code didn't prevent. That's a gap. A one-sentence addition to Gotchas closes it permanently.
+**Update trigger**: Update AGENTS.md (or AGENT.md, if that's the repo's existing convention) whenever an AI (or a new contributor) does something wrong that the code didn't prevent. That's a gap. A one-sentence addition to Gotchas closes it permanently.
