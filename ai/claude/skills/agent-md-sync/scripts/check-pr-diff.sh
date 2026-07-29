@@ -32,21 +32,16 @@ if [[ -f ".agent-md-ignore" ]]; then
   done < ".agent-md-ignore"
 fi
 
-# Resolve which AI context filename convention this repo actually uses.
-# Checks the repo root: AGENTS.md (plural, the community-standard default)
-# first, then AGENT.md (singular, legacy); defaults to AGENTS.md if neither
-# exists yet.
-resolve_agent_md_name() {
-  if [[ -f "AGENTS.md" ]]; then
-    echo "AGENTS.md"
-  elif [[ -f "AGENT.md" ]]; then
-    echo "AGENT.md"
-  else
-    echo "AGENTS.md"
-  fi
+# This script only reports on existing files — it never writes a new
+# AGENT.md/AGENTS.md itself, so there's no need to resolve one preferred
+# name. A mixed-migration repo may have some components on AGENTS.md and
+# others still on the legacy AGENT.md, so every existence check below
+# always falls back to either filename rather than assuming one.
+EITHER_AGENT_MD_RE='(^|/)AGENTS?\.md$'
+
+has_either_agent_md() {
+  [[ -f "$1/AGENT.md" || -f "$1/AGENTS.md" ]]
 }
-AGENT_MD_NAME="$(resolve_agent_md_name)"
-AGENT_MD_NAME_ESCAPED="${AGENT_MD_NAME//./\\.}"
 
 # Get all files changed in this branch vs base (three-dot diff for branch-only changes)
 mapfile -t ALL_CHANGED < <(git diff --name-only "${BASE}...HEAD" 2>/dev/null || git diff --name-only "${BASE}..HEAD" 2>/dev/null || true)
@@ -55,12 +50,12 @@ if [[ ${#ALL_CHANGED[@]} -eq 0 ]]; then
   exit 0
 fi
 
-# Which component dirs had their AGENT.md updated in this branch?
+# Which component dirs had EITHER convention's file updated in this branch?
 declare -A AGENT_UPDATED_DIRS
 while IFS= read -r -d '' f; do
   dir=$(dirname "$f")
   AGENT_UPDATED_DIRS["$dir"]=1
-done < <(printf '%s\0' "${ALL_CHANGED[@]}" | grep -zE "${AGENT_MD_NAME_ESCAPED}\$" || true)
+done < <(printf '%s\0' "${ALL_CHANGED[@]}" | grep -zE 'AGENTS?\.md$' || true)
 
 # Is a directory a recognized component type?
 is_component_dir() {
@@ -89,7 +84,7 @@ find_component_boundary() {
       return 0
     fi
 
-    if [[ -f "$dir/$AGENT_MD_NAME" ]]; then
+    if has_either_agent_md "$dir"; then
       echo "has-agent-md:$dir"
       return 0
     fi
@@ -107,8 +102,8 @@ find_component_boundary() {
 declare -A REPORTED_DIRS
 
 for file in "${ALL_CHANGED[@]}"; do
-  # Skip AGENT.md/AGENTS.md files themselves
-  [[ "$file" =~ (^|/)${AGENT_MD_NAME_ESCAPED}$ ]] && continue
+  # Skip AGENT.md/AGENTS.md files themselves (either convention)
+  [[ "$file" =~ $EITHER_AGENT_MD_RE ]] && continue
 
   boundary=$(find_component_boundary "$file") || continue
   [[ -z "$boundary" ]] && continue

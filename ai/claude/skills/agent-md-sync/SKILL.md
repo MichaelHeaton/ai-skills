@@ -1,5 +1,5 @@
 ---
-version: 1.1.0
+version: 1.1.1
 principles_version: 1.0.0
 last_updated: 2026-07-29
 updated_by: claude
@@ -8,7 +8,7 @@ description: Generate and maintain component-level AGENTS.md files — either fo
 compatibility: Requires git. Scan mode requires a repo with recognizable component structure (Ansible roles, Terraform modules, Helm charts, or README-bearing subdirectories).
 ---
 
-Component-level AGENT.md files give AI agents focused context without scanning the whole repo. They live alongside the component — `roles/nginx/AGENTS.md`, `modules/vpc/AGENTS.md` — and link back to the root AGENTS.md (or AGENT.md, if that's the repo's existing convention) for repo-wide conventions.
+Component-level AGENT.md/AGENTS.md files give AI agents focused context without scanning the whole repo. They live alongside the component — `roles/nginx/AGENTS.md`, `modules/vpc/AGENTS.md` — and link back to the root AGENTS.md (or AGENT.md, if that's the repo's existing convention) for repo-wide conventions.
 
 This skill operates in two modes:
 
