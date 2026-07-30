@@ -1,8 +1,8 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
-updated_by: human
+last_updated: 2026-07-30
+updated_by: claude
 ---
 
 # Work-team weekly (wiki PPP)
@@ -18,6 +18,7 @@ Confirm with user (often day before a standing team meeting — see `meeting_not
 ## Sources
 
 - Jira MCP for `jira.project_key` / assignee = currentUser() when configured
+- **For any ticket central to this week's narrative**, pull recent comments too (`jira_get_issue` with `comment_limit` set), not just status/description — a same-day comment can contradict a status claim built from search results or git-log alone
 - Vault: recent meetings, dailies, prep notes per `memex_agent_ref`
 
 ## Format check
