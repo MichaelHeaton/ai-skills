@@ -1,10 +1,10 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
 last_updated: 2026-07-30
 updated_by: claude
 name: iac-triage
-description: SRE / IaC investigation mode for Terraform, Ansible, Kubernetes, CI/CD, and incident log work. Encodes evidence ordering (ask for the smallest useful slice first, not full output), hypothesis-driven questioning, and a structured triage response format. Prevents context overload from full plan dumps, verbose Ansible runs, and raw log pastes. Trigger on: any Terraform, Ansible, or kubectl investigation; "debug this plan", "ansible failed", "k8s error", "CI is failing", "deployment failed", "investigate this incident", "triage this", "terraform error", "playbook failing", "pipeline broken", or any time raw operational output is about to be loaded into context.
+description: SRE / IaC investigation mode for Terraform, Ansible, Kubernetes, CI/CD, and incident log work. Encodes evidence ordering (ask for the smallest useful slice first, not full output), hypothesis-driven questioning, and a structured triage response format. Prevents context overload from full plan dumps, verbose Ansible runs, and raw log pastes. Trigger on: any Terraform, Ansible, or kubectl investigation; "debug this plan", "ansible failed", "k8s error", "CI is failing", "deployment failed", "investigate this incident", "triage this", "terraform error", "playbook failing", "pipeline broken", or any time raw operational output is about to be loaded into context — including a second or third raw structured-log paste in the same debugging loop, which is its own recognizable pattern even if the first paste was missed.
 compatibility: Any repo or workspace. Integrates with log-clip / clog if installed.
 ---
 
@@ -97,6 +97,15 @@ If not → request the smallest slice that would confirm or deny it.
 
 ---
 
+## Command hand-off
+
+When the pattern is "draft a command, the user runs it and pastes output back" (rather than running it directly):
+
+- **Resolve every placeholder before handing off.** Before giving the user a command to run, fill in any templated value (hostname, ARN, resource ID) from available context — config files, prior command output, IaC source — rather than leaving an angle-bracket placeholder for them to fill in themselves. A command handed off with a literal `<placeholder>` wastes a full round trip when it fails on something already resolvable from context. If a value genuinely can't be resolved from what's available, say so explicitly and ask for it — don't silently hand off a templated command.
+- **Don't query a VCS-driven IaC platform's API directly using a locally-cached credential**, when the workspace's plans/applies are triggered by PR merges rather than local CLI runs. Reaching for a cached platform token to hit the platform's REST API for a read-only state/history check bypasses the team's actual operating model, even though the credential happens to be available. Ask the user to check the platform's web UI and report back instead. This applies to any VCS-driven IaC platform, not one vendor specifically.
+
+---
+
 ## Triage response format
 
 Always structure operational output analysis as:
@@ -139,3 +148,5 @@ ls -t ~/.claude/logs/tf-*.log | head -1
 ```
 
 If clog isn't available, apply the evidence ordering above to manually request the right slice.
+
+**Repeated raw log pastes are their own pattern, not just repeated one-off errors.** If a second or third raw structured JSON log (Terraform/Ansible/CI run output) lands in context in the same debugging loop, that's the moment to reach for `clog`/this skill's evidence ordering even if the first paste went by unfiltered — don't let a repetitive back-and-forth normalize pasting raw output every time.
