@@ -1,5 +1,5 @@
 ---
-version: 1.10.0
+version: 1.11.0
 principles_version: 1.0.0
 last_updated: 2026-07-30
 updated_by: claude
@@ -92,8 +92,10 @@ If the active account is not `${GITHUB_PERSONAL_USER}`, capture it so it can be 
 
 ```bash
 ORIGINAL_GH_ACCOUNT=$(gh auth status 2>&1 | grep "Active account: true" -B1 | grep "Logged in to github.com account" | awk '{print $(NF-1)}')
-gh auth switch --user "${GITHUB_PERSONAL_USER}"
+gh auth switch --hostname github.com --user "${GITHUB_PERSONAL_USER}"
 ```
+
+**Always pass `--hostname github.com`.** With more than one host authenticated in `gh` (e.g. github.com plus an internal GHE/GitLab host), `gh auth switch --user <name>` fails outright with "unable to determine which account to switch to, please specify --hostname and --user" — the hostname flag isn't optional in that environment.
 
 If the active account already matches `${GITHUB_PERSONAL_USER}`, skip this capture — there's nothing to restore later.
 
@@ -280,7 +282,7 @@ Do not ask the user if they worked on tickets. Find them from the task index and
 
 ```bash
 if [[ -n "${ORIGINAL_GH_ACCOUNT:-}" ]]; then
-  gh auth switch --user "${ORIGINAL_GH_ACCOUNT}" 2>/dev/null || true
+  gh auth switch --hostname github.com --user "${ORIGINAL_GH_ACCOUNT}" 2>/dev/null || true
 fi
 ```
 
