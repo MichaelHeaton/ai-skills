@@ -32,7 +32,8 @@
       "Bash(aws sts get-caller-identity*)",
       "mcp__atlassian__jira_get_transitions",
       "Bash(bash ~/.claude/skills/issue-create/scripts/detect-context.sh*)",
-      "mcp__atlassian__jira_get_project_components"
+      "mcp__atlassian__jira_get_project_components",
+      "Bash(bash ~/.claude/skills/session-close/scripts/check-concurrent-session.sh*)"
     ]
   }
 }
