@@ -64,63 +64,19 @@ Run this check for GitHub repos only. Skip GitLab, Bitbucket, or repos with no `
 
 ### Concurrent-session check (best-effort, non-blocking)
 
-Before committing anything in a repo, do a lightweight check for a second session already operating on it — a stale-state check alone only catches a *past* session, not one running right now:
-
-```bash
-# Another claude process with a cwd inside this repo?
-bash ~/.claude/skills/session-close/scripts/check-concurrent-session.sh <repo>
-
-# Has origin moved since this session started, outside anything this session did?
-git -C <repo> fetch origin --dry-run 2>&1
-git -C <repo> log HEAD..origin/main --oneline
-```
-
-`check-concurrent-session.sh` excludes this session's own claude process (walked up from its own `$PPID`) before matching — a naive `lsof -c claude | grep <repo>` always matches the running session's own cwd, which is a guaranteed false positive on every invocation, not a real signal. It also separates output into `LIVE:<pid>:<cwd>` (the cwd directory still exists — a genuine candidate for another active session) and `STALE:<pid>:<cwd>` (the process's reported cwd no longer exists on disk, e.g. a worktree deleted earlier in this same session — not a live collision, safe to ignore).
-
-If either signal fires — a `LIVE` match, or unexpected commits on `origin/main` this session didn't make — surface a warning before proceeding: *"Another session may be operating on `<repo>` — origin has moved / a concurrent process was found. Proceed carefully or check with the user before committing."* Ignore `STALE` matches; they aren't evidence of a live collision. This is best-effort, not a hard gate — don't block the run over it, and don't over-trust a clean result as proof no one else is active.
-
-**Hard gate — per repo, not a one-time audit.** Completing this check for one repo does not clear the gate for any other repo still pending. Do not begin Step 2 for a given repo until this check has completed for that specific repo. If the check flags a merged PR (stale branch) **and** the repo has uncommitted changes, resolve those changes first via Step 2's normal flow (commit+push to the stale branch, discard, or leave pending) **while still on the stale branch**. Only once the working tree is clean, switch to `main` (`git checkout main && git pull`). Never check out `main` while changes are uncommitted, and never commit directly on `main` — any further work after switching needs a new branch per git-ops first. A repo skipped due to a `gh` failure does not satisfy this gate — flag it in Step 10 as "branch state unverified" and treat it as if a stale branch were possible (don't let Step 2 silently assume it's clean).
+Before committing anything in a repo, check for a second session already operating on it — a stale-state check alone only catches a *past* session, not one running right now. **Hard gate, per repo, not a one-time audit**: do not begin Step 2 for a given repo until this check has completed for that specific repo. Detection commands, `LIVE`/`STALE` signal handling, and the gate's interaction with stale-branch resolution: [references/concurrent-session-check.md](references/concurrent-session-check.md).
 
 ---
 
 ## Step 1b — Git-ops pre-flight
 
-Invoke the `git-ops` skill *(personal — ai-skills repo)* before Steps 2–4 — it covers branching rules, commit format, PR format, and pre-commit checks. The short version: work GitHub and GitLab repos always get a branch + PR; personal KB uses branch + PR like work repos. Full rules in `~/.claude/references/branching.md`.
+Invoke the `git-ops` skill *(global: ai-skills)* before Steps 2–4 — it covers branching rules, commit format, PR format, and pre-commit checks. The short version: work GitHub and GitLab repos always get a branch + PR; personal KB uses branch + PR like work repos. Full rules in `~/.claude/references/branching.md`.
 
 **Do not ask for confirmation before invoking git-ops.** It is a required pre-flight for every session-close run.
 
 **SSH port-22 fallback**: For all GitHub/GitLab SSH remote operations, use `scripts/git-ssh-fallback.sh <repo-path> <subcommand> [args...]` instead of raw `git`. It auto-detects port-22 blocks, switches to HTTPS, and retries transparently.
 
-**GH auth pre-flight:** Before processing any GitHub.com repo — personal or work/org — verify the active `gh` account matches that repo's owner. The "Repository not found" account-mismatch failure mode is identical regardless of whose repo it is; don't read this as personal-repo-only because of how the variable below happens to be named. Run this once now — don't wait for a push failure.
-
-First, ensure `GITHUB_PERSONAL_USER` is set — it must be exported before any `gh` call. If it's not in the environment, read it from local config:
-
-```bash
-if [[ -z "${GITHUB_PERSONAL_USER:-}" ]]; then
-  GITHUB_PERSONAL_USER=$(jq -r '.accounts.personal.github_user // empty' \
-    ~/.config/ai-skills/local.json 2>/dev/null)
-fi
-export GITHUB_PERSONAL_USER
-```
-
-If still empty after this, stop and ask the user to set `GITHUB_PERSONAL_USER` in their shell profile or `~/.config/ai-skills/local.json` — all personal GitHub operations depend on it.
-
-Then verify the active account:
-
-```bash
-gh auth status 2>&1 | grep "Logged in to github.com account"
-```
-
-If the active account is not `${GITHUB_PERSONAL_USER}`, capture it so it can be restored at the end of this run (Step 10), then switch:
-
-```bash
-ORIGINAL_GH_ACCOUNT=$(gh auth status 2>&1 | grep "Active account: true" -B1 | grep "Logged in to github.com account" | awk '{print $(NF-1)}')
-gh auth switch --hostname github.com --user "${GITHUB_PERSONAL_USER}"
-```
-
-**Always pass `--hostname github.com`.** With more than one host authenticated in `gh` (e.g. github.com plus an internal GHE/GitLab host), `gh auth switch --user <name>` fails outright with "unable to determine which account to switch to, please specify --hostname and --user" — the hostname flag isn't optional in that environment.
-
-If the active account already matches `${GITHUB_PERSONAL_USER}`, skip this capture — there's nothing to restore later.
+**GH auth pre-flight:** Before processing any GitHub.com repo — personal or work/org — verify the active `gh` account matches that repo's owner and switch if needed, restoring the original account in Step 10. Full account-detection and switch commands: [references/gh-auth-preflight.md](references/gh-auth-preflight.md).
 
 ---
 
@@ -171,32 +127,7 @@ For each repo with `WORKTREES > 0`:
    git -C <worktree-path> log master..HEAD --oneline 2>/dev/null
    ```
 
-3. For worktrees with committed but unpushed work — **check merged-PR state before pushing**, per git-ops's "Before pushing to an existing branch" rule. The `AHEAD_BRANCHES` count from Step 1 is only a point-in-time snapshot, so don't skip this check just because Step 1 flagged the branch as ahead:
-
-     ```bash
-     GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}") \
-       gh pr list --head <branch> --state merged --json number,title
-     ```
-
-   - **Non-empty result** — the PR is already merged. Do not push this branch. Follow git-ops's merged-branch recovery: check out `main`, pull, create a fresh branch, re-apply any genuinely new content (verify with `git diff origin/main..HEAD -- <file>` — two-dot, not three-dot — since a three-dot diffstat can misrepresent already-merged content after a squash-merge), then push that new branch and go straight to branch cleanup for the stale one.
-   - **Empty result** — push normally:
-
-     ```bash
-     # GitHub SSH remotes:
-     bash ~/.claude/skills/session-close/scripts/git-ssh-fallback.sh <worktree-path> push -u origin <branch>
-     # HTTPS remotes or other hosts:
-     git -C <worktree-path> push -u origin <branch>
-     ```
-
-   - After pushing, confirm the branch actually landed on the remote — this is a post-push confirmation, not a substitute for the merged-PR check above:
-
-     ```bash
-     git ls-remote --heads origin <branch>
-     ```
-
-     If the output is empty, the push didn't take. Retry it before proceeding. If the retry fails, stop and surface the error — do not attempt PR creation against a missing branch.
-
-   - Create a PR (use `gh pr create` for GitHub repos)
+3. For worktrees with committed but unpushed work — **check merged-PR state before pushing**, per git-ops's "Before pushing to an existing branch" rule. The `AHEAD_BRANCHES` count from Step 1 is only a point-in-time snapshot, so don't skip this check just because Step 1 flagged the branch as ahead. Merged-PR check, the correct push command per remote type, and post-push landing confirmation: [references/merged-branch-push-safety.md](references/merged-branch-push-safety.md). Once pushed and confirmed, create a PR (use `gh pr create` for GitHub repos).
 4. For worktrees with uncommitted changes: handle via Step 2 flow first, then push + PR
 5. For worktrees with no new commits (already merged or empty): skip — handled by prune in Step 5
 
@@ -215,7 +146,7 @@ If notes are on a branch that hasn't merged, flag this prominently — the next 
 For each repo where `BRANCH != main` and `BRANCH != master` and `WORKTREES == 0`:
 
 1. Show what's on the branch vs main: `git -C <repo> log main..HEAD --oneline`
-2. **Check merged-PR state before pushing** any unpushed commits — the `AHEAD_BRANCHES` count from Step 1 may be stale, and pushing to an already-merged branch orphans commits (per git-ops's "Before pushing to an existing branch" rule): `gh pr list --head <branch> --state merged --json number,title`. If non-empty, follow git-ops's merged-branch recovery (fresh branch off updated main) instead of pushing here. If empty, push, then verify with `git ls-remote --heads origin <branch>` that the branch actually landed on the remote before attempting PR creation.
+2. **Check merged-PR state before pushing** any unpushed commits — the `AHEAD_BRANCHES` count from Step 1 may be stale, and pushing to an already-merged branch orphans commits (per git-ops's "Before pushing to an existing branch" rule). Same check and recovery as Step 3: [references/merged-branch-push-safety.md](references/merged-branch-push-safety.md).
 3. If it's a feature branch: check whether a PR already exists (`gh pr list --head <branch> --state all`) before creating one
 4. If it's a capture branch (e.g. `captures-2026-05-15`): this is expected for Memex — but verify commits are pushed
 5. If the branch should be on main: guide through merge or PR creation
@@ -245,15 +176,7 @@ git -C <repo> fetch --prune origin
 git -C <repo> branch -vv | grep ': gone]' | awk '{print $1}' | xargs -r git -C <repo> branch -d
 ```
 
-The `-d` flag only deletes fully-merged branches — unmerged ones are left alone. **A squash-merged branch is the far more common cause of "not fully merged" here**, not just a force-deleted remote: the branch's commits genuinely landed on `main`, but git doesn't recognize them as ancestors because the squash commit has a different hash. Before falling back to `-D`, verify the content actually landed rather than assuming:
-
-```bash
-gh pr view <branch> --json state,mergedAt   # only works while the remote branch still exists
-git log --oneline --all --grep="<commit-subject>"
-git cherry main <branch>                    # empty output = every commit is already in main
-```
-
-Only use `-D` once one of these confirms the work is captured elsewhere — for a genuinely force-deleted, unmerged remote, none of them will show it as landed.
+The `-d` flag only deletes fully-merged branches — unmerged ones are left alone. **A squash-merged branch is the far more common cause of "not fully merged" here**, not just a force-deleted remote: the branch's commits genuinely landed on `main`, but git doesn't recognize them as ancestors because the squash commit has a different hash. Before falling back to `-D`, verify the content actually landed rather than assuming — verification commands: [references/merged-branch-push-safety.md](references/merged-branch-push-safety.md).
 
 When more than 3 branches would be deleted, show the list and ask with labeled options before proceeding:
 > **Delete these `N` merged local branches in `<repo-name>`?**
@@ -275,7 +198,7 @@ ls ~/.claude/skills/<name>/   # present → global: ai-skills
 find ~/Projects -maxdepth 4 -path "*/.claude/skills/<name>" -type d 2>/dev/null  # project
 ```
 
-Invoke `skill-session-handoff` *(personal — ai-skills repo)* with this annotated list to assemble the SA1 context block. Then delegate that block to the **`skill-reviewer` subagent** (Agent tool, `subagent_type: skill-reviewer`) to run skill-review's SA2–SA4 in isolation. **Do not ask for confirmation before doing either step; both run automatically as part of session-close.**
+Invoke `skill-session-handoff` *(global: ai-skills)* with this annotated list to assemble the SA1 context block. Then delegate that block to the **`skill-reviewer` subagent** (Agent tool, `subagent_type: skill-reviewer`) to run skill-review's SA2–SA4 in isolation. **Do not ask for confirmation before doing either step; both run automatically as part of session-close.**
 
 The subagent returns only a findings table, a new-skill-ideas table, and a short summary — it does not create tickets or edit anything. **If `skill-reviewer` isn't available** (not deployed on this machine), fall back to invoking the `skill-review` skill directly in-session with the same annotated list as SA1 context.
 
@@ -287,7 +210,7 @@ The subagent returns only a findings table, a new-skill-ideas table, and a short
 
 ## Step 7 — Permission-prompt hygiene
 
-Invoke the `fewer-permission-prompts` skill *(built-in — Claude Code)* automatically — no confirmation needed. It scans recent transcripts and adds an allowlist to reduce repetitive approval prompts. Takes about a minute and always safe to run.
+Invoke the `fewer-permission-prompts` skill *(built-in)* automatically — no confirmation needed. It scans recent transcripts and adds an allowlist to reduce repetitive approval prompts. Takes about a minute and always safe to run.
 
 **Pre-allowed commands**: The transcript-scanning commands (`find`, `jq`, `cat` against `~/.claude/projects/`) are pre-allowed in `.claude/settings.json` in this repo so the skill runs without triggering permission prompts during its own analysis. If you see prompts for those commands, confirm once — they are read-only operations on local transcript files.
 
