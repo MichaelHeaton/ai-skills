@@ -1,8 +1,8 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
-updated_by: human
+last_updated: 2026-07-30
+updated_by: claude
 name: iac-triage
 description: SRE / IaC investigation mode for Terraform, Ansible, Kubernetes, CI/CD, and incident log work. Encodes evidence ordering (ask for the smallest useful slice first, not full output), hypothesis-driven questioning, and a structured triage response format. Prevents context overload from full plan dumps, verbose Ansible runs, and raw log pastes. Trigger on: any Terraform, Ansible, or kubectl investigation; "debug this plan", "ansible failed", "k8s error", "CI is failing", "deployment failed", "investigate this incident", "triage this", "terraform error", "playbook failing", "pipeline broken", or any time raw operational output is about to be loaded into context.
 compatibility: Any repo or workspace. Integrates with log-clip / clog if installed.
@@ -23,8 +23,9 @@ Raw CLI output is hostile to context. A full `terraform apply` or `ansible-playb
 1. Exact error block
 2. Affected resource(s) + module path
 3. Workspace / environment / backend
-4. Resource diff (`terraform plan -target=<resource>`)
-5. Full plan — only if steps 1–4 didn't resolve it
+3a. **If a VCS-driven workspace (e.g. Terraform Cloud) didn't auto-trigger a plan after a merge** — this has no error block to start from, so check in this order before assuming an infra-side bug: (i) the VCS provider's webhook delivery log, to confirm the push itself reached the platform; (ii) the workspace's configured trigger path patterns against the actual changed file paths — a bare directory name with no wildcard suffix never matches a file inside it, and is a common silent cause
+3b. Resource diff (`terraform plan -target=<resource>`)
+4. Full plan — only if steps 1–3b didn't resolve it
 
 **Ansible**
 
