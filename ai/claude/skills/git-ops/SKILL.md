@@ -1,5 +1,5 @@
 ---
-version: 1.6.0
+version: 1.7.0
 principles_version: 1.0.0
 last_updated: 2026-07-30
 updated_by: claude
@@ -8,6 +8,13 @@ description: Universal git hygiene guide — fires on any git commit, push, PR, 
 ---
 
 Apply these rules for every git operation, in every repo. They complement repo-specific conventions — if a repo has its own stricter rules, follow those instead.
+
+> **Non-negotiable before every `gh pr create` / `glab mr create`** — even when this skill is being applied from memory rather than freshly read:
+>
+> 1. **AGENT.md check** — see "Before opening a PR — AGENT.md check" below
+> 2. **humanizer pass** on the PR Summary/Test plan — see "PR / MR descriptions" below
+>
+> Both are cheap (seconds) and both have been skipped in practice when the skill was recalled rather than re-invoked. If you're not certain these already ran this session, re-invoke the `Skill` tool on `git-ops` rather than proceeding from memory.
 
 ---
 
@@ -127,19 +134,52 @@ Do not skip this check. It is lightweight (pure git diff + file stat) and runs i
 - **Before running `gh pr create` / `glab mr create`**, invoke the `humanizer` skill on the composed Summary and Test plan bullets — same "check before creation" pattern as the AGENT.md step above. Strips AI-writing tells while every fact, ticket ref, and checklist item survives unchanged.
 - Always `cd` into the repo before running `gh pr create` — the `--repo` flag handles routing but `gh` still needs local git context to resolve the remote
 - **SSH alias remotes**: if `origin` uses an SSH config alias (e.g. `git@github.com-personal:owner/repo`) rather than the literal `github.com` hostname, `gh pr create` may fail with "must first push branch" even when the branch is already pushed. **Default**: always pass `--repo owner/repo --head branch-name` — don't attempt without these flags first
-- **Multi-account pre-flight**: before running `gh pr create` on an org repo, verify the active `gh` account has access:
+- **Multi-account pre-flight**: see "Multi-account operations" below before running `gh pr create` on an org repo.
 
-  ```bash
-  gh auth status
-  ```
+---
 
-  If the default account is your personal account and the target repo is a work org, switch with:
+## Multi-account operations
 
-  ```bash
-  GH_TOKEN=$(gh auth token --user <org-account>) gh pr create ...
-  ```
+This environment often has more than one `gh` account active (e.g. a personal account and a work org account). Apply this section to **any mutating `gh` command** — not just `gh pr create`. That includes `gh pr create`, `gh pr edit`, `gh pr merge`, `gh issue create`, `gh issue edit`, `gh issue close`, and anything else that writes rather than reads.
 
-  A `GraphQL: Could not resolve to a Repository` error almost always means account mismatch — fix the token, don't debug the remote.
+**Pre-flight — before the first mutating `gh` command on a repo**:
+
+```bash
+gh auth status
+```
+
+If the active account doesn't own the target repo, switch:
+
+```bash
+gh auth switch --user <account>
+```
+
+Or scope a single command without changing the active account:
+
+```bash
+GH_TOKEN=$(gh auth token --user <account>) gh pr create ...
+```
+
+**Symptoms of account mismatch** — both mean "fix the token/account, don't debug the remote":
+
+- `GraphQL: Could not resolve to a Repository`
+- `GraphQL: Unauthorized: As an Enterprise Managed User, ...`
+
+**gh's active account can drift mid-session.** Don't assume it stays put after one `gh auth switch` — re-run `gh auth status` immediately before *every* mutating command, not just the first one in a session.
+
+**Never run `gh auth switch` while a background polling/monitoring task is active against the same CLI.** `gh auth switch` mutates global CLI state shared across all concurrent shell sessions, not just the one it's run in — switching mid-poll can produce a false "terminal/complete" signal in a task that's actually still running against the wrong account's view of the repo. Either wait for the background task to finish first, or use the `GH_TOKEN=$(gh auth token --user <account>) gh ...` scoped form instead, which doesn't touch global state.
+
+**Plain `git push`/`pull`/`fetch` are NOT governed by `gh`'s active account.** Over HTTPS, git's own `credential.helper` (often the OS keychain, e.g. `osxkeychain` on macOS) authenticates these commands — `gh auth switch` changes which account `gh` itself uses, but does nothing for plain git if the credential helper has a different cached credential. If `git push`/`pull`/`fetch` fails with an auth or "repository not found" error even after `gh auth switch` to the correct account, override the credential helper for that command:
+
+```bash
+git -c credential.helper= -c credential.helper="!gh auth git-credential" push origin <branch>
+```
+
+If that still doesn't resolve it, fall back to a token-embedded HTTPS remote URL for that one command:
+
+```bash
+git push "https://x-access-token:$(gh auth token --user <account>)@github.com/<owner>/<repo>.git" <branch>
+```
 
 ---
 
@@ -207,6 +247,14 @@ gh pr list --head <branch-name> --state merged --json number,title
 
 Pushing to a merged branch orphans commits — they won't be in the default branch and require a cherry-pick recovery.
 
+**A three-dot diffstat is not reliable evidence of pending work after a squash-merge.** `git diff origin/main...HEAD --stat` uses the merge-base at the point the branch diverged — but a squash-merge rewrites history and breaks that lineage, so the diffstat can show insertions/deletions that are already merged. Don't trust a non-empty `--stat` alone to mean "there's real pending work here." Verify with direct content comparison instead:
+
+```bash
+git diff origin/main..HEAD -- <file>   # two-dot: current tip vs current tip, not a stale merge-base
+```
+
+If that returns empty for every file the three-dot diffstat flagged, the branch's content is already merged — treat it the same as the "non-empty merged-PR check" case above, not as work to push.
+
 ### CI/CD behavior when pushing to an open PR
 
 In repos where CI runs `plan` on PR push and `apply` on merge to main:
@@ -244,6 +292,8 @@ This applies to: `git add`, `git commit`, `git push`, `gh pr create`, and any co
 ---
 
 ## Editing through a deployed skill symlink
+
+**General principle**: whenever an isolated worktree session is active, verify any Edit/Write's resolved absolute path actually lands inside that worktree before writing — regardless of how the path was reached. A deployed skill symlink (below) is the most common way this drifts, but it's not the only one; a stale `cwd`, a wrong repo clone, or any other path-resolution mismatch can produce the same failure.
 
 `~/.claude/skills/<name>` is often a symlink into a repo's real checkout on disk. If a worktree branch is checked out for that same repo, an Edit/Write reached through the symlink path can resolve to the wrong on-disk location — e.g. the main checkout instead of the intended worktree. **Before an Edit/Write through a path under `~/.claude/skills/`**, resolve the symlink (`readlink -f`) and check for an active worktree on that repo (`git worktree list`) — full resolution commands and disambiguation rules when multiple worktrees exist: [references/skill-symlink-safety.md](references/skill-symlink-safety.md).
 

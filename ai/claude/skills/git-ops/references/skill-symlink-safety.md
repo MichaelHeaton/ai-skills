@@ -1,11 +1,13 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
 last_updated: 2026-07-30
 updated_by: claude
 ---
 
 # Editing through a deployed skill symlink
+
+**General principle**: whenever an isolated worktree session is active, verify any Edit/Write's resolved absolute path actually lands inside that worktree before writing — regardless of how the path was reached. A deployed skill symlink is the most common way this drifts, but it's not the only one; a stale `cwd`, a wrong repo clone, or any other path-resolution mismatch can produce the same failure. Apply the same check-before-write discipline whenever paths and worktrees are both in play, not just for symlinks.
 
 `~/.claude/skills/<name>` is often a symlink into a repo's real checkout on disk. If a worktree branch is checked out for that same repo, an Edit/Write reached through the symlink path can resolve to the wrong on-disk location — e.g. the main checkout instead of the intended worktree. This is exactly how a stray edit can silently land on `main`: a real near-miss was caught only because a routine `git status` happened to run afterward, and it was reverted before any commit landed on `main`.
 
