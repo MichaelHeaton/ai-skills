@@ -1,7 +1,7 @@
 ---
-version: 1.5.1
+version: 1.6.0
 principles_version: 1.0.0
-last_updated: 2026-07-28
+last_updated: 2026-07-30
 updated_by: claude
 name: git-ops
 description: Universal git hygiene guide — fires on any git commit, push, PR, or MR operation in any repo. Covers branching rules, commit message format, PR/MR description format, and pre-commit checks scoped to modified files (including terraform fmt). Applies regardless of which other skills are active. Trigger on: any request to commit, push, open a PR or MR, "git commit", "create a PR", "push this", "open a pull request", "submit a MR", "ready to merge", or any variation of committing or sharing code changes.
@@ -219,44 +219,7 @@ In repos where CI runs `plan` on PR push and `apply` on merge to main:
 
 ## Multi-commit same-file rebase conflicts
 
-When a branch has multiple commits that all touch the same file **and** the default branch has also changed that file, `git rebase main` conflicts at every replayed commit — not just once. Each step re-introduces a conflict against the already-resolved state.
-
-**Detect it early** before starting a rebase:
-
-```bash
-# How many commits on this branch touch the file?
-git log main..HEAD --oneline -- <file>
-
-# Has main also changed it since the branch diverged?
-git diff main...HEAD -- <file>
-```
-
-If both return non-empty output, do **not** rebase. Instead:
-
-1. **Capture the net diff** — what does this branch add that isn't in main?
-
-   ```bash
-   git diff main...HEAD -- <file> > /tmp/net-changes.patch
-   ```
-
-2. **Abort any in-progress rebase**
-
-   ```bash
-   git rebase --abort
-   ```
-
-3. **Create a fresh branch from the updated default branch**
-
-   ```bash
-   git checkout main && git pull
-   git checkout -b <new-branch-name>
-   ```
-
-4. **Apply the net-new changes in a single commit** — manually apply from the patch or re-author the content from scratch if cleaner.
-
-5. **Push the new branch and open a new PR**; close the old branch with a note referencing the replacement.
-
-**Why not squash the original branch and rebase that?** Squash still replays the squashed commit against main's version of the file — one conflict instead of five, but the resolution is the same work. The fresh-branch approach is equivalent and sidesteps git's rebase state machine entirely.
+Rebasing a branch whose commits all touch a file that main has also changed conflicts at **every** replayed commit, not just once — each step re-introduces a conflict against the already-resolved state. Detect this before starting a rebase, and if detected, use a fresh branch off the updated default branch instead of fighting the rebase. Full detection commands and recovery steps: [references/rebase-conflicts.md](references/rebase-conflicts.md).
 
 ---
 
@@ -282,40 +245,7 @@ This applies to: `git add`, `git commit`, `git push`, `gh pr create`, and any co
 
 ## Editing through a deployed skill symlink
 
-`~/.claude/skills/<name>` is often a symlink into a repo's real checkout on disk. If a worktree branch is checked out for that same repo, an Edit/Write reached through the symlink path can resolve to the wrong on-disk location — e.g. the main checkout instead of the intended worktree. This is exactly how a stray edit can silently land on `main`: a real near-miss was caught only because a routine `git status` happened to run afterward, and it was reverted before any commit landed on `main`.
-
-**Before an Edit/Write through a path under `~/.claude/skills/`**, resolve the real path and check for an active worktree on that repo:
-
-```bash
-# Resolve the symlink to its real on-disk location (a directory, not the SKILL.md file itself)
-readlink -f ~/.claude/skills/<name>
-
-# From the resolved path, check for active worktrees on the same repo
-git -C "$(readlink -f ~/.claude/skills/<name>)" worktree list
-```
-
-**Why:** `readlink -f` shows where the symlink actually points — often the shared main checkout, not whatever worktree you meant to edit. `git worktree list` then shows every checkout for that repo, including any active non-main worktree branch.
-
-**If an active non-main worktree exists for the same underlying repo**, warn before writing and point at the worktree checkout path instead of silently proceeding on whatever the symlink resolved to.
-
-**If `git worktree list` returns more than one non-main entry**, don't assume — disambiguate:
-
-- **Primary signal**: if the session's own current working directory (or the path it was invoked from) is itself inside one of the listed worktree paths, that's the relevant one — use it without asking.
-- **If cwd doesn't match any listed worktree** and multiple non-main worktrees exist, stop and ask the user which one is intended, listing the candidate paths and branches.
-- Do **not** fall back to "most recently modified" or "first in the list" — either would recreate the same false-confidence failure this check exists to prevent.
-
-```bash
-# Safe — resolved the symlink, saw an active worktree, edited there instead
-readlink -f ~/.claude/skills/git-ops
-# -> /Users/you/Projects/personal/ai-skills/ai/claude/skills/git-ops
-git -C /Users/you/Projects/personal/ai-skills worktree list
-# -> /Users/you/Projects/personal/ai-skills            <main>
-# -> /Users/you/Projects/personal/ai-skills/.claude/worktrees/agent-xyz  <fix/some-branch>
-# Edit lands in the worktree checkout, not the main one
-
-# Risky — edit through the symlink path with no worktree check
-# [Edit ~/.claude/skills/git-ops/SKILL.md directly, unaware a worktree branch is active]
-```
+`~/.claude/skills/<name>` is often a symlink into a repo's real checkout on disk. If a worktree branch is checked out for that same repo, an Edit/Write reached through the symlink path can resolve to the wrong on-disk location — e.g. the main checkout instead of the intended worktree. **Before an Edit/Write through a path under `~/.claude/skills/`**, resolve the symlink (`readlink -f`) and check for an active worktree on that repo (`git worktree list`) — full resolution commands and disambiguation rules when multiple worktrees exist: [references/skill-symlink-safety.md](references/skill-symlink-safety.md).
 
 ---
 
