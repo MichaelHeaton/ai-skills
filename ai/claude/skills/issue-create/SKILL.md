@@ -1,10 +1,10 @@
 ---
-version: 1.6.1
+version: 1.6.2
 principles_version: 1.0.0
 last_updated: 2026-07-29
 updated_by: claude
 name: issue-create
-description: Create a new task, issue, or story in the right system — GitHub Issues (Memex), Linear, or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", "this should be its own ticket", "separate ticket for X", "let's decompose", "log this as a backlog item", "track this for later", "create a ticket for this finding", or similar. Also fires autonomously — always use this skill when Claude itself decides to create any issue (during triage, research, session-close, or any workflow), when creating multiple issues in a batch, or whenever about to call gh issue create or glab issue create directly, or whenever about to call a ticketing MCP tool directly such as jira_create_issue (Jira) or save_issue (Linear). Work org remotes → Jira Story; personal work → GitHub Issue in Memex (default) or current repo; Linear only when routing file explicitly sets ticket_system=Linear.
+description: Create a new task, issue, or story in the right system — GitHub Issues (Memex), Linear, or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", "this should be its own ticket", "separate ticket for X", "let's decompose", "track this for later", or similar. Also fires autonomously — always use this skill when Claude itself decides to create any issue (during triage, research, session-close, or any workflow), when creating multiple issues in a batch, or whenever about to call gh issue create or glab issue create directly, or whenever about to call a ticketing MCP tool directly such as jira_create_issue (Jira) or save_issue (Linear). Work org remotes → Jira Story; personal → GitHub Issue (Memex default); Linear only via routing file ticket_system=Linear.
 compatibility: Requires gh CLI, Atlassian MCP (Jira path only).
 ---
 
