@@ -1,7 +1,7 @@
 ---
-version: 1.9.2
+version: 1.9.3
 principles_version: 1.0.0
-last_updated: 2026-07-28
+last_updated: 2026-07-29
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
@@ -88,11 +88,14 @@ Then verify the active account:
 gh auth status 2>&1 | grep "Logged in to github.com account"
 ```
 
-If the active account is not `${GITHUB_PERSONAL_USER}`, switch before continuing:
+If the active account is not `${GITHUB_PERSONAL_USER}`, capture it so it can be restored at the end of this run (Step 10), then switch:
 
 ```bash
+ORIGINAL_GH_ACCOUNT=$(gh auth status 2>&1 | grep "Active account: true" -B1 | grep "Logged in to github.com account" | awk '{print $(NF-1)}')
 gh auth switch --user "${GITHUB_PERSONAL_USER}"
 ```
+
+If the active account already matches `${GITHUB_PERSONAL_USER}`, skip this capture — there's nothing to restore later.
 
 ---
 
@@ -305,6 +308,14 @@ For Jira: call `jira_get_transitions` first to get valid transition IDs (never g
 ---
 
 ## Step 10 — Session summary
+
+**Restore original gh account first.** If `ORIGINAL_GH_ACCOUNT` was captured during the auth pre-flight (i.e. a switch happened earlier in this run), switch back now so the session doesn't end with the personal account active on repos owned by a different account:
+
+```bash
+if [[ -n "${ORIGINAL_GH_ACCOUNT:-}" ]]; then
+  gh auth switch --user "${ORIGINAL_GH_ACCOUNT}" 2>/dev/null || true
+fi
+```
 
 Produce a brief close-out summary using the template in [references/session-summary-template.md](references/session-summary-template.md). Save to `~/Projects/personal/memex/Outputs/Session/session-close-[date].md` if non-trivial.
 
