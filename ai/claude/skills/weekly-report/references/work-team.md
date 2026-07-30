@@ -1,5 +1,5 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
 last_updated: 2026-07-30
 updated_by: claude
@@ -25,6 +25,11 @@ Confirm with user (often day before a standing team meeting — see `meeting_not
 
 Before generating, fetch the current week's wiki page via Confluence MCP to verify active section headers and table layout. Do not rely solely on prior output files — format can change between weeks (e.g. numbered section headers may become plain `###` headers). If the page doesn't exist yet, use the most recent available page as reference.
 
+**Also capture and match**, since these vary by page and a mismatch only surfaces as a manual correction after the draft is otherwise done:
+
+- **Contributor heading style** — bare `@name` mention, bold markdown, or some other convention used for each person's section
+- **Ticket-reference style** — inline key, full URL, sub-bullet placement
+
 ## Wiki structure
 
 Use `display_name` as the heading (e.g. your name on the team page).
@@ -37,7 +42,7 @@ Use `display_name` as the heading (e.g. your name on the team page).
 
 **Problems** — only real blockers, or *(None this week.)*
 
-**Updates from Leads table** — if the live wiki page has an effort-level summary table above the PPP section (e.g. `| Effort | Lead | Updates |`), include a paste row for any efforts the user owns as a separate section in the output file, before the Progress section.
+**Updates from Leads table** — if the live wiki page has an effort-level summary table above the PPP section (e.g. `| Effort | Lead | Updates |`), include a paste row for any efforts the user owns as a separate section in the output file, before the Progress section. **Match the live page's cell-formatting convention** — inspect how existing populated rows format multi-point content (bulleted list within the cell vs. a single paragraph) and follow it, rather than defaulting to one dense paragraph.
 
 ## Metadata in output file
 

@@ -1,5 +1,5 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
 last_updated: 2026-07-30
 updated_by: claude
@@ -20,6 +20,7 @@ Confirm with user (often the day before a standing team meeting — see `meeting
 - Jira MCP for `jira.project_key` / assignee = currentUser() — open blockers and next-sprint items
 - **For any ticket central to this week's narrative**, pull recent comments too (`jira_get_issue` with `comment_limit` set), not just status/description — a same-day comment can contradict a status claim built from search results or git-log alone
 - Recent git commits (last 7 days) across repos the user owns: `git log --since=1.week --oneline --author="$(git config user.name)"`
+- **Same-day boundary check**: a blind `--since=1.week` window inconsistently includes/excludes commits landing on the same calendar day the prior report was generated. When any commit's date matches the prior report's generation date, don't rely on the date window alone — check the prior report's actual content/timestamp directly to determine what it already covered before including or excluding that commit here
 - Vault: recent meetings, dailies, prep notes per `memex_agent_ref`
 
 ## Format check
