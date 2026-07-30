@@ -1,5 +1,5 @@
 ---
-version: 1.13.0
+version: 1.14.0
 principles_version: 1.0.0
 last_updated: 2026-07-30
 updated_by: claude
@@ -83,7 +83,9 @@ If either signal fires — a `LIVE` match, or unexpected commits on `origin/main
 
 ---
 
-Before Steps 2–4, invoke the `git-ops` skill *(personal — ai-skills repo)* — it covers branching rules, commit format, PR format, and pre-commit checks. The short version: work GitHub and GitLab repos always get a branch + PR; personal KB uses branch + PR like work repos. Full rules in `~/.claude/references/branching.md`.
+## Step 1b — Git-ops pre-flight
+
+Invoke the `git-ops` skill *(personal — ai-skills repo)* before Steps 2–4 — it covers branching rules, commit format, PR format, and pre-commit checks. The short version: work GitHub and GitLab repos always get a branch + PR; personal KB uses branch + PR like work repos. Full rules in `~/.claude/references/branching.md`.
 
 **Do not ask for confirmation before invoking git-ops.** It is a required pre-flight for every session-close run.
 
