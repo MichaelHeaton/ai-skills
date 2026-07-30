@@ -62,6 +62,12 @@ resolve_diff_base() {
 
 DIFF_BASE="$(resolve_diff_base "$BASE")"
 
+# Always announce what's being checked, on stderr, regardless of findings —
+# a run against the wrong directory (e.g. main checkout instead of the
+# worktree holding the branch) otherwise finds nothing to report and exits 0
+# with zero output, indistinguishable from a genuinely clean result.
+echo "check-pr-diff: repo=$(git rev-parse --show-toplevel 2>/dev/null || pwd) branch=$(git branch --show-current 2>/dev/null || echo '(detached)') diff_base=${DIFF_BASE}" >&2
+
 # Load ignore list
 declare -A IGNORED
 if [[ -f ".agent-md-ignore" ]]; then
