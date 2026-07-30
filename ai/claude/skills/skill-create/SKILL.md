@@ -1,7 +1,7 @@
 ---
-version: 1.6.0
+version: 1.7.0
 principles_version: 1.0.0
-last_updated: 2026-07-24
+last_updated: 2026-07-30
 updated_by: claude
 name: skill-create
 description: Create a new Claude Code extensibility artifact — skill, subagent, hook, or MCP server — from scratch using a guided interview. Handles the full lifecycle: capturing intent, selecting the right artifact type, naming, writing the config/SKILL.md, testing, iterating, and saving to the repo. Use this whenever the user wants to build or capture a workflow, or says "make a skill for X", "turn this into a skill", "new skill", "make a subagent for X", "create a hook for X", "add an MCP server", "set up MCP for X", "adapt this into a skill", "make our own version of", "build a skill based on", "port this skill", "create a version of [X skill]", or "automate X with a hook".
@@ -107,6 +107,8 @@ Before writing anything, dig into edge cases and specifics. Good questions to ex
 - **Is this adapted from an existing published skill, subagent, or tool** (a repo, marketplace listing, gist, or blog post the user pointed at)? Capture the source URL and what's being kept vs. changed now — don't leave it for later. See [Attribution](references/conventions.md#attribution-adapting-external-skills).
 
 Check available MCP tools — if any are relevant to the skill's domain, note them for the `compatibility` field.
+
+**Verify any claimed path, frontmatter field, or product behavior before writing it into the artifact.** If the skill's design depends on a specific Claude Code schema detail, file path convention, or behavior claim, confirm it against current docs or direct testing rather than asserting from memory — an unverified assumption baked into a new artifact as fact is worse than not writing it down at all. (A subagent-placement path documented incorrectly, caught only by external verification, is the motivating case for this checkpoint.)
 
 Don't move to writing until you have enough to make real decisions, not just fill in a template.
 

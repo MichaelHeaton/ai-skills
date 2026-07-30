@@ -1,5 +1,5 @@
 ---
-version: 1.2.0
+version: 1.3.0
 principles_version: 1.0.0
 last_updated: 2026-07-30
 updated_by: claude
@@ -21,7 +21,9 @@ Read the ticket. Do NOT spawn any agents yet.
 1. Scan the repo for the smallest useful context — the files the ticket actually touches, not the whole tree.
 2. Ask any clarifying questions you need — up to 3, batched in one turn. Don't proceed on an ambiguous plan just to seem fast.
 3. Write a short build plan: files to touch, the approach, the **branch name** Coder should commit on, and the Coder specialty (`generic`, `terraform`, `db`, `ansible` — default `generic` unless the ticket clearly needs a specialist prompt swap). Naming the branch explicitly in the plan gives Step 2's verification something concrete to check against.
-4. Present the plan and **stop for explicit approval** before spawning anything. This is the approval gate — Coder/Tester/Docs/Manager never speculatively spin up.
+4. **If the plan hinges on an external convention, standard, or spec claim** (e.g. which of two competing file-naming conventions a tool actually supports, how a third-party API is documented to behave), verify it via WebFetch/WebSearch before finalizing the plan — don't assert it from memory. Mirrors the same gate `skill-create` uses for claimed product schema/behavior.
+5. **If the approved plan turns out to need no code changes** — pure research, ticket-creation, or documentation work — stop here by design, not by omission. Hand off explicitly instead of drafting the follow-on work ad hoc in this session: ticket creation goes through `issue-create`, documentation goes through `doc-coauthor`. Skip Coder/Tester/Docs/Manager entirely; there's no diff for them to act on.
+6. Present the plan and **stop for explicit approval** before spawning anything. This is the approval gate — Coder/Tester/Docs/Manager never speculatively spin up.
 
 ## Step 2 — Coder (background subagent)
 
@@ -90,6 +92,16 @@ If Manager escalates, it reports back to you and to the Architect step (this ses
 Once Manager clears (or Manager was skipped and Tester found nothing), open the PR through the `git-ops` skill as normal — do not call `gh pr create` directly. This matters specifically because `git-ops` runs a mandatory `agent-md-sync` check before every PR: it diffs the branch against component directories (Ansible roles, Terraform modules, Helm charts, README-bearing dirs) in whatever repo Coder just touched, and flags any component whose `AGENT.md` is stale or missing.
 
 No role in this pipeline owns AGENT.md staleness directly — not Coder, not Docs, not Manager. It's `git-ops`'s job, enforced at PR time, on every PR regardless of which skill produced the diff. Don't duplicate that check into Manager; just don't skip the `git-ops` handoff to get there.
+
+## Batch mode
+
+When working through several tickets in one session, this opt-in mode cuts down on interruptions without skipping any real gate:
+
+- **Batch plan approval** — present 2-4 ticket plans together in one turn instead of one at a time, then get a single approval covering all of them before spawning anything for any of them.
+- **Self-poll for PR merge state** — after a PR is opened, check `gh pr view <n> --json state,mergedAt` yourself on a reasonable cadence instead of waiting for the user to say "merged." Still never merge a PR yourself; only poll for state.
+- **Mandatory direct diff verification per ticket** — before moving a ticket to Tester or trusting Coder's report, read the actual diff yourself (`git diff`, or the changed files directly) rather than only the Coder's self-report — this is the same discipline Step 2's completion check above requires, applied per-ticket across the whole batch, not just once.
+
+Batch mode changes the interaction cadence, not the pipeline's gates — every step above still runs for every ticket.
 
 ## Known limitations (carried from design review, not solved by this pipeline)
 
