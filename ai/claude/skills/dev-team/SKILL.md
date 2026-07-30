@@ -1,7 +1,7 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-07-24
+last_updated: 2026-07-30
 updated_by: claude
 name: dev-team
 description: Run a ticket through a lightweight multi-agent build pipeline — Architect plans and asks clarifying questions, Coder implements, Tester adversarially checks the diff, Docs updates stale documentation, and a conditional Manager gates on risk. Use when working a ticket end-to-end and you want plan approval before code gets written, or when you say "run this through dev-team", "spin up the dev team on this ticket", "architect this ticket", or "build this with the team". Complements decision-council (which resolves opinions/tradeoffs, not builds) and reuses model-route for per-role model selection. Do NOT use for a quick one-line fix — the Architect step exists to catch ambiguity on real work, not to gate trivial changes.
@@ -33,6 +33,8 @@ Route the model via `model-route`'s decision table before spawning (implementati
 
 Spawn `dev-team-tester` with the diff Coder produced. Tester's job is narrow: break what shipped, and check the one pattern a backtest against real tickets confirmed generic review misses — privileged/binary downloads embedded in template-string or heredoc shell content where integrity verification is optional rather than enforced. Tester reports findings; it does not fix anything.
 
+**Before acting on Tester's output, confirm the report is actually complete.** A sub-agent can return a task status of "completed" while its final message is truncated mid-sentence or mid-list — that status field reflects the harness's task lifecycle, not whether Tester finished writing its verdict. If the report doesn't end with a clear ship/rework verdict statement, don't proceed on the partial read and don't re-spawn a fresh Tester from scratch. Instead, resume the same agent via the messaging tool used to continue sub-agents (`SendMessage`, addressed to that agent's id) and explicitly ask for a complete final report.
+
 ## Step 4 — Docs (background subagent, deterministic trigger only)
 
 **Coder never writes or updates documentation.** Its file list from Step 1 is implementation files only — that's enforced by `dev-team-coder.md` explicitly refusing doc edits. Detecting that docs are now stale, and writing the update, is entirely Docs' job. This step exists to make that detection concrete instead of assuming it happens by default.
@@ -48,6 +50,8 @@ Docs runs the `humanizer` skill on any doc text it drafts so documentation stays
 
 ## Step 5 — Manager (background subagent, conditional)
 
+**Pre-flight — before spawning Manager, verify your own checkout is fresh.** `dev-team-manager` has no Bash tool (Read/Grep/Glob only), so it cannot fetch, pull, or otherwise confirm the files it's reading are current — it trusts whatever is on disk in this session's checkout. Run `git pull` (or otherwise confirm the local checkout matches the remote default branch) immediately before spawning Manager, every time, not just when a verdict looks wrong. A stale local `main` can make Manager report a false REWORK verdict claiming already-merged work isn't actually merged.
+
 Spawn `dev-team-manager` only if either is true:
 
 - Tester flagged anything
@@ -61,6 +65,8 @@ Manager does two things, not one:
 2. **Process verification** — did the review tooling that should have run on this diff actually run (`iac-reviewer` for infra changes, `deep-review` for anything security/perf/architecture-sensitive, `adobe-security-suite` where applicable)? A backtest against 20 real merged PRs found the actual gaps weren't missing capability — they were existing tools never getting invoked before merge. Manager's job includes catching that.
 
 If Manager escalates, it reports back to you and to the Architect step (this session) — not a silent loop. **Hard cap**: after 2 rounds of flag → replan → recode, stop and escalate to the user regardless of Manager's verdict.
+
+**Rework fallback — `dev-team-coder`'s isolation mode always creates a fresh worktree; there is no parameter to target an existing one.** When Manager returns rework and the fix needs to land in the *same* worktree Coder already committed to in round 1 (e.g. fixing a collision Tester flagged in a shared module), do not re-spawn Coder — its `EnterWorktree`/`ExitWorktree` calls will create a second, unrelated worktree rather than reusing the first. Instead, apply the fix directly in the Architect session (this session), inside the existing worktree path, then re-run Tester against the updated diff. If a future Coder isolation mode adds support for targeting an existing worktree, prefer that over this fallback.
 
 ## Step 6 — Hand off to git-ops for the PR
 
