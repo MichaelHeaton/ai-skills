@@ -1,10 +1,10 @@
 ---
-version: 1.0.0
+version: 1.0.1
 principles_version: 1.0.0
 last_updated: 2026-07-29
 updated_by: claude
 name: infra-state-verify
-description: Gate any published claim about live infrastructure state behind an explicit ground-truth check, so "declared in code" never gets asserted as "confirmed running." Use before publishing a PR description, wiki/Confluence page, Slack/chat message, or status report that says a cluster is running, a feature is enabled in production, a service is deployed, a migration completed, or similar. Trigger on phrases like "is running", "is live", "is enabled in production", "confirm this is deployed", "cluster is up", "shipped to prod", or any time a draft is about to describe live infra state for a teammate or stakeholder to read. Does not apply to internal reasoning, scratch notes, or draft thinking that stays in-session.
+description: Gate any published claim about live infrastructure state behind an explicit ground-truth check, so "declared in code" never gets asserted as "confirmed running." Use before publishing a PR description, wiki/Confluence page, Slack/chat message, or status report that says a cluster is running, a feature is enabled in production, a service is deployed, a migration completed, or similar. Trigger on phrases like "is running", "is live", "is enabled in production", "confirm this is deployed", "cluster is up", "shipped to prod", or any time a draft is about to describe live infra state for a teammate or stakeholder to read. Does not apply to answering the user's question conversationally in this session — only to drafting or sending a message meant to reach a teammate or stakeholder outside this session (a Slack DM, PR comment, wiki edit, status report, or similar), or to internal reasoning, scratch notes, and draft thinking that stays in-session.
 compatibility: Any repo with Terraform, Kubernetes, Ansible, or a cloud CLI available for live checks.
 ---
 
@@ -56,6 +56,14 @@ Match the check to what's actually being claimed — don't just re-read the sour
 **Cloud CLI (AWS/Azure/GCP)**
 
 - A `describe`/`get` call against the actual resource (e.g. `aws eks describe-cluster`, `az aks show`) rather than the IaC source that requested it
+
+**Database migrations**
+
+- Check the migration tracking table or schema-version output against the live database, or the migration tool's `status` command — not just that the migration file exists in the repo
+
+**Feature flags**
+
+- Check the flag service's dashboard/API for the live flag state — not the default or intended value in code
 
 If none of these are available in the moment, say so explicitly in the draft rather than silently asserting the state — see the distinction below.
 
