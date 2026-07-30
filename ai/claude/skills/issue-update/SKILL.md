@@ -1,10 +1,10 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-06-10
+last_updated: 2026-07-30
 updated_by: claude
 name: issue-update
-description: Update a task or ticket — change status, add a comment, edit labels, close it, or sync the task index. Works across Linear, GitHub Issues, GitLab Issues, and Jira. Use when the user says "close issue #X", "mark SR-42 done", "mark PROJ-12345 done", "update the description of PROJ-123", "scope this ticket to", "scope this down to only X", "narrow the scope of this ticket", "transition this to closed", "this ticket is done — close it", "transition to blocked", or similar.
+description: Update a task or ticket — change status, add a comment, edit labels, close it, or sync the task index. Works across Linear, GitHub Issues, GitLab Issues, and Jira. Also the right tool for closing tickets found stale/duplicate/superseded during a backlog-triage pass, not just active single-ticket work. Use when the user says "close issue #X", "mark SR-42 done", "mark PROJ-12345 done", "update the description of PROJ-123", "update PROJ-123" (including a bare "update <ticket-id>" meaning add a comment, not just a status change), "scope this ticket to", "scope this down to only X", "narrow the scope of this ticket", "transition this to closed", "this ticket is done — close it", "transition to blocked", "close as duplicate", "close as stale", "close as superseded", "closing during triage", or similar.
 ---
 
 Update an existing task in its source system and keep the task index in sync.
