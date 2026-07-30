@@ -1,10 +1,10 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-07-22
+last_updated: 2026-07-30
 updated_by: claude
 name: doc-coauthor
-description: Co-author work team documentation — either directly to the live Confluence wiki or staged through the git repo for team review. Handles the full workflow: template selection, context gathering, section-by-section drafting, frontmatter generation, and delivery. Use when writing or updating any team wiki page, runbook, how-to guide, customer guide, or architecture decision record. Triggers on: "write a runbook", "draft a how-to", "create a wiki page", "update the docs for X", "write an ADR", "document this process", "new Confluence page", "doc for vault", "work team documentation", "update Confluence".
+description: Co-author work team documentation — either directly to the live Confluence wiki or staged through the git repo for team review. Handles the full workflow: template selection, context gathering, section-by-section drafting, frontmatter generation, and delivery — plus a lighter-weight path for editing already-existing content that skips template/frontmatter entirely. Use when writing or updating any team wiki page, runbook, how-to guide, customer guide, or architecture decision record. Triggers on: "write a runbook", "draft a how-to", "create a wiki page", "update the docs for X", "update the wiki", "write an ADR", "document this process", "new Confluence page", "doc for vault", "work team documentation", "update Confluence". A small, targeted correction to an existing page (fixing one fact, one link) can go through a direct MCP call instead of the full skill; a new page or a significant rewrite should go through this skill.
 compatibility: Live mode requires Confluence MCP. Staged mode requires ${repos.work_docs} (local.json) to be cloned — run repo-setup if missing.
 ---
 
@@ -28,7 +28,15 @@ The workflow is the same for both modes: **Template → Context → Draft → Te
 
 ---
 
+## Before Stage 0 — confirm the edit is still needed
+
+Before gathering context or drafting, ask: *"Given what's changed, does this page/section still need this update — or has the underlying thing already reached its target state?"* This matters more for doc-coauthor than most skills since it writes to a shared/external system — catching a no-op edit here is cheaper than catching it after Stage 1's context gathering has already run. If the user confirms no update is needed, exit cleanly without proceeding further.
+
+---
+
 ## Stage 0: Template Selection
+
+**Editing existing content?** If this is a straightforward edit to an already-existing page or section (not authoring something new), skip template selection and frontmatter generation entirely — jump to identifying what's stale vs. accurate in the existing content, then go straight to Stage 2 (Draft). Template selection and frontmatter are for new-page authoring; they add no value to correcting or extending a page that already exists.
 
 Identify the document type:
 
