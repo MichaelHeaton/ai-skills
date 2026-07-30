@@ -31,7 +31,8 @@
       "Bash(gh label list*)",
       "Bash(aws sts get-caller-identity*)",
       "mcp__atlassian__jira_get_transitions",
-      "Bash(bash ~/.claude/skills/issue-create/scripts/detect-context.sh*)"
+      "Bash(bash ~/.claude/skills/issue-create/scripts/detect-context.sh*)",
+      "mcp__atlassian__jira_get_project_components"
     ]
   }
 }
