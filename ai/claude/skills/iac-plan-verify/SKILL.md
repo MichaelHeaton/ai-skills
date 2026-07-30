@@ -32,8 +32,8 @@ python3 ai/claude/skills/iac-plan-verify/scripts/parse-tf-plan.py plan.jsonl
 Output includes:
 
 - **Resource type tally** — count of planned changes per `resource_type`
-- **Action tally** — count of `create` / `update` / `delete` / `replace` actions
-- **Totals vs `change_summary`** — the script's own add/change/remove tally compared against the official summary line Terraform prints; a mismatch is flagged (a `replace` counts as one add + one destroy, matching how Terraform's own "Plan: N to add, M to change, K to destroy" line counts it)
+- **Action tally** — count of `create` / `update` / `delete` / `replace` / `import` actions
+- **Totals vs `change_summary`** — the script's own add/change/remove/import tally compared against the official summary line Terraform prints; a mismatch is flagged (a `replace` counts as one add + one destroy, matching how Terraform's own "Plan: N to add, M to change, K to destroy" line counts it)
 
 Exits `0` if the tally matches; exits `1` if it doesn't (see below).
 
@@ -71,7 +71,7 @@ All three keys are optional — include only the checks that matter for the plan
 | --- | --- |
 | `0` | Tally matches `change_summary`, and (if given) matches the expected shape |
 | `1` | A mismatch was found — own tally vs `change_summary`, or a `resource_counts`/`must_include`/`must_exclude` violation |
-| `2` | Usage or input error (bad arguments, unreadable file, invalid JSON in the expected-shape file) |
+| `2` | Usage or input error (bad arguments, unreadable/empty/unparseable input, invalid or wrong-shaped JSON in the expected-shape file) |
 
 Wire this into a CI step or pre-apply check to hard-fail on an unexpected plan shape instead of relying on someone reading the output.
 
@@ -81,4 +81,4 @@ Wire this into a CI step or pre-apply check to hard-fail on an unexpected plan s
 
 Streamed Terraform JSON logs sometimes include stray non-JSON lines (progress output mixed in from a wrapping script, etc). The parser skips any line that fails to parse as JSON rather than crashing, and reports how many lines were skipped.
 
-`apply_start`/`apply_complete` lines are tallied the same way as `planned_change` lines, so the same script works against `terraform apply -json` logs — useful for confirming what actually happened during apply, not just what was planned.
+A real `terraform apply -json` stream contains **both** plan-phase (`planned_change`) and apply-phase (`apply_start`/`apply_complete`) lines for the same resources in the same run. The parser tallies each resource address once regardless of how many phases reference it — it does not double-count a resource just because it appears in both the plan and apply portions of the same stream.
