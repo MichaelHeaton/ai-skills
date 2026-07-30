@@ -1,5 +1,5 @@
 ---
-version: 1.7.0
+version: 1.8.0
 principles_version: 1.0.0
 last_updated: 2026-07-30
 updated_by: claude
@@ -180,6 +180,17 @@ If that still doesn't resolve it, fall back to a token-embedded HTTPS remote URL
 ```bash
 git push "https://x-access-token:$(gh auth token --user <account>)@github.com/<owner>/<repo>.git" <branch>
 ```
+
+**If the push still fails even with a token-embedded URL**, the global `~/.gitconfig` likely has a `url.<...>.insteadOf` rule (common in multi-account setups that rewrite SSH remotes to HTTPS) rewriting the tokenized URL back to a bare one before the OS credential store (e.g. macOS Keychain) gets a chance to authenticate it with the wrong account's cached token. Bypass the global config entirely for this one command:
+
+```bash
+HOME=/tmp git -C <repo> \
+  -c "url.https://<user>:<token>@github.com/.insteadOf=https://github.com/" \
+  -c "credential.helper=" \
+  push -u origin <branch>
+```
+
+`HOME=/tmp` prevents `~/.gitconfig`'s `insteadOf` rules from applying; `credential.helper=` disables the keychain lookup; the explicit `-c url....insteadOf` re-adds just the one rewrite this command needs, tokenized.
 
 ---
 
