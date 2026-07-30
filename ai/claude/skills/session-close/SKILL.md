@@ -1,7 +1,7 @@
 ---
-version: 1.9.3
+version: 1.10.0
 principles_version: 1.0.0
-last_updated: 2026-07-29
+last_updated: 2026-07-30
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
@@ -125,6 +125,11 @@ For each repo with `CHANGES > 0` **whose Step 1 branch-hygiene check has already
    > - **Discard** — revert all changes (confirm destructive)
 5. If committing: run the standard commit flow (stage relevant files, write message, push)
 6. If leaving: note it in the session summary as "pending"
+7. If discarding, use concrete commands — never `rm -rf`, which some workstations block outright via a recursive-delete safety hook:
+   - Tracked changes: `git -C <repo> restore <file>` (or `git -C <repo> checkout -- <file>`)
+   - Untracked files/dirs inside the repo: `git -C <repo> clean -fd`
+   - An untracked directory the user wants gone entirely, outside git's own reach: prefer `trash <path>` over `rm -rf <path>`
+   This only applies to explicit user-requested deletion of untracked content flagged in step 2 above — it is not a substitute for `git clean` on tracked/ignored files.
 
 ---
 
@@ -141,8 +146,15 @@ For each repo with `WORKTREES > 0`:
    git -C <worktree-path> log master..HEAD --oneline 2>/dev/null
    ```
 
-3. For worktrees with committed but unpushed work:
-   - Push the branch first — **always push before checking for or creating a PR**. The `AHEAD_BRANCHES` count from Step 1 is a point-in-time snapshot; the actual remote state takes precedence.
+3. For worktrees with committed but unpushed work — **check merged-PR state before pushing**, per git-ops's "Before pushing to an existing branch" rule. The `AHEAD_BRANCHES` count from Step 1 is only a point-in-time snapshot, so don't skip this check just because Step 1 flagged the branch as ahead:
+
+     ```bash
+     GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}") \
+       gh pr list --head <branch> --state merged --json number,title
+     ```
+
+   - **Non-empty result** — the PR is already merged. Do not push this branch. Follow git-ops's merged-branch recovery: check out `main`, pull, create a fresh branch, re-apply any genuinely new content (verify with `git diff origin/main..HEAD -- <file>` — two-dot, not three-dot — since a three-dot diffstat can misrepresent already-merged content after a squash-merge), then push that new branch and go straight to branch cleanup for the stale one.
+   - **Empty result** — push normally:
 
      ```bash
      # GitHub SSH remotes:
@@ -151,22 +163,13 @@ For each repo with `WORKTREES > 0`:
      git -C <worktree-path> push -u origin <branch>
      ```
 
-   - Before creating a PR, verify the branch actually exists on the remote — a stale local tracking ref can make it appear pushed when it isn't:
+   - After pushing, confirm the branch actually landed on the remote — this is a post-push confirmation, not a substitute for the merged-PR check above:
 
      ```bash
      git ls-remote --heads origin <branch>
      ```
 
-     If the output is empty, the branch is not on the remote. Push it now before proceeding. If the push fails, stop and surface the error — do not attempt PR creation against a missing branch.
-
-   - After confirming the branch is on the remote, check whether a PR already exists (a branch that looked "ahead" in Step 1 may have had its PR merged since the scan):
-
-     ```bash
-     GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}") \
-       gh pr list --head <branch> --state all --json number,state,title
-     ```
-
-     If a merged PR is returned, skip PR creation and go straight to branch cleanup. If none exists, create the PR.
+     If the output is empty, the push didn't take. Retry it before proceeding. If the retry fails, stop and surface the error — do not attempt PR creation against a missing branch.
 
    - Create a PR (use `gh pr create` for GitHub repos)
 4. For worktrees with uncommitted changes: handle via Step 2 flow first, then push + PR
@@ -187,7 +190,7 @@ If notes are on a branch that hasn't merged, flag this prominently — the next 
 For each repo where `BRANCH != main` and `BRANCH != master` and `WORKTREES == 0`:
 
 1. Show what's on the branch vs main: `git -C <repo> log main..HEAD --oneline`
-2. Push any unpushed commits before checking PR state — the `AHEAD_BRANCHES` count from Step 1 may be stale. After pushing, verify with `git ls-remote --heads origin <branch>` that the branch is actually on the remote before attempting PR creation.
+2. **Check merged-PR state before pushing** any unpushed commits — the `AHEAD_BRANCHES` count from Step 1 may be stale, and pushing to an already-merged branch orphans commits (per git-ops's "Before pushing to an existing branch" rule): `gh pr list --head <branch> --state merged --json number,title`. If non-empty, follow git-ops's merged-branch recovery (fresh branch off updated main) instead of pushing here. If empty, push, then verify with `git ls-remote --heads origin <branch>` that the branch actually landed on the remote before attempting PR creation.
 3. If it's a feature branch: check whether a PR already exists (`gh pr list --head <branch> --state all`) before creating one
 4. If it's a capture branch (e.g. `captures-2026-05-15`): this is expected for Memex — but verify commits are pushed
 5. If the branch should be on main: guide through merge or PR creation
