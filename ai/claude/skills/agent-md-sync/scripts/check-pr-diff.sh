@@ -21,18 +21,43 @@ if [[ -z "$BASE" ]]; then
   fi
 fi
 
+# Bound how long `git fetch` can block on a stalled network path (VPN/proxy/
+# SSH-auth hang). There's no native `git fetch --timeout`, `timeout(1)` isn't
+# available by default on macOS, and HTTP-only env vars don't cover SSH
+# remotes — so this backgrounds the fetch and kills it via bash job control
+# if it's still running after FETCH_TIMEOUT_SECS. Works for both transports
+# since it never depends on what protocol the fetch itself is using.
+FETCH_TIMEOUT_SECS="${AGENT_MD_SYNC_FETCH_TIMEOUT:-10}"
+
+fetch_with_timeout() {
+  local base="$1"
+  git fetch origin "$base" &>/dev/null &
+  local fetch_pid=$!
+  local waited=0
+  while kill -0 "$fetch_pid" 2>/dev/null; do
+    if [[ "$waited" -ge "$FETCH_TIMEOUT_SECS" ]]; then
+      kill "$fetch_pid" 2>/dev/null
+      wait "$fetch_pid" 2>/dev/null
+      return 1
+    fi
+    sleep 1
+    waited=$((waited + 1))
+  done
+  wait "$fetch_pid"
+}
+
 # Resolve the actual ref to diff against. A local base branch ref (e.g. "main")
 # isn't kept in sync with origin automatically — if it hasn't been fetched or
 # fast-forwarded recently, diffing against it can include commits that already
 # landed on origin but aren't reflected in the stale local ref, producing
 # false-positive STALE/MISSING findings. Prefer origin/<base> when reachable;
 # fall back to the local ref name as-is if there's no origin remote, the
-# fetch fails (e.g. offline), or the remote ref doesn't resolve. This must
-# never hard-fail the script on network issues.
+# fetch fails or times out (e.g. offline, stalled connection), or the remote
+# ref doesn't resolve. This must never hard-fail the script on network issues.
 resolve_diff_base() {
   local base="$1"
   if git remote get-url origin &>/dev/null 2>&1; then
-    if git fetch origin "$base" &>/dev/null 2>&1; then
+    if fetch_with_timeout "$base"; then
       if git rev-parse --verify "origin/${base}" &>/dev/null 2>&1; then
         echo "origin/${base}"
         return 0

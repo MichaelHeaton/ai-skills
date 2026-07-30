@@ -1,10 +1,10 @@
 ---
-version: 1.1.1
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-07-29
+last_updated: 2026-07-30
 updated_by: claude
 name: agent-md-sync
-description: Generate and maintain component-level AGENTS.md files — either for a single component (focused mode) or across an entire repo (scan mode). Keeps AI context co-located with code so agents can navigate specific roles, modules, or components without scanning the whole repo. Detects and respects a repo's existing AGENT.md/AGENTS.md convention rather than assuming one. Called automatically by git-ops before PR creation to catch stale or missing component AGENT.md/AGENTS.md files. Trigger on: "generate agent md for this role", "create component AGENTS.md", "scan repo for components", "check which AGENT.md files are stale", "document this module", "add AI context to this role", or when git-ops invokes it before PR creation.
+description: Generate and maintain component-level AGENTS.md files — either for a single named component (skips full-repo discovery, jumps straight to reading and drafting) or across an entire repo (scan mode). Keeps AI context co-located with code so agents can navigate specific roles, modules, or components without scanning the whole repo. Detects and respects a repo's existing AGENT.md/AGENTS.md convention rather than assuming one. Called automatically by git-ops before PR creation to catch stale or missing component AGENT.md/AGENTS.md files. Trigger on: "generate agent md for this role", "create component AGENTS.md", "scan repo for components", "check which AGENT.md files are stale", "document this module", "add AI context to this role", or when git-ops invokes it before PR creation.
 compatibility: Requires git. Scan mode requires a repo with recognizable component structure (Ansible roles, Terraform modules, Helm charts, or README-bearing subdirectories).
 ---
 
@@ -12,7 +12,7 @@ Component-level AGENT.md/AGENTS.md files give AI agents focused context without 
 
 This skill operates in two modes:
 
-- **Scan mode** — discover all components in a repo and generate missing AGENT.md/AGENTS.md files
+- **Scan mode** — discover all components in a repo and generate missing AGENT.md/AGENTS.md files. When the user names a specific component at invocation ("create AGENT.md for `roles/nginx`"), this is a single-component request through scan mode, not a separate mode — skip Step 1's discovery script (which scans the whole repo) and go straight to Step 3, since the target is already known.
 - **Check mode** — given a branch diff, identify which component AGENT.md/AGENTS.md files are stale or missing, warn the user, and offer to update them before PR creation
 
 The scripts in this skill resolve which filename convention a repo already uses (checking for `AGENTS.md` first, then `AGENT.md`, defaulting to `AGENTS.md` if neither exists) rather than assuming the singular form.
@@ -30,6 +30,8 @@ Use scan mode when:
 - User explicitly asks to scan or document all components
 
 ### Step 1 — Discover components
+
+**Skip this step if the user already named a specific component** (e.g. "create AGENT.md for `roles/nginx`") — go straight to Step 3 with that path. Discovery scans the whole repo; that's overhead when the target is already known.
 
 Run the discovery script from the repo root:
 
