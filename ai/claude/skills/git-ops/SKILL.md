@@ -1,10 +1,10 @@
 ---
-version: 1.8.0
+version: 1.9.0
 principles_version: 1.0.0
 last_updated: 2026-07-30
 updated_by: claude
 name: git-ops
-description: Universal git hygiene guide — fires on any git commit, push, PR, or MR operation in any repo. Covers branching rules, commit message format, PR/MR description format, and pre-commit checks scoped to modified files (including terraform fmt). Applies regardless of which other skills are active. Trigger on: any request to commit, push, open a PR or MR, "git commit", "create a PR", "push this", "open a pull request", "submit a MR", "ready to merge", or any variation of committing or sharing code changes.
+description: Universal git hygiene guide — fires on the *first* git commit, push, PR, or MR operation in a session and every one after, not only retroactively at session-close. Covers branching rules, commit message format, PR/MR description format, and pre-commit checks scoped to modified files (including terraform fmt). Applies regardless of which other skills are active. Trigger on: any request to commit, push, open a PR or MR, "git commit", "create a PR", "push this", "open a pull request", "submit a MR", "ready to merge", or any variation of committing or sharing code changes.
 ---
 
 Apply these rules for every git operation, in every repo. They complement repo-specific conventions — if a repo has its own stricter rules, follow those instead.
@@ -15,6 +15,8 @@ Apply these rules for every git operation, in every repo. They complement repo-s
 > 2. **humanizer pass** on the PR Summary/Test plan — see "PR / MR descriptions" below
 >
 > Both are cheap (seconds) and both have been skipped in practice when the skill was recalled rather than re-invoked. If you're not certain these already ran this session, re-invoke the `Skill` tool on `git-ops` rather than proceeding from memory.
+
+**If you already read this file fresh earlier in this session** (a formal `Skill` tool invocation, or having directly read/edited it), apply these rules directly rather than re-reading or reprinting the full body again for a second commit/PR in the same session — the freshness requirement above is about the content being current in context, not about the specific mechanism that put it there.
 
 ---
 
@@ -146,6 +148,19 @@ Do not skip this check. It is lightweight (pure git diff + file stat) and runs i
 - Always `cd` into the repo before running `gh pr create` — the `--repo` flag handles routing but `gh` still needs local git context to resolve the remote
 - **SSH alias remotes**: if `origin` uses an SSH config alias (e.g. `git@github.com-personal:owner/repo`) rather than the literal `github.com` hostname, `gh pr create` may fail with "must first push branch" even when the branch is already pushed. **Default**: always pass `--repo owner/repo --head branch-name` — don't attempt without these flags first
 - **Multi-account pre-flight**: see "Multi-account operations" below before running `gh pr create` on an org repo.
+- **After `gh pr create`, re-query state before treating the branch as "pending review"**: `gh pr view <n> --json state,mergedAt`. Some personal repos have repo-level auto-merge enabled, so a just-opened PR can merge itself within seconds — if `mergedAt` is already set, switch back to the default branch, pull, and run local branch cleanup for it in the same pass instead of deferring that to a later check. The "always branch + PR" rule still applies even when the PR merges itself immediately; this only changes when cleanup happens, not whether the PR step is skipped.
+
+---
+
+## Pre-flight: colliding open PR on a shared file
+
+Before committing a change to a file that's shared and frequently touched across sessions (`.claude/settings.json` is the recurring offender in this repo), check for an existing open PR against it first:
+
+```bash
+gh pr list --search "<file-path-or-filename>" --state open --repo <owner>/<repo>
+```
+
+If an open PR already touches that file, fold the new content into it or wait for it to merge, rather than proposing an independent, likely-colliding edit. This is a distinct problem from the general concurrent-session detection session-close runs — that check only detects that *another* session exists, not that it's about to make a colliding edit to a specific file. Two sessions independently proposing the identical one-line permission addition, caught only because one happened to read the same-day session log first, is the motivating case.
 
 ---
 
@@ -263,6 +278,8 @@ If no config exists for a tool, do not run it. Do not install or introduce new f
 - [ ] Commit message follows conventional format with ticket ref if applicable
 - [ ] Pre-commit checks run on modified files
 - [ ] Branch name matches repo convention (check recent branches if unsure)
+
+**Pre-commit hook auto-fix recovery**: if a commit fails with "files were modified by this hook" (common with markdownlint, prettier, black, and similar auto-fixing hooks), the hook reformatted one or more staged files rather than just flagging them. Run `git diff --name-only` to see which files changed, `git add <those files>`, then retry the commit. Do not use `--no-verify` to skip the hook.
 
 ---
 
