@@ -1,7 +1,7 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-06-11
+last_updated: 2026-07-30
 updated_by: claude
 ---
 
@@ -18,6 +18,7 @@ Confirm with user (often the day before a standing team meeting — see `meeting
 ## Sources
 
 - Jira MCP for `jira.project_key` / assignee = currentUser() — open blockers and next-sprint items
+- **For any ticket central to this week's narrative**, pull recent comments too (`jira_get_issue` with `comment_limit` set), not just status/description — a same-day comment can contradict a status claim built from search results or git-log alone
 - Recent git commits (last 7 days) across repos the user owns: `git log --since=1.week --oneline --author="$(git config user.name)"`
 - Vault: recent meetings, dailies, prep notes per `memex_agent_ref`
 
