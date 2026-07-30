@@ -1,5 +1,5 @@
 ---
-version: 1.7.0
+version: 1.8.0
 principles_version: 1.0.0
 last_updated: 2026-07-30
 updated_by: claude
@@ -120,6 +120,7 @@ Do not skip this check. It is lightweight (pure git diff + file stat) and runs i
 
 ## Refs
 - Ticket: PROJ-XXXXX / #NN
+- Closes: #NN
 - Related PR: #NN (if any)
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
@@ -131,10 +132,35 @@ Do not skip this check. It is lightweight (pure git diff + file stat) and runs i
 - Test plan must have at least one checkable item; "tested manually" is not enough
 - Link the ticket; if there is no ticket, say so explicitly rather than omitting the section
 - Keep the title short — details belong in the body
+- **Closing multiple issues from one PR — repeat the keyword, never comma-list it.** GitHub only auto-closes the first issue number after a closing keyword (`Closes`, `Fixes`, `Resolves`); it does not parse a trailing comma-separated list. `Closes: #141, #134, #157` closes only `#141` — `#134` and `#157` stay open even though the PR merged, and have to be closed by hand after the fact. Repeat the keyword once per issue instead, either each on its own line:
+
+  ```
+  ## Refs
+  - Closes: #141
+  - Closes: #134
+  - Closes: #157
+  ```
+
+  or inline per GitHub's documented multi-issue syntax: `Closes #141, closes #134, closes #157`. Same rule applies across repos — `Closes owner/repo#NN` for each cross-repo reference.
 - **Before running `gh pr create` / `glab mr create`**, invoke the `humanizer` skill on the composed Summary and Test plan bullets — same "check before creation" pattern as the AGENT.md step above. Strips AI-writing tells while every fact, ticket ref, and checklist item survives unchanged.
 - Always `cd` into the repo before running `gh pr create` — the `--repo` flag handles routing but `gh` still needs local git context to resolve the remote
 - **SSH alias remotes**: if `origin` uses an SSH config alias (e.g. `git@github.com-personal:owner/repo`) rather than the literal `github.com` hostname, `gh pr create` may fail with "must first push branch" even when the branch is already pushed. **Default**: always pass `--repo owner/repo --head branch-name` — don't attempt without these flags first
 - **Multi-account pre-flight**: see "Multi-account operations" below before running `gh pr create` on an org repo.
+
+---
+
+## Post-merge issue verification
+
+After merging a PR whose `## Refs` section claims to close one or more issues, verify each one actually closed — GitHub's auto-close is silent on failure, so a malformed keyword (comma-list, typo'd number, wrong repo) leaves an issue open with no error anywhere:
+
+```bash
+gh issue view <N> --json state --jq .state
+```
+
+- **`CLOSED`** — matches the PR's claim, no action needed
+- **`OPEN`** — the auto-close didn't fire; close it manually and note why (e.g. `gh issue close <N> --comment "Closed by #<PR>"`)
+
+Run this for every issue number listed in the merged PR's Refs section, not just the first — that's precisely the case that breaks silently (see the multi-issue rule above). Skip this check only for PRs with no Refs/Closes section.
 
 ---
 
