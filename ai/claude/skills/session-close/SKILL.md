@@ -1,5 +1,5 @@
 ---
-version: 1.11.0
+version: 1.12.0
 principles_version: 1.0.0
 last_updated: 2026-07-30
 updated_by: claude
@@ -13,6 +13,10 @@ Close out this session safely. The goal: nothing stranded in branches, all ticke
 > **Setup dependencies** — Steps 1–5 (git hygiene) work in any repo. Steps 6–7 require ai-skills installed (`make install-system`). Steps 9–10 assume a personal memex vault at `~/Projects/personal/memex/` with `_task-index.jsonl` — adapt those paths to your own notes setup if different.
 
 **Context check before starting**: session-close runs at the tail of what's often an already-long session — the multi-repo scan and Step 6's skill review add real weight on top of that. If this has been a long conversation (many tool calls, multiple tasks), say so before beginning: *"This has been a long session — want me to `/compact` first? A controlled compact now gives the checklist headroom, instead of an automatic compaction firing partway through it."* Proceed with whatever they answer — don't block on it.
+
+**Check the most recent same-day summary before starting.** Before Step 1, check whether `~/Projects/personal/memex/Outputs/Session/session-close-[today's date].md` already exists — a second same-day run is common. If it does, read it first: it may still have unresolved items (a declined decision, an unticketed bug, a scoping question) from earlier today that this run needs to carry forward rather than silently overwrite when Step 10 writes its own summary.
+
+**Also check the most recent prior-day summary for known-pending blockers scoped to the repos in this session.** Grep its "Pending" / "needs attention" section for items matching repos this session will touch, and surface any matches up front — don't make the user (or yourself) re-diagnose a blocker that was already solved and documented one session ago.
 
 ## Step 1 — Discover repos with open work
 
@@ -58,6 +62,21 @@ gh pr list --head <branch> --state all --json number,state,title \
 
 Run this check for GitHub repos only. Skip GitLab, Bitbucket, or repos with no `gh`-reachable remote. Do not block on errors — if `gh` fails for a repo, skip it silently and note it in the Step 10 summary.
 
+### Concurrent-session check (best-effort, non-blocking)
+
+Before committing anything in a repo, do a lightweight check for a second session already operating on it — a stale-state check alone only catches a *past* session, not one running right now:
+
+```bash
+# Another claude process with a cwd inside this repo?
+lsof -c claude 2>/dev/null | grep "$(realpath <repo>)"
+
+# Has origin moved since this session started, outside anything this session did?
+git -C <repo> fetch origin --dry-run 2>&1
+git -C <repo> log HEAD..origin/main --oneline
+```
+
+If either signal fires — another process with a cwd in this repo, or unexpected commits on `origin/main` this session didn't make — surface a warning before proceeding: *"Another session may be operating on `<repo>` — origin has moved / a concurrent process was found. Proceed carefully or check with the user before committing."* This is best-effort, not a hard gate — don't block the run over it, and don't over-trust a clean result as proof no one else is active.
+
 **Hard gate — per repo, not a one-time audit.** Completing this check for one repo does not clear the gate for any other repo still pending. Do not begin Step 2 for a given repo until this check has completed for that specific repo. If the check flags a merged PR (stale branch) **and** the repo has uncommitted changes, resolve those changes first via Step 2's normal flow (commit+push to the stale branch, discard, or leave pending) **while still on the stale branch**. Only once the working tree is clean, switch to `main` (`git checkout main && git pull`). Never check out `main` while changes are uncommitted, and never commit directly on `main` — any further work after switching needs a new branch per git-ops first. A repo skipped due to a `gh` failure does not satisfy this gate — flag it in Step 10 as "branch state unverified" and treat it as if a stale branch were possible (don't let Step 2 silently assume it's clean).
 
 ---
@@ -68,7 +87,7 @@ Before Steps 2–4, invoke the `git-ops` skill *(personal — ai-skills repo)* �
 
 **SSH port-22 fallback**: For all GitHub/GitLab SSH remote operations, use `scripts/git-ssh-fallback.sh <repo-path> <subcommand> [args...]` instead of raw `git`. It auto-detects port-22 blocks, switches to HTTPS, and retries transparently.
 
-**GH auth pre-flight (personal repos):** Before processing any GitHub.com repo, verify the active account matches the repo owner. Run this once now — don't wait for a push failure.
+**GH auth pre-flight:** Before processing any GitHub.com repo — personal or work/org — verify the active `gh` account matches that repo's owner. The "Repository not found" account-mismatch failure mode is identical regardless of whose repo it is; don't read this as personal-repo-only because of how the variable below happens to be named. Run this once now — don't wait for a push failure.
 
 First, ensure `GITHUB_PERSONAL_USER` is set — it must be exported before any `gh` call. If it's not in the environment, read it from local config:
 
@@ -222,7 +241,15 @@ git -C <repo> fetch --prune origin
 git -C <repo> branch -vv | grep ': gone]' | awk '{print $1}' | xargs -r git -C <repo> branch -d
 ```
 
-The `-d` flag only deletes fully-merged branches — unmerged ones are left alone. If a branch shows as gone but wasn't merged (e.g., force-deleted remote), use `-D` only after confirming the work is captured elsewhere.
+The `-d` flag only deletes fully-merged branches — unmerged ones are left alone. **A squash-merged branch is the far more common cause of "not fully merged" here**, not just a force-deleted remote: the branch's commits genuinely landed on `main`, but git doesn't recognize them as ancestors because the squash commit has a different hash. Before falling back to `-D`, verify the content actually landed rather than assuming:
+
+```bash
+gh pr view <branch> --json state,mergedAt   # only works while the remote branch still exists
+git log --oneline --all --grep="<commit-subject>"
+git cherry main <branch>                    # empty output = every commit is already in main
+```
+
+Only use `-D` once one of these confirms the work is captured elsewhere — for a genuinely force-deleted, unmerged remote, none of them will show it as landed.
 
 When more than 3 branches would be deleted, show the list and ask with labeled options before proceeding:
 > **Delete these `N` merged local branches in `<repo-name>`?**
