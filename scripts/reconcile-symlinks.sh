@@ -61,4 +61,9 @@ if [[ -f "$CLOG_SRC" ]]; then
   link_item "$CLOG_SRC" "$CLOG_DST" "clog" file
 fi
 
+if [[ -f "$CLI_FILTER_SRC" ]]; then
+  chmod +x "$CLI_FILTER_SRC" 2>/dev/null || true
+  link_item "$CLI_FILTER_SRC" "$CLI_FILTER_DST" "cli-filter" file
+fi
+
 exit 0

@@ -240,6 +240,13 @@ if [[ -f "$CLOG_SRC" ]]; then
 fi
 
 log ""
+log "7b. cli-filter (symlink)"
+if [[ -f "$CLI_FILTER_SRC" ]]; then
+  $DRY_RUN || chmod +x "$CLI_FILTER_SRC"
+  link_item "$CLI_FILTER_SRC" "$CLI_FILTER_DST" "cli-filter" file
+fi
+
+log ""
 log "8. Private config (create-if-missing, never symlinked)"
 if [[ -f "$CONFIG_DST" ]]; then
   log "skip (exists): $CONFIG_DST"

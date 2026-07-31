@@ -141,7 +141,13 @@ ansible-playbook ... 2>&1 | clog ansible
 kubectl apply -f . 2>&1 | clog k8s
 ```
 
-Then read the filtered file — not the raw output:
+Then read the filtered file — not the raw output. Prefer `cli-filter <tool>` over reading raw Terraform/Ansible/kubectl output when a filtered log already exists:
+
+```bash
+cli-filter tf
+```
+
+If `cli-filter` isn't installed, fall back to:
 
 ```bash
 ls -t ~/.claude/logs/tf-*.log | head -1
