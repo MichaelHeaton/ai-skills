@@ -52,6 +52,13 @@ terraform plan 2>&1 | clog tf
 
 If `clog` is not installed, Claude should apply a manual filter: grep for `Error:|Warning:|Plan:|Apply complete` rather than reading the full output.
 
+Once a filtered log already exists — whether from manual `clog` piping above or a separate automatic-capture pipeline if one is installed — `cli-filter <tool>` is the preferred way to read the latest one, rather than hunting through `~/.claude/logs/` manually:
+
+```bash
+cli-filter tf              # prints the latest filtered tf log
+cli-filter ansible -n 3    # prints the 3 most recent filtered ansible logs
+```
+
 ---
 
 ## What gets filtered
@@ -111,7 +118,13 @@ When analyzing filtered output, structure the response as:
 
 ## Reading logs
 
-Claude should always read the most recent log for a given tool:
+Claude should always read the most recent log for a given tool. Prefer `cli-filter` over manually globbing the directory:
+
+```bash
+cli-filter tf
+```
+
+Or, if `cli-filter` isn't installed:
 
 ```bash
 # Find the latest tf log
@@ -124,10 +137,11 @@ Or the user can say: "read the last tf log" and Claude will find and read it fro
 
 ## Installation
 
-`clog` is installed by `ai-skills/scripts/install.sh`:
+`clog` and `cli-filter` are installed by `ai-skills/scripts/install-system.sh`:
 
 ```bash
 # Creates: ~/.local/bin/clog → ai/claude/skills/log-clip/scripts/clog.py
+# Creates: ~/.local/bin/cli-filter → ai/claude/skills/log-clip/scripts/cli-filter.py
 make install-system   # from ~/Projects/personal/ai-skills/
 ```
 
