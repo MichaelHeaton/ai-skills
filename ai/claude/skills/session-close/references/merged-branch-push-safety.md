@@ -1,5 +1,5 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
 last_updated: 2026-08-13
 updated_by: claude
@@ -46,13 +46,17 @@ git log --oneline --all --grep="<commit-subject>"
 git cherry main <branch>                    # empty output = every commit is already in main
 ```
 
-**`git cherry` is not itself infallible after a squash-merge** — it has been observed reporting a genuinely-landed commit as `+` (not yet applied), likely when the squash commit's diff doesn't patch-match cleanly against the original commits' combined diff. Don't trust `git cherry`'s +/- alone in either direction — cross-check with a direct content diff before treating any of the three checks above as the final word:
+**`git cherry` is not itself infallible after a squash-merge** — it has been observed reporting a genuinely-landed commit as `+` (not yet applied), likely when the squash commit's diff doesn't patch-match cleanly against the original commits' combined diff. Don't trust `git cherry`'s +/- alone in either direction — cross-check with a direct content diff before treating any of the three checks above as the final word.
+
+**Scope that diff to the branch's own commits, not the full tree.** A full-tree `git diff main..<branch>` (or `--stat`) answers "has anything changed anywhere between these two refs" — not the actually-needed question, "did *this branch's* content land." If `main` has drifted forward on unrelated files since the branch diverged, those files show up in a full-tree diff too, looking exactly like unmerged content when it's really just normal forward drift on files the branch never touched. This produced two real false alarms, including one that (before this scoping fix) misreported a genuinely-merged PR's content as "missing from main." Find the branch's own touched files first, then diff only those:
 
 ```bash
-git diff main..<branch>   # two-dot: does the branch's actual content differ from main's current tip?
+git log main..<branch> --oneline              # the branch's own commits
+git show --stat <commit>                       # per commit, or:
+git diff main..<branch> -- <file1> <file2> ...  # scoped to the files those commits actually touched
 ```
 
-- **Empty** — the branch's content is already fully present on `main`, regardless of what `git cherry` or the commit-message grep showed. Safe to `-D`.
-- **Non-empty** — real pending content exists. Do not force-delete, even if `gh pr view` or `git cherry` suggested the branch was already captured.
+- **Empty** — the branch's content is already fully present on `main`, regardless of what `git cherry`, the commit-message grep, or an unscoped full-tree diff showed. Safe to `-D`.
+- **Non-empty** — real pending content exists in files the branch's own commits touched. Do not force-delete, even if `gh pr view` or `git cherry` suggested the branch was already captured.
 
-Only use `-D` once the content diff confirms the work is captured elsewhere — for a genuinely force-deleted, unmerged remote, the diff will show real differences.
+Only use `-D` once the scoped content diff confirms the work is captured elsewhere — for a genuinely force-deleted, unmerged remote, the diff will show real differences in the branch's own files.

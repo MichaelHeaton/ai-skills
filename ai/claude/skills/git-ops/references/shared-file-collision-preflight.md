@@ -1,13 +1,13 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-13
 updated_by: claude
 ---
 
 # Pre-flight: colliding open PR on a shared file
 
-Before committing a change to a file that's shared and frequently touched across sessions (`.claude/settings.json` is the recurring offender in this repo), check for an existing open PR against it first:
+Before committing a change to a file that's shared and frequently touched across sessions, check for an existing open PR against it first. `.claude/settings.json` was the original motivating example, but skill `SKILL.md` files (and their `references/*.md`) are the more frequent recurring offender in practice — two concurrent sessions editing the same skill's docs within moments of each other is the more common collision, not just the settings file:
 
 ```bash
 gh pr list --search "<file-path-or-filename>" --state open --repo <owner>/<repo>

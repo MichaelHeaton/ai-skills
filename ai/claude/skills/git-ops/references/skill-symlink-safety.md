@@ -1,13 +1,27 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-13
 updated_by: claude
 ---
 
-# Editing through a deployed skill symlink
+# Worktree path safety when editing
 
 **General principle**: whenever an isolated worktree session is active, verify any Edit/Write's resolved absolute path actually lands inside that worktree before writing — regardless of how the path was reached. A deployed skill symlink is the most common way this drifts, but it's not the only one; a stale `cwd`, a wrong repo clone, or any other path-resolution mismatch can produce the same failure. Apply the same check-before-write discipline whenever paths and worktrees are both in play, not just for symlinks.
+
+## General check — any path, not just symlinks
+
+**Before an Edit/Write to any absolute path**, when an isolated worktree is active for the target repo, confirm the target's actual toplevel matches the worktree you intend to edit — this catches plain path mistakes (a stale `cwd`, a path typed or pasted without the worktree's prefix, a wrong clone) that never go through `~/.claude/skills/` at all and so wouldn't trip the symlink-specific check below:
+
+```bash
+git -C "$(dirname <target-path>)" rev-parse --show-toplevel
+```
+
+Compare the output against the intended worktree root. A mismatch means the write is about to land in the wrong checkout — stop and point at the correct worktree path instead of proceeding.
+
+**Motivating incident**: during a 2026-07-30 session, several `Write`/`Edit` calls used an absolute repo path directly (not through `~/.claude/skills/`) without the active worktree's prefix. The mistake landed silently in the main checkout — caught only by chance when a post-commit `git status` in the worktree showed "nothing to commit." No data was lost, but the detection gap was real: the symlink-specific check below never fires when the path doesn't touch `~/.claude/skills/`.
+
+## Special case — editing through a deployed skill symlink
 
 `~/.claude/skills/<name>` is often a symlink into a repo's real checkout on disk. If a worktree branch is checked out for that same repo, an Edit/Write reached through the symlink path can resolve to the wrong on-disk location — e.g. the main checkout instead of the intended worktree. This is exactly how a stray edit can silently land on `main`: a real near-miss was caught only because a routine `git status` happened to run afterward, and it was reverted before any commit landed on `main`.
 
