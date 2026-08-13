@@ -1,5 +1,5 @@
 ---
-version: 1.3.0
+version: 1.3.1
 principles_version: 1.0.0
 last_updated: 2026-08-13
 updated_by: claude
@@ -102,18 +102,16 @@ Work through template sections in order:
 3. Apply edits surgically — never reprint the whole doc
 4. Move on when the user is satisfied
 
-Apply the DRY rule: if something is documented elsewhere in the repo or wiki, link to it rather than restating it.
-
 ### Cascading depth (runbooks & how-tos)
 
-Keep the step-by-step path lean enough to run under pressure; push the "why" out to a separate, reusable concept page rather than growing the runbook.
+Apply the DRY rule — if something is documented elsewhere in the repo or wiki, link to it rather than restating it. For runbooks and how-tos specifically, that means keeping the step-by-step path lean enough to run under pressure and pushing the "why" out to a separate, reusable concept page rather than growing the runbook.
 
 - Each step (or block of steps that only make sense run together, e.g. a sequence that stacks state) gets **one short why** — a sentence, not a paragraph — plus **at most one link out**. Steps that stack in order share a single link rather than repeating one per step.
 - Anything longer than a one-line why belongs on its own concept page (e.g. `Concepts/{topic}.md`), not inline. Give that page a `Referenced from` section listing every runbook/how-to that links into it, so it stays discoverable and gets updated once instead of in N places.
 - Don't split a topic into many tiny concept pages — a page nobody edits because it's a paragraph long is worse than one page covering a whole related group of settings/steps. Optimize for "gets kept accurate," not maximum granularity.
 - **If the target concept page doesn't exist yet**, do one of two things before moving on — never leave a bare link to nothing and never defer with just "we'll come back to it":
   1. Draft the concept page now, in this session, or
-  2. Open a tracking ticket via the `issue-create` skill, and put the ticket reference directly at the link site in the doc (e.g. `→ Deep dive: not yet documented — tracked in PROJ-123`) so the gap is visible to the next reader, not just sitting in a ticket queue.
+  2. Open a tracking ticket via the `issue-create` skill _(global: ai-skills)_, and put the ticket reference directly at the link site in the doc (e.g. `→ Deep dive: not yet documented — tracked in PROJ-123`) so the gap is visible to the next reader, not just sitting in a ticket queue.
 
 ### Filename (staged mode only)
 
@@ -123,7 +121,7 @@ Lowercase, hyphenated, descriptive. Examples: `approle-cidr-binding-mismatch.md`
 
 ## Stage 2.5: Humanize
 
-Once the full draft is assembled, invoke the `humanizer` skill on it before reader testing — strips AI-writing tells (puffery, canned phrasing, formatting artifacts) while preserving every step, command, and fact exactly. Run reader testing against the humanized version, not the raw draft.
+Once the full draft is assembled, invoke the `humanizer` skill _(global: ai-skills)_ on it before reader testing — strips AI-writing tells (puffery, canned phrasing, formatting artifacts) while preserving every step, command, and fact exactly. Run reader testing against the humanized version, not the raw draft.
 
 ---
 
