@@ -1,5 +1,5 @@
 ---
-version: 1.11.0
+version: 1.12.0
 principles_version: 1.0.0
 last_updated: 2026-08-13
 updated_by: claude
@@ -149,6 +149,22 @@ Do not skip this check. It is lightweight (pure git diff + file stat) and runs i
 - **SSH alias remotes**: if `origin` uses an SSH config alias (e.g. `git@github.com-personal:owner/repo`) rather than the literal `github.com` hostname, `gh pr create` may fail with "must first push branch" even when the branch is already pushed. **Default**: always pass `--repo owner/repo --head branch-name` — don't attempt without these flags first
 - **Multi-account pre-flight**: see "Multi-account operations" below before running `gh pr create` on an org repo.
 - **After `gh pr create`, re-query state before treating the branch as "pending review"**: `gh pr view <n> --json state,mergedAt`. Some personal repos have repo-level auto-merge enabled, so a just-opened PR can merge itself within seconds — if `mergedAt` is already set, switch back to the default branch, pull, and run local branch cleanup for it in the same pass instead of deferring that to a later check. The "always branch + PR" rule still applies even when the PR merges itself immediately; this only changes when cleanup happens, not whether the PR step is skipped.
+
+---
+
+## Shared checkout branch-identity check
+
+Distinct from `session-close`'s concurrent-session check, which only answers "does another live process exist?" — it doesn't catch a second process **sharing this exact (non-worktree) checkout** silently swapping the active branch out from under this session. An isolated `git worktree` checkout is immune to this (its branch is pinned to that worktree); a shared/main checkout is not — a background task checking out its own branch directly in a shared working directory can silently replace the branch this session believes it's still on, and a commit can land on the wrong branch before anyone notices.
+
+Before every `git commit`, verify the active branch is still the one this session expects (the branch named in the Architect/plan step, or the branch you last explicitly checked out or created):
+
+```bash
+bash ~/.claude/skills/git-ops/scripts/check-branch-identity.sh <repo-path> <expected-branch>
+```
+
+- **`MATCH`** — proceed
+- **`WORKTREE:<actual>`** — this checkout is an isolated worktree; a branch swap in a *different* checkout of the same repo can't collide with it here. Proceed.
+- **`MISMATCH:<actual>`** — the active branch changed unexpectedly in a shared checkout. **Stop before committing.** Confirm which branch is actually correct before proceeding — do not commit onto whatever happens to be checked out.
 
 ---
 
