@@ -1,5 +1,5 @@
 ---
-version: 1.2.1
+version: 1.3.0
 principles_version: 1.0.0
 last_updated: 2026-08-13
 updated_by: claude
@@ -75,6 +75,8 @@ For each component to document, also read its key files before drafting anything
 **Generic component** — read `README.md` and 2–3 key source files. Understand: purpose, interfaces, dependencies.
 
 Also check the root AGENTS.md (or AGENT.md, if that's the repo's existing convention) to confirm what's already documented repo-wide — do not repeat it in the component file.
+
+**First-of-kind component (no sibling to model after):** if this is the first component of its type in the repo (e.g. the first per-environment Terraform root in a repo that will have several), there's no existing AGENT.md/AGENTS.md in this repo to mirror. Look for a comparable component in a related repo that uses the same directory-shape convention, and use that as a drafting reference instead. Drafting a first-of-kind AGENT.md from scratch genuinely takes longer than updating an existing template — that's expected, not a sign the check found something wrong.
 
 ### Step 4 — Draft and confirm
 

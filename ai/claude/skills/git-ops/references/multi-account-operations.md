@@ -1,13 +1,15 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-13
 updated_by: claude
 ---
 
 # Multi-account operations
 
 This environment often has more than one `gh` account active (e.g. a personal account and a work org account). Apply this section to **any mutating `gh` command** — not just `gh pr create`. That includes `gh pr create`, `gh pr edit`, `gh pr merge`, `gh issue create`, `gh issue edit`, `gh issue close`, and anything else that writes rather than reads.
+
+**Always pass `--repo owner/repo` on any `gh` command against an org repo (e.g. `gh pr create`, `gh pr view`, `gh issue list`), and `--head branch-name` on top of that for `gh pr create`.** This isn't only an SSH-alias-remote workaround — an org repo's ambient git context (`cd`-resolved remote, active account) is more likely to disagree with the target repo than a personal one, so `gh` silently resolving the wrong repo from context is the more common failure mode for org work. Don't wait for a "must first push branch" or similar error before adding these flags; pass them from the first command.
 
 **Pre-flight — before the first mutating `gh` command on a repo**:
 
