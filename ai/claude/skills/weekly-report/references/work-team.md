@@ -42,7 +42,10 @@ Use `display_name` as the heading (e.g. your name on the team page).
 
 **Problems** — only real blockers, or *(None this week.)*
 
-**Updates from Leads table** — if the live wiki page has an effort-level summary table above the PPP section (e.g. `| Effort | Lead | Updates |`), include a paste row for any efforts the user owns as a separate section in the output file, before the Progress section. **Match the live page's cell-formatting convention** — inspect how existing populated rows format multi-point content (bulleted list within the cell vs. a single paragraph) and follow it, rather than defaulting to one dense paragraph.
+**Updates from Leads table** — if the live wiki page has an effort-level summary table above the PPP section (e.g. `| Effort | Lead | Updates |`), include a paste target for any efforts the user owns as a separate section in the output file, before the Progress section.
+
+- **Content**: short, punchy, one-line-per-item talking points — not the 2-5 sentence paragraph-style bullets used in Progress/Plans/Problems. Name the thing, not the detail; save ticket numbers, PR numbers, and "why it mattered" for the Progress bullets underneath.
+- **Structure in the output file**: render it as a normal Markdown bullet list (one `*`/`-` item per line) under its own heading — do **not** embed it inside a `| |` Markdown table row/cell. Pipe-table cells can't hold real line breaks, so multi-point content forced into one either gets squashed onto a single `*`-separated line or `<br>`-joined — both paste into the live Confluence cell worse than a plain bullet list copies in as a bullet list. This was corrected 2026-08-13 after a first pass over-corrected a paste-breaking complaint into single-line prose, which was the wrong fix in the wrong direction — the working answer is short bullets, each on its own line, outside of a table cell in this file.
 
 ## Metadata in output file
 
