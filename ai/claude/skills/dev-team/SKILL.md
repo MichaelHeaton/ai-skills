@@ -1,5 +1,5 @@
 ---
-version: 1.4.0
+version: 1.5.0
 principles_version: 1.0.0
 last_updated: 2026-08-13
 updated_by: claude
@@ -19,11 +19,14 @@ This design went through three rounds of `decision-council` review plus a backte
 Read the ticket. Do NOT spawn any agents yet.
 
 1. Scan the repo for the smallest useful context — the files the ticket actually touches, not the whole tree.
-2. Ask any clarifying questions you need — up to 3, batched in one turn. Don't proceed on an ambiguous plan just to seem fast.
-3. Write a short build plan: files to touch, the approach, the **branch name** Coder should commit on, and the Coder specialty (`generic`, `terraform`, `db`, `ansible` — default `generic` unless the ticket clearly needs a specialist prompt swap). Naming the branch explicitly in the plan gives Step 2's verification something concrete to check against.
-4. **If the plan hinges on an external convention, standard, or spec claim** (e.g. which of two competing file-naming conventions a tool actually supports, how a third-party API is documented to behave), verify it via WebFetch/WebSearch before finalizing the plan — don't assert it from memory. Mirrors the same gate `skill-create` uses for claimed product schema/behavior.
-5. **If the approved plan turns out to need no code changes** — pure research, ticket-creation, or documentation work — stop here by design, not by omission. Hand off explicitly instead of drafting the follow-on work ad hoc in this session: ticket creation goes through `issue-create`, documentation goes through `doc-coauthor`. Skip Coder/Tester/Docs/Manager entirely; there's no diff for them to act on.
-6. Present the plan and **stop for explicit approval** before spawning anything. This is the approval gate — Coder/Tester/Docs/Manager never speculatively spin up.
+2. **Check whether the ticket is already resolved.** Before drafting a plan, check `git log`/`git blame` against the ticket's described files and behavior — a prior commit may have already fixed it without referencing the ticket. Catching this here is deterministic instead of relying on ad hoc judgment mid-plan. If already resolved, skip straight to closing the ticket with a citation to the fixing commit; there's no plan to draft or diff for Coder to produce.
+3. **Check whether the fix location resolves to a different repo than the ticket is filed in** — via a symlink (a deployed skill path resolving to a different on-disk checkout) or general repo structure. Cross-reference git-ops's "Worktree path safety when editing" section rather than re-deriving the check. If the target repo differs, name it explicitly in the build plan below — Coder needs to know which repo it's actually working in before it spawns.
+4. Ask any clarifying questions you need — up to 3, batched in one turn. Don't proceed on an ambiguous plan just to seem fast.
+5. Write a short build plan: files to touch, the approach, the **branch name** Coder should commit on, and the Coder specialty (`generic`, `terraform`, `db`, `ansible` — default `generic` unless the ticket clearly needs a specialist prompt swap). Naming the branch explicitly in the plan gives Step 2's verification something concrete to check against. If Step 3 above found a cross-repo fix location, the plan must name that target repo, not the ticket's filing repo.
+6. **If the plan hinges on an external convention, standard, or spec claim** (e.g. which of two competing file-naming conventions a tool actually supports, how a third-party API is documented to behave), verify it via WebFetch/WebSearch before finalizing the plan — don't assert it from memory. Mirrors the same gate `skill-create` uses for claimed product schema/behavior.
+7. **If the approved plan turns out to need no code changes** — pure research, ticket-creation, or documentation work — stop here by design, not by omission. Hand off explicitly instead of drafting the follow-on work ad hoc in this session: ticket creation goes through `issue-create`, documentation goes through `doc-coauthor`. Skip Coder/Tester/Docs/Manager entirely; there's no diff for them to act on.
+8. **If the ticket is actually live infra operations** — a multi-step rebuild, migration rehearsal, or iterative CLI diagnosis session — rather than a bounded, plannable code change, say so up front instead of stretching one Architect conversation across an open-ended ops session. Recognizable signal: the ticket describes manual verification, live cluster state changes, or a multi-phase migration with no fixed diff to hand off. Treat it as an extended direct-operations session and skip Coder/Tester/Docs/Manager — that's the correct outcome here, not an omission, same as step 7's research/docs case.
+9. Present the plan and **stop for explicit approval** before spawning anything. This is the approval gate — Coder/Tester/Docs/Manager never speculatively spin up.
 
 ## Step 2 — Coder (background subagent)
 
@@ -40,6 +43,17 @@ git log main..HEAD --oneline
 
 Empty `git status --short` and at least one commit in the log is the actual completion signal, not the task status word. If either check fails, resume the same agent via `SendMessage` and ask it to finish and commit before proceeding.
 
+**Hard cap on resume attempts.** If two resumes in a row still don't produce a clean `git status --short` and a real commit, stop treating this as an Architect-side verification loop — resuming a third time on the assumption "it just needs one more nudge" is how this becomes indefinite. Flag it as a Coder defect instead: report what's actually on disk to the user and ask how to proceed, rather than resuming again.
+
+**When the ticket's fix repo differs from this Architect session's own repo** (per Step 1's cross-repo fix-location check), confirm Coder actually isolated into the *target* repo's worktree — not the shared primary checkout — before trusting any diff:
+
+```bash
+git -C <target-repo-worktree-path> rev-parse --show-toplevel
+git worktree list
+```
+
+Coder's own `EnterWorktree`/`ExitWorktree` tooling is supposed to handle this automatically, but it isn't fully reliable across repos — confirming here deterministically is cheap and catches a shared-checkout collision before it corrupts state, rather than by chance.
+
 **Also confirm the branch name matches the plan.** Coder's isolation mode sometimes lands on the worktree's auto-generated scaffold branch name instead of the branch named in the approved plan:
 
 ```bash
@@ -53,6 +67,8 @@ If it doesn't match, rename before proceeding to Tester or push: `git branch -m 
 Spawn `dev-team-tester` with the diff Coder produced **and the ticket's stated acceptance criteria** (not just the diff — a "does the shipped value match the requirement" check needs the requirement text to check against). Tester's job is narrow: break what shipped, check the one pattern a backtest against real tickets confirmed generic review misses — privileged/binary downloads embedded in template-string or heredoc shell content where integrity verification is optional rather than enforced — and confirm every ticket-relevant changed value actually matches what the ACs say, not just that the code is structurally sound and plans/compiles cleanly. Tester reports findings; it does not fix anything.
 
 **Before acting on Tester's output, confirm the report is actually complete.** A sub-agent can return a task status of "completed" while its final message is truncated mid-sentence or mid-list — that status field reflects the harness's task lifecycle, not whether Tester finished writing its verdict. If the report doesn't end with a clear ship/rework verdict statement, don't proceed on the partial read and don't re-spawn a fresh Tester from scratch. Instead, resume the same agent via the messaging tool used to continue sub-agents (`SendMessage`, addressed to that agent's id) and explicitly ask for a complete final report.
+
+**Same hard cap as Step 2**: after two resumes without a complete verdict, stop resuming and flag it as a Tester defect to the user instead of treating it as an indefinite Architect-side verification loop.
 
 ## Step 4 — Docs (background subagent, deterministic trigger only)
 
@@ -77,6 +93,8 @@ Spawn `dev-team-manager` only if either is true:
 - The diff crosses a size/risk threshold (touches `auth/`, `payments/`, IAM, or is large relative to the ticket's scope)
 
 Otherwise skip Manager and go straight to your summary — most tickets don't need a fourth agent.
+
+**For diffs that already cross the size/risk threshold above** (auth/credential handling, a persistent background service install, or similar) **spawn Manager in parallel with Tester instead of waiting for Tester to finish first.** A backtest found Manager catching real bugs — a data-loss race, an orphaned-file redaction gap — that Tester's first pass missed, and running strictly sequential meant those findings only surfaced after a full Tester pass, burning rework rounds against the pipeline's cap that earlier parallel spawning would have avoided. This only applies to diffs that already meet the risk threshold above — don't spawn Manager speculatively before Tester on ordinary tickets.
 
 Manager does two things, not one:
 
