@@ -1,7 +1,7 @@
 ---
-version: 1.6.2
+version: 1.7.0
 principles_version: 1.0.0
-last_updated: 2026-07-29
+last_updated: 2026-08-13
 updated_by: claude
 name: issue-create
 description: Create a new task, issue, or story in the right system — GitHub Issues (Memex), Linear, or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", "this should be its own ticket", "separate ticket for X", "let's decompose", "track this for later", or similar. Also fires autonomously — always use this skill when Claude itself decides to create any issue (during triage, research, session-close, or any workflow), when creating multiple issues in a batch, or whenever about to call gh issue create or glab issue create directly, or whenever about to call a ticketing MCP tool directly such as jira_create_issue (Jira) or save_issue (Linear). Work org remotes → Jira Story; personal → GitHub Issue (Memex default); Linear only via routing file ticket_system=Linear.
@@ -69,6 +69,8 @@ Select the most relevant component based on ticket content and repo name. Includ
 ### A3. Draft description and create
 
 Draft the user story body using the template in §C2. **Critical**: pass the description body as a literal multi-line string — do **not** construct it with escaped `\n` characters. The Jira MCP requires real newlines; `\n` literals appear verbatim in the Jira UI.
+
+**Underscore-escaping survives backtick/monospace wrapping.** Jira's create/update API escapes underscores in identifiers (resource names, variable names) into `\_` — even when the identifier is wrapped in backticks or `{{...}}` monospace markers; that formatting is not a reliable workaround. After creating (or updating) an issue with underscore-heavy identifiers, verify the rendered result via `jira_get_issue` and correct via a follow-up `jira_update_issue` (or `jira_edit_comment` for comments) if mangled.
 
 Create via Atlassian MCP `jira_create_issue` with `jira.project_key`, the component from A2 (if applicable), and the multi-line description.
 

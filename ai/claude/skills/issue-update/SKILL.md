@@ -1,7 +1,7 @@
 ---
-version: 1.2.0
+version: 1.3.0
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-13
 updated_by: claude
 name: issue-update
 description: Update a task or ticket — change status, add a comment, edit labels, close it, or sync the task index. Works across Linear, GitHub Issues, GitLab Issues, and Jira. Also the right tool for closing tickets found stale/duplicate/superseded during a backlog-triage pass, not just active single-ticket work. Use when the user says "close issue #X", "mark SR-42 done", "mark PROJ-12345 done", "update the description of PROJ-123", "update PROJ-123" (including a bare "update <ticket-id>" meaning add a comment, not just a status change), "scope this ticket to", "scope this down to only X", "narrow the scope of this ticket", "transition this to closed", "this ticket is done — close it", "transition to blocked", "close as duplicate", "close as stale", "close as superseded", "closing during triage", or similar.
@@ -51,9 +51,10 @@ Use Linear MCP: `save_comment`, `save_issue` (with `id` for state/priority/descr
 
 #### GitHub Issues
 
-> **Account:** Export the personal token before any `gh` call (`GITHUB_PERSONAL_USER` must be set in your environment):
+> **Account:** Export the personal token before any `gh` call (`GITHUB_PERSONAL_USER` must be set in your environment). **Unset `GH_TOKEN` first** — a stale value already in the environment takes precedence over the fresh keyring lookup below and can silently re-export a bad token, causing 401s:
 >
 > ```bash
+> unset GH_TOKEN
 > export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")
 > ```
 >
@@ -110,7 +111,19 @@ Use the Atlassian MCP tools:
 
 See [[Agents/23-jira-rules|23-jira-rules]] for work Jira conventions (private vault rules).
 
-### 3. Sync task index
+### 3. Verify comment/description writes for markdown-escaping mangling
+
+Some ticket systems (Jira in particular) silently mangle plain-text markdown on write — underscores escaped to `\_`, bold markers (`**text**`) dropped or rendered as literal escaped asterisks, or `+` characters stripped. Backtick-wrapping helps inconsistently, so the only reliable check is to re-fetch and compare.
+
+After any comment or description write (not label/status-only changes), re-fetch the posted content and diff it against what was sent:
+
+- **Jira**: `jira_get_issue` (or `jira_get_comment` for a comment) and compare the returned text
+- **GitHub**: `gh issue view {NUMBER} --repo {owner/repo} --json body,comments`
+- **GitLab**: `glab issue view {NUMBER} --repo {namespace/repo}`
+
+If the re-fetched content shows escaping artifacts (`\_`, `\*`, dropped bold markers, stripped `+`), correct it immediately via the system's edit call (`jira_update_issue` / `jira_edit_comment`, `gh issue edit` / `gh issue comment --edit-last`, `glab issue update`) rather than leaving it to be caught manually later.
+
+### 4. Sync task index
 
 After any status change, update `~/Projects/personal/memex/Raw/_task-index.jsonl`:
 
@@ -120,7 +133,7 @@ After any status change, update `~/Projects/personal/memex/Raw/_task-index.jsonl
 
 To update: read the file, find the matching line by `id`, rewrite it with the updated `status`, write the file back.
 
-### 4. Confirm to the user
+### 5. Confirm to the user
 
 Report what changed:
 

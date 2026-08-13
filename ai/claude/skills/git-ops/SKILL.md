@@ -1,5 +1,5 @@
 ---
-version: 1.12.0
+version: 1.13.0
 principles_version: 1.0.0
 last_updated: 2026-08-13
 updated_by: claude
@@ -210,11 +210,11 @@ When committing, pushing, or creating PRs across more than one repo in the same 
 
 ---
 
-## Editing through a deployed skill symlink
+## Worktree path safety when editing
 
-**General principle**: whenever an isolated worktree session is active, verify any Edit/Write's resolved absolute path actually lands inside that worktree before writing — regardless of how the path was reached. A deployed skill symlink (below) is the most common way this drifts, but it's not the only one; a stale `cwd`, a wrong repo clone, or any other path-resolution mismatch can produce the same failure.
+**General principle**: whenever an isolated worktree session is active, verify any Edit/Write's resolved absolute path actually lands inside that worktree before writing — regardless of how the path was reached. A deployed skill symlink (below) is the most common way this drifts, but it's not the only one; a stale `cwd`, a wrong repo clone, or any plain absolute-path mistake typed or pasted without the worktree's prefix can produce the same failure, and none of those go through `~/.claude/skills/` at all. Before any such Edit/Write, `git -C "$(dirname <target-path>)" rev-parse --show-toplevel` and compare against the intended worktree root — full check and the motivating incident: [references/skill-symlink-safety.md](references/skill-symlink-safety.md).
 
-`~/.claude/skills/<name>` is often a symlink into a repo's real checkout on disk. If a worktree branch is checked out for that same repo, an Edit/Write reached through the symlink path can resolve to the wrong on-disk location — e.g. the main checkout instead of the intended worktree. **Before an Edit/Write through a path under `~/.claude/skills/`**, resolve the symlink (`readlink -f`) and check for an active worktree on that repo (`git worktree list`) — full resolution commands and disambiguation rules when multiple worktrees exist: [references/skill-symlink-safety.md](references/skill-symlink-safety.md).
+`~/.claude/skills/<name>` is often a symlink into a repo's real checkout on disk — this is the special case. If a worktree branch is checked out for that same repo, an Edit/Write reached through the symlink path can resolve to the wrong on-disk location — e.g. the main checkout instead of the intended worktree. **Before an Edit/Write through a path under `~/.claude/skills/`**, resolve the symlink (`readlink -f`) and check for an active worktree on that repo (`git worktree list`) — full resolution commands and disambiguation rules when multiple worktrees exist: [references/skill-symlink-safety.md](references/skill-symlink-safety.md).
 
 ---
 
