@@ -1,5 +1,5 @@
 ---
-version: 1.7.0
+version: 1.8.0
 principles_version: 1.0.0
 last_updated: 2026-08-13
 updated_by: claude
@@ -99,9 +99,13 @@ bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
   --project "<jira.project_key>"
 ```
 
+### A5.5. Freshness re-check (optional, cheap)
+
+The de-dupe check in "Detect routing target" only searches *before* creation — it can't catch activity that lands on the ticket's own key right after it's created (a webhook-driven comment, an automation-added field). Before finalizing the confirmation message, do one fresh `jira_get_issue` fetch on the ticket just created. If it already carries comments or field changes that weren't part of the draft in A3, surface them in the A6 confirmation instead of confirming as if the ticket were still exactly as drafted.
+
 ### A6. Confirm
 
-Report: ticket key, URL, epic it was linked to, and predecessor link (if applicable).
+Report: ticket key, URL, epic it was linked to, predecessor link (if applicable), and any unexpected activity found in the A5.5 freshness re-check.
 
 ---
 
@@ -131,7 +135,7 @@ Draft the body using the user story template in §C2.
 
 ### B2–B5
 
-Seed labels, `gh issue create`, append task index with `--system github`, confirm.
+Seed labels, `gh issue create`, append task index with `--system github`. Before confirming, same freshness re-check as Path A's A5.5: `gh issue view <NUMBER> --repo <owner/repo> --json comments,updatedAt` — surface anything unexpected in the confirmation rather than confirming silently.
 
 ---
 
@@ -175,6 +179,8 @@ bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
 ```
 
 ### B2-4. Confirm
+
+Before confirming, same freshness re-check as Path A's A5.5: `glab issue view <NUMBER> --repo <namespace/repo>` — surface anything unexpected in the confirmation rather than confirming silently.
 
 Report: issue number, URL, repo, and labels applied.
 
@@ -265,6 +271,8 @@ bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
 
 ### C7. Confirm
 
+Before confirming, same freshness re-check as Path A's A5.5: `gh issue view <NUMBER> --repo ${GITHUB_PERSONAL_USER}/memex --json comments,updatedAt` — surface anything unexpected in the confirmation rather than confirming silently.
+
 Report: issue number and URL as a markdown link, project it was added to (or skipped with reason), labels applied, and vault note link status (if applicable).
 
 - Normal: `"Created [#97 — Review HomeLab DNS config](https://github.com/...) → HomeLab project, priority/medium."`
@@ -318,6 +326,8 @@ bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
 ```
 
 ### D5. Confirm
+
+Before confirming, same freshness re-check as Path A's A5.5: Linear MCP `get_issue` on the created identifier — surface any unexpected comments or field changes in the confirmation rather than confirming silently.
 
 Report: Linear identifier, URL, project, and priority.
 

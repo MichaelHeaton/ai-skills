@@ -1,5 +1,5 @@
 ---
-version: 1.15.2
+version: 1.16.0
 principles_version: 1.0.0
 last_updated: 2026-08-13
 updated_by: claude
@@ -24,7 +24,9 @@ Close out this session safely. The goal: nothing stranded in branches, all ticke
 bash ~/.claude/skills/session-close/scripts/discover-repos.sh
 ```
 
-This scans repos in the active VS Code workspace (detected via `*.code-workspace` file in `$PWD`) and prints only those that need attention. Falls back to `~/Projects/` if no workspace file is found. Parse the output to build a working list.
+This scans repos in the active VS Code workspace (detected via `*.code-workspace` file in `$PWD`, then `~/Projects/workspace/*.code-workspace`, then a depth-3 search under `~/Projects/`) and prints only those that need attention. Falls back to the full `~/Projects/` sweep if no workspace file is found anywhere. Parse the output to build a working list.
+
+**Single-repo sessions hard-exclude `RECENT:n` sweep noise by default.** When the workspace has exactly one folder, the script already narrows the working set itself: `RECENT:n` repos found only by the broad `~/Projects/` sweep (not the workspace's own folder or the current repo) are left out of the output entirely — they're stale archive repos, not part of this session. This is a real exclusion, not just "skip the question" below. If the session is clearly single-repo-scoped from conversation context alone (no workspace file, or a multi-folder workspace where only one folder is actually in play), re-run with `SESSION_SINGLE_REPO=1` to get the same narrowing. The excluded repos are never lost — re-run with `SHOW_ALL_REPOS=1` to see them, which is what the "Show all repos" option below does.
 
 For each line, extract:
 
@@ -44,7 +46,7 @@ For each line, extract:
 >
 > - **All of them**
 > - **[list each recently-active repo as its own option]** *(RECENT:y repos listed first)*
-> - **Show all repos** *(if some were filtered out as not recent)*
+> - **Show all repos** *(re-runs Step 1 with `SHOW_ALL_REPOS=1` to surface `RECENT:n` sweep repos excluded by default in single-repo sessions, plus any filtered out as not recent)*
 > - **None — just clean up noise**
 
 ### Branch hygiene check
@@ -106,6 +108,8 @@ For each repo with `CHANGES > 0` **whose Step 1 branch-hygiene check has already
    > - **Discard** — revert all changes (confirm destructive)
 5. If committing: run the standard commit flow (stage relevant files, write message, push)
 6. If leaving: note it in the session summary as "pending"
+
+**Drafts meant for manual human follow-up (wiki pastes, external-system content) need a durable home, not a scratchpad.** Any output this session is deferring to a future session for manual action — "paste this into the wiki," "someone needs to copy this into X" — should be written to a durable, git-tracked location (e.g. `Outputs/Drafts/` in the relevant repo) rather than left at an ephemeral scratchpad path. A scratchpad gets cleaned up between sessions with no warning; a genuinely finished draft sitting there can be lost outright, not just inconvenient to re-find. If such a draft already exists at a scratchpad path when Step 10 runs, copy it to the durable location before writing the summary, and flag it in the Pending section as an **at-risk item needing relocation** — not a normal pending task — so it can't be silently dropped by a routine scratchpad cleanup.
 7. If discarding, use concrete commands — never `rm -rf`, which some workstations block outright via a recursive-delete safety hook:
    - Tracked changes: `git -C <repo> restore <file>` (or `git -C <repo> checkout -- <file>`)
    - Untracked files/dirs inside the repo: `git -C <repo> clean -fd`

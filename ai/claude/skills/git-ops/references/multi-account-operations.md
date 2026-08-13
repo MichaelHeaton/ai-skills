@@ -1,5 +1,5 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
 last_updated: 2026-08-13
 updated_by: claude
@@ -60,3 +60,17 @@ HOME=/tmp git -C <repo> \
 ```
 
 `HOME=/tmp` prevents `~/.gitconfig`'s `insteadOf` rules from applying; `credential.helper=` disables the keychain lookup; the explicit `-c url....insteadOf` re-adds just the one rewrite this command needs, tokenized.
+
+---
+
+## Org scope — don't assume one org across repos
+
+Account mismatch (above) isn't the only way a `gh` sweep across "all your repos" goes quiet-wrong. A team's repos can live across more than one GitHub org (or a personal org plus a personal-account namespace) even when a single `gh` account can see all of them — in that case there's no auth error at all, just a `gh pr list` or `gh search prs` sweep that silently comes back short because it only checked one org.
+
+**Before treating any cross-repo PR/issue sweep as exhaustive**, check each repo's actual org from its own remote rather than assuming one org value applies to every repo in the set:
+
+```bash
+git -C <repo> remote get-url origin | sed -E 's#.*[:/]([^/]+)/[^/]+(\.git)?$#\1#'
+```
+
+Group repos by the org this returns, and run the sweep once per org — a single `--owner <org>` or `--org <org>` filter carried over from one repo to the rest of the set is the failure mode, not the tool itself. This applies to `gh search prs`, `gh search issues`, and any hand-rolled "PRs across owned repos" loop alike.
