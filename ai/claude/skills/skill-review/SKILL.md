@@ -1,10 +1,10 @@
 ---
-version: 1.6.0
+version: 1.7.0
 principles_version: 1.0.0
 last_updated: 2026-08-13
 updated_by: claude
 name: skill-review
-description: Review and improve skills — either a single skill or all skills used in the current session. Single-skill mode: audits a SKILL.md against conventions, incorporates session learnings, and tunes triggering. Session-audit mode: reflects on the current conversation to find skill friction, missed triggers, and workflow gaps worth turning into new skills — meant to be called at the end of every session to make skills a little better each time. Also invoked programmatically by a parent session passing pre-collected session context (sub-agent mode: SA1 done by parent, SA2–SA4 run in sub-agent with fresh skill files). Triggers on: "review this skill", "improve skill X", "this skill isn't working well", "update skill based on what we learned", "skill feels off", "tune skill description", "review skills from this session", "what skills need updating", "session skill review", "audit skills", when session-close reaches its skill hygiene step, or proactively right after a SKILL.md is edited directly from conversation (not through `skill-create`'s own flow, which already includes review) — offer single-skill mode on the just-edited skill before treating the edit as done.
+description: Review and improve skills — either a single skill or all skills used in the current session. Single-skill mode: audits a SKILL.md against conventions, incorporates session learnings, and tunes triggering. Session-audit mode: reflects on the conversation for skill friction and workflow gaps worth turning into new skills; scans usage counters for zero/dormant-usage skills across ALL installed skills, not just this session's; and flags skills whose SKILL.md hasn't been touched in 90+ days — run at the end of every session, or proactively right after a SKILL.md is edited directly (not through `skill-create`, which already reviews). Also invoked programmatically by a parent session passing pre-collected context (sub-agent mode: SA1 by parent, SA2–SA4 in sub-agent). Triggers on: "review this skill", "improve skill X", "skill isn't working well", "tune skill description", "session skill review", "audit skills", "stale skills", or when session-close reaches its skill hygiene step.
 compatibility: Requires git. Skills deployed via `make install-system` (per-item symlinks; see principles/deployment.md).
 ---
 
@@ -24,6 +24,19 @@ If unclear, ask: "Do you want to review a specific skill, or do a session-wide s
 ## Session-audit mode
 
 Use this when called at the end of a session or when the user wants a sweep rather than a targeted review.
+
+### SA0. Check for stale skills (lightweight, runs every time)
+
+Run this regardless of whether a conversation-context block is available — it doesn't need session reflection, only two local reads, so it isn't blocked by the SA1 halt condition below.
+
+1. `jq '.skillUsage' ~/.claude.json` — lifetime `usageCount` and `lastUsedAt` per skill (never windowed, never reset).
+2. `ls -la ~/.claude/skills/` (and `<project>/.claude/skills/` if the project has one) — the symlink/directory date is a proxy for how long each skill has been installed.
+3. Flag a skill as **stale** if either:
+   - It has no entry in `skillUsage` at all (zero lifetime dispatches) **and** its symlink/directory is older than ~2 weeks, or
+   - It has a `lastUsedAt` older than ~90 days.
+4. Skip anything installed less than ~2 weeks ago — too new to judge, note it rather than flagging it.
+
+This reuses `/doctor` check 1's signal (skill usage counters) but skips its multi-session transcript scan — these two file reads are cheap enough to run at every session-close. Carry the result into SA4 as a third list.
 
 ### SA1. Identify skills used this session
 
@@ -63,11 +76,13 @@ Look for any multi-step work that ran without a skill — no skill fired, but th
 
 ### SA4. Output the skill delta
 
-Produce two lists:
+Produce three lists:
 
 **Existing skills to improve** — name the skill, describe the specific fix (quote the friction if possible, or "stale — last touched N days ago" for a staleness-only flag). Offer to run single-skill mode on it now or create a ticket in ai-skills.
 
 **New skill ideas** — proposed name + one sentence on what it does. Offer to invoke `skill-create` now or create a ticket in ai-skills.
+
+**Stale skills** (from SA0) — name each, its lifetime `usageCount` and `lastUsedAt` (or "never"), and why it was flagged. Propose disabling via `skillOverrides: {"<name>": "off"}` in `.claude/settings.local.json` (project skill) or `~/.claude/settings.json` (global skill) — reversible by removing the entry. Get explicit confirmation before disabling anything; don't apply silently.
 
 If there's nothing to improve: say "no skill changes identified this session" — don't manufacture findings.
 
