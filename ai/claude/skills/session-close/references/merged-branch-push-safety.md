@@ -1,7 +1,7 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-13
 updated_by: claude
 ---
 
@@ -46,4 +46,13 @@ git log --oneline --all --grep="<commit-subject>"
 git cherry main <branch>                    # empty output = every commit is already in main
 ```
 
-Only use `-D` once one of these confirms the work is captured elsewhere — for a genuinely force-deleted, unmerged remote, none of them will show it as landed.
+**`git cherry` is not itself infallible after a squash-merge** — it has been observed reporting a genuinely-landed commit as `+` (not yet applied), likely when the squash commit's diff doesn't patch-match cleanly against the original commits' combined diff. Don't trust `git cherry`'s +/- alone in either direction — cross-check with a direct content diff before treating any of the three checks above as the final word:
+
+```bash
+git diff main..<branch>   # two-dot: does the branch's actual content differ from main's current tip?
+```
+
+- **Empty** — the branch's content is already fully present on `main`, regardless of what `git cherry` or the commit-message grep showed. Safe to `-D`.
+- **Non-empty** — real pending content exists. Do not force-delete, even if `gh pr view` or `git cherry` suggested the branch was already captured.
+
+Only use `-D` once the content diff confirms the work is captured elsewhere — for a genuinely force-deleted, unmerged remote, the diff will show real differences.
