@@ -1,5 +1,5 @@
 ---
-version: 1.14.0
+version: 1.15.0
 principles_version: 1.0.0
 last_updated: 2026-08-13
 updated_by: claude
@@ -165,6 +165,38 @@ bash ~/.claude/skills/git-ops/scripts/check-branch-identity.sh <repo-path> <expe
 - **`MATCH`** — proceed
 - **`WORKTREE:<actual>`** — this checkout is an isolated worktree; a branch swap in a _different_ checkout of the same repo can't collide with it here. Proceed.
 - **`MISMATCH:<actual>`** — the active branch changed unexpectedly in a shared checkout. **Stop before committing.** Confirm which branch is actually correct before proceeding — do not commit onto whatever happens to be checked out.
+
+---
+
+## Live concurrent-session detection
+
+Distinct from the "Shared checkout branch-identity check" above, which only catches a branch swap _after_ it's already happened. Before committing, check whether a second Claude Code session is actively writing to this same repo right now — via `ps aux` for another process with `--add-dir` on this repo, plus a file-mtime check against this session's own start time. Full detection commands and the "don't touch the other session's in-progress edit; move to a fresh branch off updated main once it's done" recovery: [references/live-concurrent-session.md](references/live-concurrent-session.md).
+
+---
+
+## Merging a PR
+
+`gh pr merge <n> --squash --delete-branch` (or your repo's configured merge strategy) can fail on transient GitHub API errors — a 502, or "merge already in progress." Don't retry blindly: a transient-looking failure can mean the merge actually landed server-side, and a second merge attempt against an already-merged PR just produces a second, confusing error.
+
+**Re-check before every retry:**
+
+```bash
+gh pr view <n> --repo <owner/repo> --json state,mergedAt
+```
+
+If `state` is `MERGED`, stop retrying — the merge succeeded. Move on to post-merge cleanup (branch switch, issue verification) instead.
+
+**If it's still open, retry with backoff** — a few attempts, doubling the wait each time, re-checking state before each one:
+
+```bash
+for attempt in 1 2 3; do
+  gh pr merge <n> --repo <owner/repo> --squash --delete-branch && break
+  gh pr view <n> --repo <owner/repo> --json state,mergedAt | grep -q '"MERGED"' && break
+  sleep $(( 2 ** attempt ))
+done
+```
+
+If all attempts fail and the re-check still shows the PR open, stop and surface the error rather than continuing to retry silently — a merge conflict or branch protection failure won't resolve itself with more retries.
 
 ---
 

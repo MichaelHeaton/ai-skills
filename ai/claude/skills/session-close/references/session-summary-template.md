@@ -1,8 +1,8 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-06-10
-updated_by: human
+last_updated: 2026-08-13
+updated_by: claude
 ---
 
 # Session summary template
@@ -20,6 +20,7 @@ updated_by: human
 ### ⚠️ Pending (needs attention next session)
 - <repo> — <what was left and why>
 - <ticket> — <current state>
+- ⚠️ AT RISK — <draft description> currently at `<scratchpad path>`; relocate to `Outputs/Drafts/` before it's cleaned up
 
 ### Next session context
 - Memex is on: [branch] — [merged to main? yes/no]
