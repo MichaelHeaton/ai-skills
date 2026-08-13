@@ -111,6 +111,7 @@ For each repo with `CHANGES > 0` **whose Step 1 branch-hygiene check has already
 
 **Drafts meant for manual human follow-up (wiki pastes, external-system content) need a durable home, not a scratchpad.** Any output this session is deferring to a future session for manual action — "paste this into the wiki," "someone needs to copy this into X" — should be written to a durable, git-tracked location (e.g. `Outputs/Drafts/` in the relevant repo) rather than left at an ephemeral scratchpad path. A scratchpad gets cleaned up between sessions with no warning; a genuinely finished draft sitting there can be lost outright, not just inconvenient to re-find. If such a draft already exists at a scratchpad path when Step 10 runs, copy it to the durable location before writing the summary, and flag it in the Pending section as an **at-risk item needing relocation** — not a normal pending task — so it can't be silently dropped by a routine scratchpad cleanup.
 7. If discarding, use concrete commands — never `rm -rf`, which some workstations block outright via a recursive-delete safety hook:
+
    - Tracked changes: `git -C <repo> restore <file>` (or `git -C <repo> checkout -- <file>`)
    - Untracked files/dirs inside the repo: `git -C <repo> clean -fd`
    - An untracked directory the user wants gone entirely, outside git's own reach: prefer `trash <path>` over `rm -rf <path>`

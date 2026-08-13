@@ -170,7 +170,7 @@ bash ~/.claude/skills/git-ops/scripts/check-branch-identity.sh <repo-path> <expe
 
 ## Live concurrent-session detection
 
-Distinct from the "Shared checkout branch-identity check" above, which only catches a branch swap *after* it's already happened. Before committing, check whether a second Claude Code session is actively writing to this same repo right now — via `ps aux` for another process with `--add-dir` on this repo, plus a file-mtime check against this session's own start time. Full detection commands and the "don't touch the other session's in-progress edit; move to a fresh branch off updated main once it's done" recovery: [references/live-concurrent-session.md](references/live-concurrent-session.md).
+Distinct from the "Shared checkout branch-identity check" above, which only catches a branch swap _after_ it's already happened. Before committing, check whether a second Claude Code session is actively writing to this same repo right now — via `ps aux` for another process with `--add-dir` on this repo, plus a file-mtime check against this session's own start time. Full detection commands and the "don't touch the other session's in-progress edit; move to a fresh branch off updated main once it's done" recovery: [references/live-concurrent-session.md](references/live-concurrent-session.md).
 
 ---
 
