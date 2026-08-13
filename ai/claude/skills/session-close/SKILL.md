@@ -1,7 +1,7 @@
 ---
-version: 1.14.0
+version: 1.15.0
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-13
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
@@ -224,7 +224,7 @@ Reflect on context discipline. Exempt: session-close itself. Flag if observed: l
 
 ## Step 9 — Update in-progress tickets
 
-Do not ask the user if they worked on tickets. Find them from the task index and the session's git activity (commit messages, branch names, PR titles), then update status — comment before transitioning, never in parallel, so a failed comment never leaves a ticket closed without an audit trail. Full procedure (index lookup query, git cross-reference, per-system commands for Jira/GitHub/Linear): [references/ticket-cross-referencing.md](references/ticket-cross-referencing.md).
+Do not ask the user if they worked on tickets. Find them from the task index and the session's git activity (commit messages, branch names, PR titles), then update status — comment before transitioning, never in parallel, so a failed comment never leaves a ticket closed without an audit trail. A branch/commit-message match is only a candidate; confirm via `gh pr view` that the PR itself references the ticket before asserting the linkage anywhere, including the Step 10 summary. Full procedure (index lookup query, git cross-reference, PR-verification, per-system commands for Jira/GitHub/Linear): [references/ticket-cross-referencing.md](references/ticket-cross-referencing.md).
 
 **If no matches are found**: skip silently — no open question needed.
 

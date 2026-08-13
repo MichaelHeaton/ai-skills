@@ -1,7 +1,7 @@
 ---
-version: 1.10.0
+version: 1.11.0
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-13
 updated_by: claude
 name: git-ops
 description: Universal git hygiene guide — fires on the *first* git commit, push, PR, or MR operation in a session and every one after, not only retroactively at session-close. Covers branching rules, commit message format, PR/MR description format, and pre-commit checks scoped to modified files (including terraform fmt). Applies regardless of which other skills are active. Trigger on: any request to commit, push, open a PR or MR, "git commit", "create a PR", "push this", "open a pull request", "submit a MR", "ready to merge", or any variation of committing or sharing code changes.
@@ -199,6 +199,30 @@ When committing, pushing, or creating PRs across more than one repo in the same 
 **General principle**: whenever an isolated worktree session is active, verify any Edit/Write's resolved absolute path actually lands inside that worktree before writing — regardless of how the path was reached. A deployed skill symlink (below) is the most common way this drifts, but it's not the only one; a stale `cwd`, a wrong repo clone, or any other path-resolution mismatch can produce the same failure.
 
 `~/.claude/skills/<name>` is often a symlink into a repo's real checkout on disk. If a worktree branch is checked out for that same repo, an Edit/Write reached through the symlink path can resolve to the wrong on-disk location — e.g. the main checkout instead of the intended worktree. **Before an Edit/Write through a path under `~/.claude/skills/`**, resolve the symlink (`readlink -f`) and check for an active worktree on that repo (`git worktree list`) — full resolution commands and disambiguation rules when multiple worktrees exist: [references/skill-symlink-safety.md](references/skill-symlink-safety.md).
+
+---
+
+## Optional: automated reminder hook
+
+The rule "invoke git-ops on the first git commit/push/PR and every one after" (frontmatter, above) is easy to follow correctly from habit while never actually re-invoking the `Skill` tool — meaning its own freshness gate (AGENT.md check, humanizer pass) was never confirmed satisfied that session, even though the underlying git commands were run correctly by memory. Two companion hooks close this gap without blocking anything:
+
+- `hooks/git-ops-track.py` (`PostToolUse`, matcher `Skill`) — records that git-ops fired, once per session
+- `hooks/git-ops-reminder.py` (`PreToolUse`, matcher `Bash`) — prints a one-line nudge before a `git commit` / `git push` / `gh pr create` / `glab mr create` if git-ops hasn't fired yet this session
+
+Both are advisory only (always exit 0) and never block a command. They aren't wired into any tracked `settings.json` by default — add them via the `update-config` skill if you want the reminder:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      { "matcher": "Skill", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/git-ops-track.py" }] }
+    ],
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/git-ops-reminder.py" }] }
+    ]
+  }
+}
+```
 
 ---
 
