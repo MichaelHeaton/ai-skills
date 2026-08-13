@@ -1,5 +1,5 @@
 ---
-version: 1.13.0
+version: 1.14.0
 principles_version: 1.0.0
 last_updated: 2026-08-13
 updated_by: claude
@@ -146,7 +146,7 @@ Do not skip this check. It is lightweight (pure git diff + file stat) and runs i
   or inline per GitHub's documented multi-issue syntax: `Closes #141, closes #134, closes #157`. Same rule applies across repos — `Closes owner/repo#NN` for each cross-repo reference.
 - **Before running `gh pr create` / `glab mr create`**, invoke the `humanizer` skill _(global: ai-skills)_ on the composed Summary and Test plan bullets — same "check before creation" pattern as the AGENT.md step above. Strips AI-writing tells while every fact, ticket ref, and checklist item survives unchanged.
 - Always `cd` into the repo before running `gh pr create` — the `--repo` flag handles routing but `gh` still needs local git context to resolve the remote
-- **SSH alias remotes**: if `origin` uses an SSH config alias (e.g. `git@github.com-personal:owner/repo`) rather than the literal `github.com` hostname, `gh pr create` may fail with "must first push branch" even when the branch is already pushed. **Default**: always pass `--repo owner/repo --head branch-name` — don't attempt without these flags first
+- **Always pass `--repo owner/repo --head branch-name`** on `gh pr create` for any org repo — don't wait for a failure first. This isn't just an SSH-alias workaround: an org repo's ambient git context is more likely to disagree with the target repo than a personal one. (SSH alias remotes are one concrete trigger — if `origin` uses an SSH config alias, e.g. `git@github.com-personal:owner/repo`, `gh pr create` can fail with "must first push branch" even when the branch is already pushed — but the flags are the default regardless of remote type.) Full rule: [references/multi-account-operations.md](references/multi-account-operations.md).
 - **Multi-account pre-flight**: see "Multi-account operations" below before running `gh pr create` on an org repo.
 - **After `gh pr create`, re-query state before treating the branch as "pending review"**: `gh pr view <n> --json state,mergedAt`. Some personal repos have repo-level auto-merge enabled, so a just-opened PR can merge itself within seconds — if `mergedAt` is already set, switch back to the default branch, pull, and run local branch cleanup for it in the same pass instead of deferring that to a later check. The "always branch + PR" rule still applies even when the PR merges itself immediately; this only changes when cleanup happens, not whether the PR step is skipped.
 
@@ -252,3 +252,5 @@ This applies to all of the above: **fix what you touch, leave what you don't.**
 - Don't add unrelated improvements "while you're in there"
 
 If you notice something worth fixing outside your scope, create a ticket for it. Do the work separately.
+
+**`make bootstrap-version` in this repo**: pass `SCOPE=<path>` (e.g. `make bootstrap-version SCOPE=ai/claude/skills/git-ops`) to normalize frontmatter on one skill/dir only — the unscoped form touches every skill in the repo and can pull unrelated whitespace churn into your diff. If you already ran the unscoped form and picked up unrelated changes, revert everything outside your actual scope before committing: `git diff --name-only | grep -v <your-path> | xargs git checkout --`.

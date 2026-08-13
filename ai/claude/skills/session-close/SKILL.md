@@ -1,5 +1,5 @@
 ---
-version: 1.15.1
+version: 1.15.2
 principles_version: 1.0.0
 last_updated: 2026-08-13
 updated_by: claude
@@ -12,7 +12,7 @@ Close out this session safely. The goal: nothing stranded in branches, all ticke
 
 > **Setup dependencies** — Steps 1–5 (git hygiene) work in any repo. Steps 6–7 require ai-skills installed (`make install-system`). Steps 9–10 assume a personal memex vault at `~/Projects/personal/memex/` with `_task-index.jsonl` — adapt those paths to your own notes setup if different.
 
-**Context check before starting**: session-close runs at the tail of what's often an already-long session — the multi-repo scan and Step 6's skill review add real weight on top of that. If this has been a long conversation (many tool calls, multiple tasks), say so before beginning: *"This has been a long session — want me to `/compact` first? A controlled compact now gives the checklist headroom, instead of an automatic compaction firing partway through it."* Proceed with whatever they answer — don't block on it.
+**Context check before starting**: session-close runs at the tail of what's often an already-long session — the multi-repo scan and Step 6's skill review add real weight on top of that. If this has been a long conversation (many tool calls, multiple tasks), say so before beginning — as a user action, not something the agent can trigger, since `/compact` is a slash command only the user can run: *"This has been a long session — consider typing `/compact` now for a controlled compact before this checklist adds more weight, then say continue. Otherwise I'll proceed as-is."* Proceed with whatever they answer — don't block on it.
 
 **Check the most recent same-day summary before starting.** Before Step 1, check whether `~/Projects/personal/memex/Outputs/Session/session-close-[today's date].md` already exists — a second same-day run is common. If it does, read it first: it may still have unresolved items (a declined decision, an unticketed bug, a scoping question) from earlier today that this run needs to carry forward rather than silently overwrite when Step 10 writes its own summary.
 

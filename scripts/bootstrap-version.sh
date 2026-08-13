@@ -3,14 +3,20 @@
 #   - ai/claude/skills/**/SKILL.md (version block + name, description, …)
 #   - ai/claude/skills/**/references/*.md and **/examples/*.md (version block only)
 #   - ai/cursor/rules/*.mdc (version block + description, alwaysApply, globs, …)
+#
+# Usage: bootstrap-version.sh [scope-path]
+#   scope-path — optional, repo-relative (e.g. ai/claude/skills/git-ops). When
+#   given, only files under that path are normalized; everything else in the
+#   repo is left untouched. Omit to process the whole repo as before.
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PRINCIPLES_VER="${PRINCIPLES_VER:-1.0.0}"
 TODAY="${TODAY:-$(date +%Y-%m-%d)}"
 UPDATED_BY="${UPDATED_BY:-human}"
+SCOPE_PATH="${1:-}"
 
-export REPO_DIR PRINCIPLES_VER TODAY UPDATED_BY
+export REPO_DIR PRINCIPLES_VER TODAY UPDATED_BY SCOPE_PATH
 python3 << 'PY'
 import os
 from pathlib import Path
@@ -19,11 +25,19 @@ repo = Path(os.environ["REPO_DIR"])
 principles_ver = os.environ["PRINCIPLES_VER"]
 today = os.environ["TODAY"]
 updated_by = os.environ["UPDATED_BY"]
+scope_path = os.environ.get("SCOPE_PATH", "").strip().strip("/")
 
 skills_root = repo / "ai" / "claude" / "skills"
 if not skills_root.is_dir():
     print(f"error: {skills_root} not found — run make import-legacy first", flush=True)
     raise SystemExit(1)
+
+
+def in_scope(path: Path) -> bool:
+    if not scope_path:
+        return True
+    rel = str(path.relative_to(repo))
+    return rel == scope_path or rel.startswith(scope_path + "/")
 
 VERSION_DEFAULTS = {
     "version": "1.0.0",
@@ -126,8 +140,12 @@ def normalize_cursor_rule(text: str) -> tuple[str, bool]:
 
 
 count = 0
+if scope_path:
+    print(f"Scoped to: {scope_path}\n")
 print("SKILL.md:")
 for skill_md in sorted(skills_root.glob("*/SKILL.md")):
+    if not in_scope(skill_md):
+        continue
     raw = skill_md.read_text(encoding="utf-8")
     new, changed = normalize_skill(raw)
     if changed:
@@ -140,6 +158,8 @@ for skill_md in sorted(skills_root.glob("*/SKILL.md")):
 print("\nreferences/ and examples/:")
 for pattern in ("*/references/*.md", "*/examples/*.md"):
     for path in sorted(skills_root.glob(pattern)):
+        if not in_scope(path):
+            continue
         raw = path.read_text(encoding="utf-8")
         new, changed = normalize_support(raw)
         if changed:
@@ -150,7 +170,7 @@ for pattern in ("*/references/*.md", "*/examples/*.md"):
             print(f"  skip (ok): {path.relative_to(repo)}")
 
 cursor_rules_root = repo / "ai" / "cursor" / "rules"
-if cursor_rules_root.is_dir():
+if cursor_rules_root.is_dir() and not scope_path:
     print("\nai/cursor/rules/*.mdc:")
     for path in sorted(cursor_rules_root.glob("*.mdc")):
         raw = path.read_text(encoding="utf-8")

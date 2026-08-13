@@ -38,7 +38,7 @@ help:
 	@echo ""
 	@echo "  Migration / maintenance:"
 	@echo "    make import-legacy            Import ai/claude/ from claude-skills"
-	@echo "    make bootstrap-version        Normalize version frontmatter"
+	@echo "    make bootstrap-version        Normalize version frontmatter (SCOPE=<path> to limit to one skill/dir)"
 	@echo "    make manifest-update          Regenerate .deploy/repo-manifest.json"
 	@echo "    make unlink-legacy            Phase 0: materialize symlinks, migrate config"
 	@echo "    make unlink-legacy-dry-run    Preview Phase 0"
@@ -62,7 +62,7 @@ import-legacy:
 	@LEGACY_REPO="$(LEGACY_REPO)" bash scripts/import-from-legacy.sh
 
 bootstrap-version:
-	@bash scripts/bootstrap-version.sh
+	@bash scripts/bootstrap-version.sh $(SCOPE)
 
 manifest-update:
 	@bash scripts/manifest-update.sh

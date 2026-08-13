@@ -1,10 +1,10 @@
 ---
-version: 1.5.0
+version: 1.6.0
 principles_version: 1.0.0
 last_updated: 2026-08-13
 updated_by: claude
 name: skill-review
-description: Review and improve skills — either a single skill or all skills used in the current session. Single-skill mode: audits a SKILL.md against conventions, incorporates session learnings, and tunes triggering. Session-audit mode: reflects on the current conversation to find skill friction, missed triggers, and workflow gaps worth turning into new skills — meant to be called at the end of every session to make skills a little better each time. Also invoked programmatically by a parent session passing pre-collected session context (sub-agent mode: SA1 done by parent, SA2–SA4 run in sub-agent with fresh skill files). Triggers on: "review this skill", "improve skill X", "this skill isn't working well", "update skill based on what we learned", "skill feels off", "tune skill description", "review skills from this session", "what skills need updating", "session skill review", "audit skills", or when session-close reaches its skill hygiene step.
+description: Review and improve skills — either a single skill or all skills used in the current session. Single-skill mode: audits a SKILL.md against conventions, incorporates session learnings, and tunes triggering. Session-audit mode: reflects on the current conversation to find skill friction, missed triggers, and workflow gaps worth turning into new skills — meant to be called at the end of every session to make skills a little better each time. Also invoked programmatically by a parent session passing pre-collected session context (sub-agent mode: SA1 done by parent, SA2–SA4 run in sub-agent with fresh skill files). Triggers on: "review this skill", "improve skill X", "this skill isn't working well", "update skill based on what we learned", "skill feels off", "tune skill description", "review skills from this session", "what skills need updating", "session skill review", "audit skills", when session-close reaches its skill hygiene step, or proactively right after a SKILL.md is edited directly from conversation (not through `skill-create`'s own flow, which already includes review) — offer single-skill mode on the just-edited skill before treating the edit as done.
 compatibility: Requires git. Skills deployed via `make install-system` (per-item symlinks; see principles/deployment.md).
 ---
 
@@ -16,6 +16,8 @@ This skill has two modes. Read the user's request to determine which to run:
 - **Session-audit mode** — user wants a sweep of all skills used in this session (`"audit skills"`, `"session skill review"`, or called from session-close Step 6)
 
 If unclear, ask: "Do you want to review a specific skill, or do a session-wide sweep?"
+
+**Proactive trigger — direct SKILL.md edits.** When a SKILL.md is edited directly from conversation mid-session (not through `skill-create`'s own guided flow, which already runs review as part of creation), offer single-skill mode on that skill before treating the edit as done — a review at the point of change catches small issues (trigger drift, convention gaps) that would otherwise only surface if someone remembers to ask later.
 
 ---
 

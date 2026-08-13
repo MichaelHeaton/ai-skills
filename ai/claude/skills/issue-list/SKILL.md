@@ -1,13 +1,19 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-30
-updated_by: human
+last_updated: 2026-08-13
+updated_by: claude
 name: issue-list
-description: Get a list of open tasks/tickets — across all systems (Linear, GitHub, Jira) or scoped to a project, label, or priority. Always syncs status back to the task index.
+description: Get a list of open tasks/tickets — across all systems (Linear, GitHub, Jira) or scoped to a project, label, or priority. Always syncs status back to the task index. Browsing/listing only — when the request names one or more specific known ticket IDs (e.g. "list PROJ-123 and PROJ-456", "show me #47, #52, #61"), that's a fetch request, not a browse request: use `issue-get` instead of this skill.
 ---
 
 Fetch open tasks from all active systems, sync any status changes back to the task index, then present results.
+
+## Step 0 — Short-circuit for specific ticket IDs
+
+**Before running Step 1**, check whether the user's request names one or more specific ticket IDs (`PROJ-123`, `#47`, a bare issue number in context, etc.) rather than asking to browse or filter a backlog. A request like "list these 4 tickets: PROJ-100, PROJ-101, PROJ-102, PROJ-103" is a fetch request, not a browse request — delegate it to `issue-get` (or call the fetch tool/API directly per-ID) and skip the rest of this skill's flow entirely.
+
+Browsing requests ("show me my open work", "what's in the backlog", "my Linear tasks") still follow the full list flow below as normal — this short-circuit only applies when the request already names the specific ID(s) it wants.
 
 ## Steps
 
