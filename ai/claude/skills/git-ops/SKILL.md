@@ -163,7 +163,7 @@ bash ~/.claude/skills/git-ops/scripts/check-branch-identity.sh <repo-path> <expe
 ```
 
 - **`MATCH`** — proceed
-- **`WORKTREE:<actual>`** — this checkout is an isolated worktree; a branch swap in a *different* checkout of the same repo can't collide with it here. Proceed.
+- **`WORKTREE:<actual>`** — this checkout is an isolated worktree; a branch swap in a _different_ checkout of the same repo can't collide with it here. Proceed.
 - **`MISMATCH:<actual>`** — the active branch changed unexpectedly in a shared checkout. **Stop before committing.** Confirm which branch is actually correct before proceeding — do not commit onto whatever happens to be checked out.
 
 ---
