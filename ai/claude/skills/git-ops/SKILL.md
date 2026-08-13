@@ -1,5 +1,5 @@
 ---
-version: 1.15.0
+version: 1.16.0
 principles_version: 1.0.0
 last_updated: 2026-08-13
 updated_by: claude
@@ -67,6 +67,7 @@ Use conventional commits. Format:
 - Subject line: imperative mood, lowercase after the type, no period, 72 chars max
 - Scope is optional but useful in multi-component repos (`feat(vault):`, `fix(auth):`)
 - Include the ticket key in the footer when one exists: `Refs: PROJ-XXXXX` or `Closes: #NN`
+- **Before using a closing keyword (`Closes:`/`Fixes:`/`Resolves:`), confirm the referenced issue's work is actually done in this commit** — don't add it speculatively because the ticket is related or was touched earlier in the session. A closing keyword on unfinished work auto-closes a ticket that isn't actually resolved the moment the PR merges.
 - Co-author line when Claude wrote the commit: `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`
 - One logical change per commit — don't bundle unrelated fixes
 
@@ -152,6 +153,18 @@ Do not skip this check. It is lightweight (pure git diff + file stat) and runs i
 
 ---
 
+## After a merge and main-sync
+
+Right after switching to `main` and pulling post-merge, `main` is the active branch — and it's easy to carry straight on to the next edit without cutting a new branch first, since nothing about the working tree looks different yet. Before making the next edit in the same repo, confirm you're not still on `main`/`master`:
+
+```bash
+git branch --show-current
+```
+
+If it prints `main` or `master`, cut a new branch (per "Branching" above) before touching any file. A commit landing directly on `main` here is a self-inflicted violation of the branch-and-PR rule, not a git failure — recover with `git branch <new-branch> && git reset --hard origin/main` on `main` (moving the commit onto the new branch, then resetting `main` back to match `origin/main`) if it happens before pushing.
+
+---
+
 ## Shared checkout branch-identity check
 
 Distinct from `session-close`'s concurrent-session check, which only answers "does another live process exist?" — it doesn't catch a second process **sharing this exact (non-worktree) checkout** silently swapping the active branch out from under this session. An isolated `git worktree` checkout is immune to this (its branch is pinned to that worktree); a shared/main checkout is not — a background task checking out its own branch directly in a shared working directory can silently replace the branch this session believes it's still on, and a commit can land on the wrong branch before anyone notices.
@@ -208,7 +221,13 @@ Before committing a change to a file that's shared and frequently touched across
 
 ## Post-merge issue verification
 
-After merging a PR whose `## Refs` section claims to close one or more issues, verify each one actually closed — GitHub's auto-close is silent on failure, so a malformed keyword (comma-list, typo'd number, wrong repo) leaves an issue open with no error anywhere. Check command and per-issue loop guidance: [references/post-merge-verification.md](references/post-merge-verification.md).
+After merging a PR whose `## Refs` section claims to close one or more issues, verify each one actually closed — GitHub's auto-close is silent on failure, so a malformed keyword (comma-list, typo'd number, wrong repo) leaves an issue open with no error anywhere.
+
+```bash
+bash ~/.claude/skills/git-ops/scripts/verify-closes.sh <pr-number> [owner/repo]
+```
+
+Prints `CLOSED:<N>` / `OPEN:<N>` / `ERROR:<N>` per referenced issue and exits non-zero if any didn't close — replaces hand-writing the same `for n in ...` loop after every merge. Full background on why this matters and what to do with an `OPEN` result: [references/post-merge-verification.md](references/post-merge-verification.md).
 
 ---
 
