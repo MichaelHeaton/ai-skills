@@ -1,5 +1,5 @@
 ---
-version: 1.2.0
+version: 1.3.0
 principles_version: 1.0.0
 last_updated: 2026-08-13
 updated_by: claude
@@ -29,10 +29,11 @@ Or scope a single command without changing the active account:
 GH_TOKEN=$(gh auth token --user <account>) gh pr create ...
 ```
 
-**Symptoms of account mismatch** — both mean "fix the token/account, don't debug the remote":
+**Symptoms of account mismatch** — all mean "fix the token/account, don't debug the remote":
 
 - `GraphQL: Could not resolve to a Repository`
 - `GraphQL: Unauthorized: As an Enterprise Managed User, ...`
+- `GraphQL: Forbidden` — this one especially reads like a permissions or network problem, but it's usually the same account-mismatch (or a bad `GH_TOKEN` override) as the other two, not an outage. Recovery: run `gh auth status` to confirm the active account, switch to the correct one if it's wrong, and pass `--repo owner/repo` explicitly on the retry rather than relying on ambient context. If `gh auth status` shows an invalid or unexpected token, a stale `GH_TOKEN` exported earlier in the session is likely shadowing keyring auth — `unset GH_TOKEN` before retrying.
 
 **gh's active account can drift mid-session.** Don't assume it stays put after one `gh auth switch` — re-run `gh auth status` immediately before *every* mutating command, not just the first one in a session.
 
@@ -60,6 +61,14 @@ HOME=/tmp git -C <repo> \
 ```
 
 `HOME=/tmp` prevents `~/.gitconfig`'s `insteadOf` rules from applying; `credential.helper=` disables the keychain lookup; the explicit `-c url....insteadOf` re-adds just the one rewrite this command needs, tokenized.
+
+---
+
+## `gh api`/`gh repo view` 404 on a repo that clearly exists
+
+A repo returning 404 from `gh api repos/<owner>/<repo>` or `gh repo view` doesn't always mean the repo is missing or misnamed — if plain `git push`/`pull` over SSH already works against that same repo, the repo exists and network access is fine. The more likely cause is an SSO-authorization gap on the active token: an org that enforces SAML SSO requires each personal access token to be separately authorized for that org, and an unauthorized token gets a 404 rather than a 403 on API calls (GitHub's default behavior for SSO-gated resources, to avoid leaking their existence to unauthorized callers).
+
+**Recovery**: authorize the token for the org's SSO (via the token settings page, or `gh auth refresh`), then retry. Don't spend time re-verifying the repo name or remote URL first — check SSO authorization before assuming the repo doesn't exist.
 
 ---
 
