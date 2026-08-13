@@ -1,7 +1,7 @@
 ---
-version: 1.2.0
+version: 1.2.1
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-13
 updated_by: claude
 name: agent-md-sync
 description: Generate and maintain component-level AGENTS.md files — either for a single named component (skips full-repo discovery, jumps straight to reading and drafting) or across an entire repo (scan mode). Keeps AI context co-located with code so agents can navigate specific roles, modules, or components without scanning the whole repo. Detects and respects a repo's existing AGENT.md/AGENTS.md convention rather than assuming one. Called automatically by git-ops before PR creation to catch stale or missing component AGENT.md/AGENTS.md files. Trigger on: "generate agent md for this role", "create component AGENTS.md", "scan repo for components", "check which AGENT.md files are stale", "document this module", "add AI context to this role", or when git-ops invokes it before PR creation.
@@ -62,7 +62,9 @@ If there are many gaps, ask the user which to document now vs. defer. Don't gene
 
 ### Step 3 — Read the component
 
-For each component to document, read its key files before drafting anything:
+**First, check whether the target file already exists** — `<component-path>/AGENTS.md` or `<component-path>/AGENT.md` — before reading anything else. This applies every time, including the single-component path that skips Step 1's discovery (discovery is what normally surfaces `HAS_AGENT_MD=true`; skipping it does not exempt this check). If it exists, read it in full. The draft in Step 4 must then be a merge/update against that existing content, not a fresh replacement — preserve accurate existing material (tables, gotchas, runbook links) and only change what's stale or missing. Writing a thinner draft over a substantial existing file silently destroys real content.
+
+For each component to document, also read its key files before drafting anything:
 
 **Ansible role** — read `tasks/main.yml`, `defaults/main.yml`, `vars/main.yml`, `README.md` (if present). Understand: what the role configures, required vs. optional variables, idempotency behavior, what it deploys.
 
