@@ -1,7 +1,7 @@
 ---
-version: 1.3.0
+version: 1.4.0
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-13
 updated_by: claude
 name: dev-team
 description: Run a ticket through a lightweight multi-agent build pipeline — Architect plans and asks clarifying questions, Coder implements, Tester adversarially checks the diff, Docs updates stale documentation, and a conditional Manager gates on risk. Use when working a ticket end-to-end and you want plan approval before code gets written, or when you say "run this through dev-team", "spin up the dev team on this ticket", "architect this ticket", or "build this with the team". Complements decision-council (which resolves opinions/tradeoffs, not builds) and reuses model-route for per-role model selection. Do NOT use for a quick one-line fix — the Architect step exists to catch ambiguity on real work, not to gate trivial changes.
@@ -50,7 +50,7 @@ If it doesn't match, rename before proceeding to Tester or push: `git branch -m 
 
 ## Step 3 — Tester (background subagent, after Coder completes)
 
-Spawn `dev-team-tester` with the diff Coder produced. Tester's job is narrow: break what shipped, and check the one pattern a backtest against real tickets confirmed generic review misses — privileged/binary downloads embedded in template-string or heredoc shell content where integrity verification is optional rather than enforced. Tester reports findings; it does not fix anything.
+Spawn `dev-team-tester` with the diff Coder produced **and the ticket's stated acceptance criteria** (not just the diff — a "does the shipped value match the requirement" check needs the requirement text to check against). Tester's job is narrow: break what shipped, check the one pattern a backtest against real tickets confirmed generic review misses — privileged/binary downloads embedded in template-string or heredoc shell content where integrity verification is optional rather than enforced — and confirm every ticket-relevant changed value actually matches what the ACs say, not just that the code is structurally sound and plans/compiles cleanly. Tester reports findings; it does not fix anything.
 
 **Before acting on Tester's output, confirm the report is actually complete.** A sub-agent can return a task status of "completed" while its final message is truncated mid-sentence or mid-list — that status field reflects the harness's task lifecycle, not whether Tester finished writing its verdict. If the report doesn't end with a clear ship/rework verdict statement, don't proceed on the partial read and don't re-spawn a fresh Tester from scratch. Instead, resume the same agent via the messaging tool used to continue sub-agents (`SendMessage`, addressed to that agent's id) and explicitly ask for a complete final report.
 
@@ -108,6 +108,7 @@ Batch mode changes the interaction cadence, not the pipeline's gates — every s
 - **SCP/policy enforcement invisible at plan time** — infra changes that fail only at `apply` time due to AWS Service Control Policies won't be caught by any review step here. No agent fixes this; it needs an apply-time check or a maintained allowlist, out of scope for this skill.
 - **`adobe-security-suite` coverage is account/environment-provisioned**, not a local file — don't assume its coverage exists outside an Adobe-provisioned Claude Code session.
 - **Coder specialization is a prompt parameter, not a separate role** — `terraform`/`db`/`ansible` swap the system prompt Coder receives; they are not distinct agent files. Only promote a specialty to its own file once three real specialties are in production use.
+- **Copying from a reference implementation can inherit a wrong assumption about the reference's own defaults.** A build modeled closely on an existing component can silently ship a config value that matches the reference's checked-in file default while missing that the reference's actual production behavior comes from an override elsewhere (a workspace variable, an environment-level default, etc.) — the copy looks structurally identical to the reference but is functionally different from what it was modeled on. Tester's AC-conformance check (Step 3) catches this only when the divergent value is also an explicit ticket AC; a divergence with no corresponding AC line can still slip through. No role currently verifies a reference component's *actual* runtime defaults independent of its file contents.
 
 ## Model routing
 

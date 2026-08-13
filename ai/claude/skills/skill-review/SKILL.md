@@ -1,7 +1,7 @@
 ---
-version: 1.4.0
+version: 1.5.0
 principles_version: 1.0.0
-last_updated: 2026-07-24
+last_updated: 2026-08-13
 updated_by: claude
 name: skill-review
 description: Review and improve skills — either a single skill or all skills used in the current session. Single-skill mode: audits a SKILL.md against conventions, incorporates session learnings, and tunes triggering. Session-audit mode: reflects on the current conversation to find skill friction, missed triggers, and workflow gaps worth turning into new skills — meant to be called at the end of every session to make skills a little better each time. Also invoked programmatically by a parent session passing pre-collected session context (sub-agent mode: SA1 done by parent, SA2–SA4 run in sub-agent with fresh skill files). Triggers on: "review this skill", "improve skill X", "this skill isn't working well", "update skill based on what we learned", "skill feels off", "tune skill description", "review skills from this session", "what skills need updating", "session skill review", "audit skills", or when session-close reaches its skill hygiene step.
@@ -31,6 +31,14 @@ Use this when called at the end of a session or when the user wants a sweep rath
 
 Otherwise: reflect on the current conversation. Look for every Skill tool invocation or place a skill was named and executed. Build a list.
 
+**Also check for skills that have silently aged out of review** — a skill that never fires in a given session never comes up for audit through this path alone, so a low-frequency skill (e.g. `security-review`, `comms-write`) can go untouched indefinitely. Run:
+
+```bash
+bash ~/.claude/skills/skill-review/scripts/check-stale-skills.sh
+```
+
+This flags any skill whose `SKILL.md` `last_updated` is 90+ days old (`STALE:<days>:<skill>:<last_updated>`). Add flagged skills to a separate "Stale — due for a look" list alongside the ones that fired this session; they get the same SA2 treatment but note the reason is staleness, not observed friction.
+
 ### SA2. Assess each skill that fired
 
 For each skill that ran, evaluate:
@@ -55,7 +63,7 @@ Look for any multi-step work that ran without a skill — no skill fired, but th
 
 Produce two lists:
 
-**Existing skills to improve** — name the skill, describe the specific fix (quote the friction if possible). Offer to run single-skill mode on it now or create a ticket in ai-skills.
+**Existing skills to improve** — name the skill, describe the specific fix (quote the friction if possible, or "stale — last touched N days ago" for a staleness-only flag). Offer to run single-skill mode on it now or create a ticket in ai-skills.
 
 **New skill ideas** — proposed name + one sentence on what it does. Offer to invoke `skill-create` now or create a ticket in ai-skills.
 
@@ -140,6 +148,7 @@ Read the skill's SKILL.md. Full audit dimensions are in `references/conventions.
 - **Attribution**: if `metadata.adapted_from` is set, check whether the upstream source has moved on since — worth a quick skim if it's been a while (see `references/conventions.md` § Attribution)
 - **CLI/runbook steps**: login/auth commands (`vault login`, `sudo -i`, etc.) are in their own code block, never combined with dependent commands (see `references/conventions.md`)
 - **Freshness**: no stale tool refs; not scaffolding what Claude handles natively
+- **Capability test**: for every line that reads like scaffolding rather than domain knowledge, ask "would a strong model behave worse without this line?" — project-specific gotchas and personal/team conventions are exempt by definition, never cut on this basis. Full delete-category taxonomy, keep-exemptions, and the required verdict format: [references/capability-test-pruning.md](references/capability-test-pruning.md). Every flagged line gets an explicit `KEEP`/`PRUNE` verdict with a reason — not a general "looks fine" impression of the section it's in. Zero prunes is a valid outcome; don't manufacture cuts to show work.
 
 ---
 

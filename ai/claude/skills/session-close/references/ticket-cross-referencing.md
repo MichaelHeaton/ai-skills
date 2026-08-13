@@ -1,7 +1,7 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-13
 updated_by: claude
 ---
 
@@ -26,12 +26,23 @@ git -C <repo> log --oneline --since="12 hours ago"
 
 Look for patterns like `PROJ-12345`, `PROJ-###`, `#94`, or ticket keywords matching index titles.
 
-**Step 9c — Act on matches**
+**Step 9c — Verify the PR actually references the ticket**
 
-For each open ticket that matches session activity:
+A branch name or commit message matching a ticket ID in Step 9b is a candidate, not confirmation — before asserting "PR #N relates to TICKET-X" anywhere (a ticket comment, the closing note, or the Step 10 session summary), confirm the PR itself actually references that ticket key:
+
+```bash
+gh pr view <PR> --repo <owner/repo> --json title,body,commits \
+  --jq '.title, .body, (.commits[].messageHeadline)'
+```
+
+Check the output for the ticket key. If it's not found, do not assert the linkage as settled fact — either omit the PR from that ticket's update entirely, or note it as "possibly related, unverified" and let the user confirm. A branch/commit-message match without a PR-text match is exactly the false-positive case this check exists for (a stale or unrelated PR sharing a naming coincidence with the ticket).
+
+**Step 9d — Act on matches**
+
+For each open ticket that matches session activity (and, for PR-linked updates, passed the Step 9c verification):
 
 - If work is **done** → transition to Done/Closed or add a closing comment
-- If work is **in review** (PR open) → update status to "In Review", add PR link in comment
+- If work is **in review** (PR open, verified) → update status to "In Review", add PR link in comment
 - If work is **paused** → add a comment with where things stand so the next session picks up cleanly
 - If work is **blocked** → add a blocker comment and transition to Blocked
 
