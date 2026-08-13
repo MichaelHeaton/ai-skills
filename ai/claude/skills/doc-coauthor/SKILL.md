@@ -1,7 +1,7 @@
 ---
-version: 1.2.0
+version: 1.3.0
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-13
 updated_by: claude
 name: doc-coauthor
 description: Co-author work team documentation — either directly to the live Confluence wiki or staged through the git repo for team review. Handles the full workflow: template selection, context gathering, section-by-section drafting, frontmatter generation, and delivery — plus a lighter-weight path for editing already-existing content that skips template/frontmatter entirely. Use when writing or updating any team wiki page, runbook, how-to guide, customer guide, or architecture decision record. Triggers on: "write a runbook", "draft a how-to", "create a wiki page", "update the docs for X", "update the wiki", "write an ADR", "document this process", "new Confluence page", "doc for vault", "work team documentation", "update Confluence". A small, targeted correction to an existing page (fixing one fact, one link) can go through a direct MCP call instead of the full skill; a new page or a significant rewrite should go through this skill.
@@ -79,6 +79,12 @@ Ask for an unstructured info dump covering:
 
 After the dump, ask 3–5 targeted clarifying questions for remaining gaps.
 
+### Shadow-session mode (optional)
+
+For procedures the user is about to run anyway, offer this as an alternative to the info dump: the user narrates each action as they perform it, in order, without being asked questions mid-stream. Claude only records — no interrupting to ask "why," no filling in a skipped step from assumption. This exists because an expert doing a task from memory reflexively skips steps that feel obvious to them but aren't to a new reader; narrating in real time, in order, surfaces those steps instead of relying on the expert to remember to mention them later.
+
+Hold all clarifying questions until the narration is complete, then ask them normally. Use this mode only when the user invokes it (e.g. "let's do this as a shadow session") — it's slower than a dump-and-clarify pass, so it's not the default.
+
 ---
 
 ## Stage 2: Draft
@@ -97,6 +103,17 @@ Work through template sections in order:
 4. Move on when the user is satisfied
 
 Apply the DRY rule: if something is documented elsewhere in the repo or wiki, link to it rather than restating it.
+
+### Cascading depth (runbooks & how-tos)
+
+Keep the step-by-step path lean enough to run under pressure; push the "why" out to a separate, reusable concept page rather than growing the runbook.
+
+- Each step (or block of steps that only make sense run together, e.g. a sequence that stacks state) gets **one short why** — a sentence, not a paragraph — plus **at most one link out**. Steps that stack in order share a single link rather than repeating one per step.
+- Anything longer than a one-line why belongs on its own concept page (e.g. `Concepts/{topic}.md`), not inline. Give that page a `Referenced from` section listing every runbook/how-to that links into it, so it stays discoverable and gets updated once instead of in N places.
+- Don't split a topic into many tiny concept pages — a page nobody edits because it's a paragraph long is worse than one page covering a whole related group of settings/steps. Optimize for "gets kept accurate," not maximum granularity.
+- **If the target concept page doesn't exist yet**, do one of two things before moving on — never leave a bare link to nothing and never defer with just "we'll come back to it":
+  1. Draft the concept page now, in this session, or
+  2. Open a tracking ticket via the `issue-create` skill, and put the ticket reference directly at the link site in the doc (e.g. `→ Deep dive: not yet documented — tracked in PROJ-123`) so the gap is visible to the next reader, not just sitting in a ticket queue.
 
 ### Filename (staged mode only)
 
