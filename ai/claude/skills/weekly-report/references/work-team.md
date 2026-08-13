@@ -1,7 +1,7 @@
 ---
-version: 1.2.0
+version: 1.2.1
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-13
 updated_by: claude
 ---
 
@@ -46,6 +46,10 @@ Use `display_name` as the heading (e.g. your name on the team page).
 
 - **Content**: short, punchy, one-line-per-item talking points — not the 2-5 sentence paragraph-style bullets used in Progress/Plans/Problems. Name the thing, not the detail; save ticket numbers, PR numbers, and "why it mattered" for the Progress bullets underneath.
 - **Structure in the output file**: render it as a normal Markdown bullet list (one `*`/`-` item per line) under its own heading — do **not** embed it inside a `| |` Markdown table row/cell. Pipe-table cells can't hold real line breaks, so multi-point content forced into one either gets squashed onto a single `*`-separated line or `<br>`-joined — both paste into the live Confluence cell worse than a plain bullet list copies in as a bullet list. This was corrected 2026-08-13 after a first pass over-corrected a paste-breaking complaint into single-line prose, which was the wrong fix in the wrong direction — the working answer is short bullets, each on its own line, outside of a table cell in this file.
+
+## Confluence-paste formatting
+
+Confluence's paste handler doesn't render Markdown backtick syntax — the backtick characters show up literally in the pasted text. Worse, bare `word.tld`-shaped text (e.g. a filename like `AGENTS.md` or `variables.tf`) gets caught by Confluence's link-autodetect and turned into a broken hyperlink (e.g. `http://AGENTS.md`). Both problems only surface after paste, once the content is already live on the wiki page. Write filenames and variable names as plain text in this output, not wrapped in backticks — this is scoped to Confluence-paste output specifically; backticks are fine in output meant for GitHub or Jira, which render Markdown correctly.
 
 ## Metadata in output file
 

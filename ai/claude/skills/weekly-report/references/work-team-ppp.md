@@ -1,7 +1,7 @@
 ---
-version: 1.2.0
+version: 1.2.1
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-13
 updated_by: claude
 ---
 
@@ -59,6 +59,10 @@ Team moves, shoutouts, hiring updates, and org changes worth surfacing.
 - If nothing notable: omit the section entirely rather than writing *(None this week.)*
 
 ---
+
+## Confluence-paste formatting
+
+Confluence's paste handler doesn't render Markdown backtick syntax — the backtick characters show up literally in the pasted text. Worse, bare `word.tld`-shaped text (e.g. a filename like `AGENTS.md` or `variables.tf`) gets caught by Confluence's link-autodetect and turned into a broken hyperlink (e.g. `http://AGENTS.md`). Both problems only surface after paste, once the content is already live on the wiki page. Write filenames and variable names as plain text in this output, not wrapped in backticks — this is scoped to Confluence-paste output specifically; backticks are fine in output meant for GitHub or Jira, which render Markdown correctly.
 
 ## Metadata in output file
 
