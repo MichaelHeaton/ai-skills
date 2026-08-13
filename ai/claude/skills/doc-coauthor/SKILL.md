@@ -111,7 +111,7 @@ Apply the DRY rule — if something is documented elsewhere in the repo or wiki,
 - Don't split a topic into many tiny concept pages — a page nobody edits because it's a paragraph long is worse than one page covering a whole related group of settings/steps. Optimize for "gets kept accurate," not maximum granularity.
 - **If the target concept page doesn't exist yet**, do one of two things before moving on — never leave a bare link to nothing and never defer with just "we'll come back to it":
   1. Draft the concept page now, in this session, or
-  2. Open a tracking ticket via the `issue-create` skill _(global: ai-skills)_, and put the ticket reference directly at the link site in the doc (e.g. `→ Deep dive: not yet documented — tracked in PROJ-123`) so the gap is visible to the next reader, not just sitting in a ticket queue.
+  2. Open a tracking ticket via the `issue-create` skill *(global: ai-skills)*, and put the ticket reference directly at the link site in the doc (e.g. `→ Deep dive: not yet documented — tracked in PROJ-123`) so the gap is visible to the next reader, not just sitting in a ticket queue.
 
 ### Filename (staged mode only)
 
@@ -121,7 +121,7 @@ Lowercase, hyphenated, descriptive. Examples: `approle-cidr-binding-mismatch.md`
 
 ## Stage 2.5: Humanize
 
-Once the full draft is assembled, invoke the `humanizer` skill _(global: ai-skills)_ on it before reader testing — strips AI-writing tells (puffery, canned phrasing, formatting artifacts) while preserving every step, command, and fact exactly. Run reader testing against the humanized version, not the raw draft.
+Once the full draft is assembled, invoke the `humanizer` skill *(global: ai-skills)* on it before reader testing — strips AI-writing tells (puffery, canned phrasing, formatting artifacts) while preserving every step, command, and fact exactly. Run reader testing against the humanized version, not the raw draft.
 
 ---
 
