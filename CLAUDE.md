@@ -10,11 +10,7 @@
 - Open PR with `gh pr create` — do not merge; owner reviews
 - No force-push without explicit instruction
 
-**When the user says a PR merged**, do this automatically without being asked each time:
-
-1. Pull `main` (fast-forward) in the primary checkout
-2. Remove the worktree and delete the local feature branch (skip remote branch deletion if GitHub already auto-deleted it)
-3. Run `make install-system` to redeploy
+**When the user says a PR merged**, run the `post-merge-cleanup` skill _(global: ai-skills)_ automatically without being asked each time — it covers the pull/worktree/branch-delete sequence and redeploys via `make install-system` (this repo's redeploy step).
 
 ## Content caution
 
