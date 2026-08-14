@@ -6,7 +6,7 @@ Public, versioned **multi-AI workspace** for assistant skills, principles, and c
 
 ## Status
 
-Present: `principles/`, `config/` templates, `categories/tags.yaml`, [docs/](docs/README.md), `Makefile` + `scripts/`, and **`ai/claude/`** (28 skills + hooks + memory). Deploy: **`make install-system`** (copy-only).
+Present: `principles/`, `config/` templates, `categories/tags.yaml`, [docs/](docs/README.md), `Makefile` + `scripts/`, and **`ai/claude/`** (64 skills + hooks + memory). Deploy: **`make install-system`** (copy-only).
 
 ```bash
 make help                      # scripts overview
