@@ -1,7 +1,7 @@
 ---
-version: 1.8.0
+version: 1.9.0
 principles_version: 1.0.0
-last_updated: 2026-08-13
+last_updated: 2026-08-14
 updated_by: claude
 name: issue-create
 description: Create a new task, issue, or story in the right system — GitHub Issues (Memex), Linear, or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", "this should be its own ticket", "separate ticket for X", "let's decompose", "track this for later", or similar. Also fires autonomously — always use this skill when Claude itself decides to create any issue (during triage, research, session-close, or any workflow), when creating multiple issues in a batch, or whenever about to call gh issue create or glab issue create directly, or whenever about to call a ticketing MCP tool directly such as jira_create_issue (Jira) or save_issue (Linear). Work org remotes → Jira Story; personal → GitHub Issue (Memex default); Linear only via routing file ticket_system=Linear.
@@ -11,6 +11,8 @@ compatibility: Requires gh CLI, Atlassian MCP (Jira path only).
 Create a new task in the right system based on where you're working. See `references/routing.md` for routing rules. Once created, the description is frozen — all updates go in comments (see description edit policy in `issue-update`).
 
 **Always use this skill for issue creation — user-initiated or autonomous.** If Claude is about to call `gh issue create` or `glab issue create` directly, or call a ticketing MCP tool directly such as `jira_create_issue` (Jira) or Linear's `save_issue` (triage, research, session-close, batch work), route through this skill instead. Direct CLI or MCP tool calls bypass routing, label seeding, task index, and project assignment.
+
+**This instruction is easiest to skip in a long, tool-heavy session** — not because the wording is unclear, but because "always route through this skill" competes with dozens of other tool calls for attention as a session goes on, and it's been observed being followed for some creates in a session while skipped for others in the same session. Before any direct `gh issue create`/`glab issue create`/`jira_create_issue`/`save_issue` call, treat it as a one-beat check: "should this go through issue-create instead?" — the same way git-ops's frontmatter reminds against proceeding from memory on a stale invocation.
 
 ## Steps
 

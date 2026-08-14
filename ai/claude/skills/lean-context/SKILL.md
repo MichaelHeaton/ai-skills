@@ -1,10 +1,10 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
-updated_by: human
+last_updated: 2026-08-14
+updated_by: claude
 name: lean-context
-description: Activates cost-aware, context-disciplined engineering mode. Minimizes token spend without hurting output quality — narrows context loading, steers toward fresh sessions, matches model to task complexity, and batches related reads. Use when starting an investigation, when the thread is getting long, or when token efficiency matters. Trigger on: "lean mode", "save tokens", "context discipline", "stay narrow", "I'm wasting tokens", "cost-aware mode", or at the start of any heavy investigation where scope creep is a risk.
+description: Activates cost-aware, context-disciplined engineering mode. Minimizes token spend without hurting output quality — narrows context loading, steers toward fresh sessions, matches model to task complexity, and batches related reads. Use when starting an investigation, when the thread is getting long, or when token efficiency matters. Trigger on: "lean mode", "save tokens", "context discipline", "stay narrow", "I'm wasting tokens", "cost-aware mode", or at the start of any heavy investigation where scope creep is a risk — including when the task description itself signals multi-repo breadth up front (e.g. "review where we are across these 7 repos", "check X and Y and write a migration plan"), not only when the user names lean mode explicitly by keyword.
 compatibility: Any repo or workspace.
 ---
 
@@ -76,6 +76,7 @@ For IaC/SRE work, raw CLI output (Terraform plans, Ansible verbose runs, kubectl
 | Terraform/Ansible output about to be pasted | Ask for error block + resource/task name first; full output last |
 | Large log paste incoming | Ask for error signature + narrow time window first |
 | User requests more output | Name the hypothesis it would test — don't request blindly |
+| Task description itself spans several repos before any tool call (e.g. "review where we are, check X, check Y, write a migration plan" across 7+ repos) | Activate lean mode proactively at the start — don't wait for a keyword; batching/narrowing matters most before the first exploratory read, not after |
 
 ---
 
