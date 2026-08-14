@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.1.1
 principles_version: 1.0.0
-last_updated: 2026-07-22
+last_updated: 2026-08-14
 updated_by: claude
 name: memex-decide
 description: Log a finalized decision into the Memex wiki as a persistent ADR-style document. Use when a decision has been reached through a structured process (decision council, research, discussion) and needs a permanent home — not a ticket. Writes to Wiki/Concepts/{Topic}-Decision.md, updates Wiki/log.md, Wiki/index.md, Wiki/Concepts/README.md, and Wiki/overview.md. Does NOT create a ticket — that's memex-dump's job. Trigger on: "log this decision", "document this decision", "write this up as a decision", "save this to the wiki", "archive this decision", "memex this decision", "create a decision doc", "add this to the wiki", at the end of a decision-council run when the user says to save or archive the output. SKIP when the user wants to capture a raw thought, idea, or unresolved question — use memex-dump for those.
@@ -12,6 +12,15 @@ description: Log a finalized decision into the Memex wiki as a persistent ADR-st
 Writes a finalized decision to the Memex wiki as a persistent, searchable document. Decisions are not tasks — they have no completion state and should never live in a ticket that will close and disappear.
 
 **Complement:** `memex-dump` handles unstructured captures → tickets. `decision-council` runs the analysis that produces the decision. This skill archives what was decided.
+
+**Resolving the vault path.** Steps below use `$MEMEX_ROOT` for the vault location. Resolve it once before writing anything — this matters most in remote/cloud sessions, where the repo checks out to a session-specific path instead of the workstation default:
+
+```bash
+MEMEX_ROOT="$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null)"
+[[ -d "$MEMEX_ROOT/Wiki/Concepts" ]] || MEMEX_ROOT=~/Projects/personal/memex
+```
+
+Falls back to the standard workstation path when `$PWD` isn't a memex checkout. On a normal workstation session this resolves to the same directory as the hardcoded default, so nothing changes there.
 
 ---
 
@@ -49,7 +58,7 @@ Rules:
 - No date prefix
 - End in `-Decision`
 
-Full path: `~/Projects/personal/memex/Wiki/Concepts/{filename}`
+Full path: `$MEMEX_ROOT/Wiki/Concepts/{filename}`
 
 Check if a file with this name already exists. If it does, confirm with the user before overwriting.
 
@@ -58,7 +67,7 @@ Check if a file with this name already exists. If it does, confirm with the user
 ## Step 3 — Write the decision document
 
 ```bash
-cat > ~/Projects/personal/memex/Wiki/Concepts/{filename} << 'EOF'
+cat > "$MEMEX_ROOT/Wiki/Concepts/{filename}" << 'EOF'
 ---
 tags: [wiki, domain/{domain}, decision]
 created: {YYYY-MM-DD}
@@ -176,4 +185,4 @@ Remind the user to commit: `git commit && git push` in the Memex repo to persist
 - **No ticket is created by this skill** — the decision is already made. Tickets are for unresolved work.
 - **No MEMORY.md entry** — future sessions find decisions via Memex wiki search.
 - **`Raw/_task-index.jsonl` is not updated by this skill** — decision docs don't create new issues. If a related ticket existed, its index entry was already written when that ticket was created. No additional index entry is needed.
-- **Transcript preservation** — if the decision came from a decision council and the user wants to save the full council transcript, write it to `~/Projects/personal/memex/Outputs/Council/council-{YYYY-MM-DD}-{topic}.md` before closing the session. This is separate from the decision doc.
+- **Transcript preservation** — if the decision came from a decision council and the user wants to save the full council transcript, write it to `$MEMEX_ROOT/Outputs/Council/council-{YYYY-MM-DD}-{topic}.md` before closing the session. This is separate from the decision doc.

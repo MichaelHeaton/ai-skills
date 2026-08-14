@@ -1,7 +1,7 @@
 ---
-version: 1.7.0
+version: 1.7.1
 principles_version: 1.0.0
-last_updated: 2026-08-13
+last_updated: 2026-08-14
 updated_by: claude
 name: skill-review
 description: Review and improve skills — either a single skill or all skills used in the current session. Single-skill mode: audits a SKILL.md against conventions, incorporates session learnings, and tunes triggering. Session-audit mode: reflects on the conversation for skill friction and workflow gaps worth turning into new skills; scans usage counters for zero/dormant-usage skills across ALL installed skills, not just this session's; and flags skills whose SKILL.md hasn't been touched in 90+ days — run at the end of every session, or proactively right after a SKILL.md is edited directly (not through `skill-create`, which already reviews). Also invoked programmatically by a parent session passing pre-collected context (sub-agent mode: SA1 by parent, SA2–SA4 in sub-agent). Triggers on: "review this skill", "improve skill X", "skill isn't working well", "tune skill description", "session skill review", "audit skills", "stale skills", or when session-close reaches its skill hygiene step.
@@ -18,6 +18,8 @@ This skill has two modes. Read the user's request to determine which to run:
 If unclear, ask: "Do you want to review a specific skill, or do a session-wide sweep?"
 
 **Proactive trigger — direct SKILL.md edits.** When a SKILL.md is edited directly from conversation mid-session (not through `skill-create`'s own guided flow, which already runs review as part of creation), offer single-skill mode on that skill before treating the edit as done — a review at the point of change catches small issues (trigger drift, convention gaps) that would otherwise only surface if someone remembers to ask later.
+
+**This rule covers skill-review's own file too.** A direct edit to this SKILL.md mid-session should trigger the same single-skill-mode offer on skill-review itself — don't let the rule that catches unreviewed skill edits carry a blind spot for the one skill it lives in.
 
 ---
 

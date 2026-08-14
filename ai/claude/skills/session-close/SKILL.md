@@ -1,5 +1,5 @@
 ---
-version: 1.16.1
+version: 1.16.2
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
@@ -10,11 +10,20 @@ compatibility: Requires gh CLI, glab CLI, git. Atlassian MCP needed only if Jira
 
 Close out this session safely. The goal: nothing stranded in branches, all tickets reflect current state, next session starts with complete context.
 
-> **Setup dependencies** — Steps 1–5 (git hygiene) work in any repo. Steps 6–7 require ai-skills installed (`make install-system`). Steps 9–10 assume a personal memex vault at `~/Projects/personal/memex/` with `_task-index.jsonl` — adapt those paths to your own notes setup if different.
+> **Setup dependencies** — Steps 1–5 (git hygiene) work in any repo. Steps 6–7 require ai-skills installed (`make install-system`). Steps 9–10 assume a personal memex vault (default `~/Projects/personal/memex/`) with `_task-index.jsonl` — adapt those paths to your own notes setup if different.
+
+**Resolving the vault path.** Steps below use `$MEMEX_ROOT` for the vault location. Resolve it once at the start of the session instead of assuming the workstation path — this matters most in remote/cloud sessions, where the repo checks out to a session-specific path instead:
+
+```bash
+MEMEX_ROOT="$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null)"
+[[ -f "$MEMEX_ROOT/Raw/_task-index.jsonl" ]] || MEMEX_ROOT=~/Projects/personal/memex
+```
+
+Falls back to the standard workstation path when `$PWD` isn't a memex checkout (or `git rev-parse` fails). On a normal workstation session this resolves to the same directory as the hardcoded default, so nothing changes there.
 
 **Context check before starting**: session-close runs at the tail of what's often an already-long session — the multi-repo scan and Step 6's skill review add real weight on top of that. If this has been a long conversation (many tool calls, multiple tasks), say so before beginning — as a user action, not something the agent can trigger, since `/compact` is a slash command only the user can run: *"This has been a long session — consider typing `/compact` now for a controlled compact before this checklist adds more weight, then say continue. Otherwise I'll proceed as-is."* Proceed with whatever they answer — don't block on it.
 
-**Check the most recent same-day summary before starting.** Before Step 1, check whether `~/Projects/personal/memex/Outputs/Session/session-close-[today's date].md` already exists — a second same-day run is common. If it does, read it first: it may still have unresolved items (a declined decision, an unticketed bug, a scoping question) from earlier today that this run needs to carry forward rather than silently overwrite when Step 10 writes its own summary.
+**Check the most recent same-day summary before starting.** Before Step 1, check whether `$MEMEX_ROOT/Outputs/Session/session-close-[today's date].md` already exists — a second same-day run is common. If it does, read it first: it may still have unresolved items (a declined decision, an unticketed bug, a scoping question) from earlier today that this run needs to carry forward rather than silently overwrite when Step 10 writes its own summary.
 
 **Also check the most recent prior-day summary for known-pending blockers scoped to the repos in this session.** Grep its "Pending" / "needs attention" section for items matching repos this session will touch, and surface any matches up front — don't make the user (or yourself) re-diagnose a blocker that was already solved and documented one session ago.
 
@@ -139,7 +148,7 @@ For each repo with `WORKTREES > 0`:
 **Memex-specific check**: After handling worktrees, verify that this session's vault notes and task index entries are reachable from `main`. Run:
 
 ```bash
-git -C ~/Projects/personal/memex log main..HEAD --oneline 2>/dev/null
+git -C "$MEMEX_ROOT" log main..HEAD --oneline 2>/dev/null
 ```
 
 If notes are on a branch that hasn't merged, flag this prominently — the next session will start blind. If the push fails with an auth error, switch to the personal GitHub account first: `gh auth switch --user <personal-user>`.
@@ -245,18 +254,18 @@ if [[ -n "${ORIGINAL_GH_ACCOUNT:-}" ]]; then
 fi
 ```
 
-Produce a brief close-out summary using the template in [references/session-summary-template.md](references/session-summary-template.md). Save to `~/Projects/personal/memex/Outputs/Session/session-close-[date].md` if non-trivial.
+Produce a brief close-out summary using the template in [references/session-summary-template.md](references/session-summary-template.md). Save to `$MEMEX_ROOT/Outputs/Session/session-close-[date].md` if non-trivial.
 
 Before writing the file, ensure the output directory exists:
 
 ```bash
-mkdir -p ~/Projects/personal/memex/Outputs/Session
+mkdir -p "$MEMEX_ROOT/Outputs/Session"
 ```
 
 After writing the new file, prune files older than 14 days — they've been consumed by at least one subsequent session and have no remaining handoff value:
 
 ```bash
-find ~/Projects/personal/memex/Outputs/Session -name "session-close-*.md" -mtime +14 -delete && \
+find "$MEMEX_ROOT/Outputs/Session" -name "session-close-*.md" -mtime +14 -delete && \
 echo "✓ pruned old session files"
 ```
 

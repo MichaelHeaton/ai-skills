@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-08-13
+last_updated: 2026-08-14
 updated_by: claude
 name: issue-list
 description: Get a list of open tasks/tickets — across all systems (Linear, GitHub, Jira) or scoped to a project, label, or priority. Always syncs status back to the task index. Browsing/listing only — when the request names one or more specific known ticket IDs (e.g. "list PROJ-123 and PROJ-456", "show me #47, #52, #61"), that's a fetch request, not a browse request: use `issue-get` instead of this skill.
@@ -91,6 +91,10 @@ gh issue list --repo <owner/repo> --state open --json number,title,labels,url --
 **Work Jira (via Atlassian MCP):**
 Use JQL: `assignee = currentUser() AND resolution = Unresolved ORDER BY updated DESC`
 See [[Agents/23-jira-rules|23-jira-rules]] for ticket type conventions and work Jira context (private vault rules).
+
+**Large result set — GitHub.** The documented `gh issue list --search` flow doesn't scale once a repo's backlog runs into the hundreds — a 500+ issue repo has hit this. Instead of listing and filtering, use the search API's `total_count` field to get counts by label/state without pulling every issue's full payload, then page through with `--limit` only for the slice actually needed.
+
+**Large result set — Jira.** `jira_search`'s inline output can exceed the tool's context limit well before the result set feels large (38 issues was enough to trigger it in practice). When that happens, save the raw JQL result to a file and read it back with `jq`/`python3` instead of retrying the same call — don't assume a smaller `maxResults` alone fixes it, since the per-issue payload size varies.
 
 ### 3. Catch unindexed issues
 

@@ -1,7 +1,7 @@
 ---
-version: 1.16.0
+version: 1.17.0
 principles_version: 1.0.0
-last_updated: 2026-08-13
+last_updated: 2026-08-14
 updated_by: claude
 name: git-ops
 description: Universal git hygiene guide — fires on the *first* git commit, push, PR, or MR operation in a session and every one after, not only retroactively at session-close. Covers branching rules, commit message format, PR/MR description format, and pre-commit checks scoped to modified files (including terraform fmt). Applies regardless of which other skills are active. Trigger on: any request to commit, push, open a PR or MR, "git commit", "create a PR", "push this", "open a pull request", "submit a MR", "ready to merge", or any variation of committing or sharing code changes.
@@ -246,6 +246,12 @@ Run checks **only on files you are modifying**. Do not run repo-wide formatters 
 ## Before pushing to an existing branch
 
 Before every `git push` to a feature branch, check whether its PR is already merged — pushing to a merged branch orphans commits, and a three-dot diffstat is not reliable evidence of pending work after a squash-merge. Merged-PR check, squash-merge diffstat caveat, and CI/CD re-run behavior: [references/pushing-to-existing-branch.md](references/pushing-to-existing-branch.md).
+
+---
+
+## Push immediately once a PR looks merge-ready
+
+Once a merge conflict is resolved locally and the branch looks merge-ready, push right away — don't wait for session-close or a later checkpoint to do it. A PR merged via GitHub's web UI resolves conflicts against whatever is on the remote at that moment; a local-only commit that never got pushed (a separate fix made alongside the conflict resolution, say) is invisible to that merge and gets silently dropped, with no error anywhere — the merge just looks clean. Recovering it means noticing the gap after the fact and shipping a follow-up PR. Treat "conflicts resolved, ready to merge" as the trigger to push, not a state to sit in.
 
 ---
 
