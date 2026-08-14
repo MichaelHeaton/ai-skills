@@ -1,7 +1,7 @@
 ---
-version: 1.3.0
+version: 1.4.0
 principles_version: 1.0.0
-last_updated: 2026-08-13
+last_updated: 2026-08-14
 updated_by: claude
 name: agent-md-sync
 description: Generate and maintain component-level AGENTS.md files — either for a single named component (skips full-repo discovery, jumps straight to reading and drafting) or across an entire repo (scan mode). Keeps AI context co-located with code so agents can navigate specific roles, modules, or components without scanning the whole repo. Detects and respects a repo's existing AGENT.md/AGENTS.md convention rather than assuming one. Called automatically by git-ops before PR creation to catch stale or missing component AGENT.md/AGENTS.md files. Trigger on: "generate agent md for this role", "create component AGENTS.md", "scan repo for components", "check which AGENT.md files are stale", "document this module", "add AI context to this role", or when git-ops invokes it before PR creation.
@@ -168,3 +168,5 @@ bash <path-to-skill>/scripts/check-coverage.sh <repo-path> [repo-path...]
 ```
 
 It independently scans the same repo(s) for known marker files (`tasks/main.yml`, `main.tf`, `Chart.yaml`, first-level `README.md`) at any depth and reports any directory `discover-components.sh` didn't pick up, as `MISSED:<type>:<path>`. Takes multiple repo paths in one call, so a set of repos in a workspace can be checked in one pass. A `MISSED` line is evidence a detection rule needs widening — not a reason to widen it preemptively.
+
+This is one instance of a general pattern — any skill that pattern-matches repo structure into a list has the same class of blind spot. See [references/coverage-audit-pattern.md](references/coverage-audit-pattern.md) for the generalized version and how to apply it to a different detector; `repo-ai-init`'s `check-tech-stack-coverage.sh` is a second applied instance.
