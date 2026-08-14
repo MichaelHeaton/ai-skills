@@ -1,7 +1,7 @@
 ---
-version: 1.7.0
+version: 1.8.0
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-14
 updated_by: claude
 name: skill-create
 description: Create a new Claude Code extensibility artifact — skill, subagent, hook, or MCP server — from scratch using a guided interview. Handles the full lifecycle: capturing intent, selecting the right artifact type, naming, writing the config/SKILL.md, testing, iterating, and saving to the repo. Use this whenever the user wants to build or capture a workflow, or says "make a skill for X", "turn this into a skill", "new skill", "make a subagent for X", "create a hook for X", "add an MCP server", "set up MCP for X", "adapt this into a skill", "make our own version of", "build a skill based on", "port this skill", "create a version of [X skill]", or "automate X with a hook".
@@ -123,7 +123,7 @@ Read `references/conventions.md` for the full naming rules and optional domain-p
 - Must match the directory name exactly
 - Add a `{context}-` prefix only when the skill is useless outside one scope; do not invent employer-specific prefix tables in public skills
 
-Propose a name with a one-line explanation of the domain choice. If the user has a preference, use it — but flag if it violates the convention.
+Propose a name with a one-line explanation of the domain choice. If the user has a preference, use it — but if the chosen name's prefix and the chosen scope explicitly disagree (e.g. a `vault-`-prefixed name paired with "any repo, general default" scope), stop and get an explicit one-line confirmation before writing the file: *"you're naming this `vault-foo` but scoping it as a general default — keep the name anyway?"* A mention in free-form conversation isn't enough for a real contradiction — it needs its own yes/no. This check only applies once both the name and the scope are actually known; don't force the scope question early just to run it.
 
 ---
 

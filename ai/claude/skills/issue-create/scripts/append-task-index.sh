@@ -12,6 +12,11 @@ set -euo pipefail
 MEMEX_DIR="${HOME}/Projects/personal/memex"
 INDEX_FILE="${MEMEX_DIR}/Raw/_task-index.jsonl"
 
+if [[ ! -d "${MEMEX_DIR}/Raw" ]]; then
+  echo "⚠️ memex vault not found locally — skipping task-index append" >&2
+  exit 0
+fi
+
 SYSTEM="" REPO="null" INSTANCE="null" ID="" URL="" TITLE="" DOMAIN=""
 PROJECT="null" STATUS="open" CREATED="$(date +%Y-%m-%d)"
 

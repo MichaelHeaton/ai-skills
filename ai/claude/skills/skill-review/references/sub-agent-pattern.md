@@ -1,11 +1,13 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-07-23
+last_updated: 2026-08-14
 updated_by: claude
 ---
 
 # Sub-agent invocation pattern
+
+**Scope**: the `skill-reviewer` subagent exists for skill-review's own SA2–SA4 audits only — a fresh-context pass over specific skills' `SKILL.md` files. It is not a general-purpose delegation target for unrelated work (live user-negotiation, ticket-scoping conversations, or anything outside a skill-hygiene audit), even when a task happens to come up mid-session alongside a skill review.
 
 Run SA2–SA4 inside a sub-agent when you want fresh skill file reads mid-session (sub-agents reload all SKILL.md files from disk at startup) or when the accumulated session context would distort the audit.
 

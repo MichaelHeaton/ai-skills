@@ -1,7 +1,7 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-14
 updated_by: claude
 ---
 
@@ -38,6 +38,7 @@ Only run formatters/linters that are already configured in the repo. Check befor
 | `shellcheck` | CI config, `Makefile` | Modified `.sh` files only |
 | `yamllint` | `.yamllint`, CI config | Modified `.yml`/`.yaml` files only |
 | `prettier` | `.prettierrc`, `package.json` | Modified files only |
+| `markdownlint` | `.markdownlint.json`, or a pre-commit CI workflow that runs `markdownlint-cli2` | Modified `.md` files only |
 
 If no config exists for a tool, do not run it. Do not install or introduce new formatters without asking.
 

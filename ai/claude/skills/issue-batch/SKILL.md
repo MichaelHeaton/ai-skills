@@ -1,5 +1,5 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
@@ -28,7 +28,7 @@ For each work item, draft a body using `issue-create`'s user-story template (§C
 
 ## 4. Present for review
 
-Show a summary table before creating anything:
+Show a summary table before creating anything — this step never skips, even when the confirmation wait below does:
 
 ```
 | # | Title | Priority |
@@ -38,7 +38,9 @@ Show a summary table before creating anything:
 | 3 | Fix flaky auth test | high |
 ```
 
-**Wait for confirmation.** Let the user adjust titles, drop items, or split/merge before any ticket is created.
+**Wait for confirmation** when the request was open-ended — "let's file some tickets", "should we track this somewhere?" Let the user adjust titles, drop items, or split/merge before any ticket is created.
+
+**Skip the wait when the request already authorizes creation** — imperative phrasing like "create tickets for X and Y" or "make tickets for A, B, and C" already is the confirmation; asking "should I create these?" afterward is redundant friction. Show the summary table for visibility, then proceed straight to Step 5. When phrasing is ambiguous between the two, default to waiting.
 
 ## 5. Create in parallel, index sequentially
 

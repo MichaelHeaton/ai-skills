@@ -1,5 +1,5 @@
 ---
-version: 1.7.1
+version: 1.8.0
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
@@ -118,6 +118,28 @@ If the user explicitly declines a ticket for a finding: acknowledge and move on 
 ## Sub-agent invocation pattern
 
 See [references/sub-agent-pattern.md](references/sub-agent-pattern.md) for the full prompt template, output format, and security notes.
+
+---
+
+## Optional: automated reminder hook
+
+The "Proactive trigger — direct SKILL.md edits" rule above only fires if this file is already loaded in context that session — a session that never invokes skill-review at all never gets the chance to read it, so the safeguard silently depends on something it can't guarantee. A companion hook closes that gap the same way `git-ops`'s reminder hooks do for its own freshness rule:
+
+- `hooks/skill-review-reminder.py` (`PostToolUse`, matcher `Edit|Write`) — prints a one-line nudge whenever an edit targets a `SKILL.md` path, regardless of whether skill-review fired earlier in the session
+
+Advisory only (always exits 0), never blocks the edit. Not wired into any tracked `settings.json` by default — add it via the `update-config` skill:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      { "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/skill-review-reminder.py" }] }
+    ]
+  }
+}
+```
+
+It also fires on edits made through `skill-create`'s own flow, which already runs review as part of creation — harmless since the nudge is purely advisory.
 
 ---
 
