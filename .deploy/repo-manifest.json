@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-14T20:43:00Z",
+  "generated_at": "2026-08-14T20:48:22Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
@@ -80,7 +80,7 @@
     "ai/claude/skills/issue-batch/SKILL.md": "89670e7a4ae906f5e792c375e3773c80",
     "ai/claude/skills/issue-create/SKILL.md": "3c20b2531db959d0a08afb63c112060f",
     "ai/claude/skills/issue-create/references/routing.md": "6edf046bb68f17b3321849c52ee4b5c1",
-    "ai/claude/skills/issue-create/references/user-story-template.md": "afb62df7922911f2e032c1841935f827",
+    "ai/claude/skills/issue-create/references/user-story-template.md": "e52dfc3fc716a55264094fea644ab3c7",
     "ai/claude/skills/issue-create/scripts/append-task-index.sh": "bcd50b2293f377c74fe82c9fd0554c55",
     "ai/claude/skills/issue-create/scripts/close-github-issues-migrated-to-linear.sh": "e6b5bfbca8f282c9064009e487b181b5",
     "ai/claude/skills/issue-create/scripts/detect-context.sh": "82cbf70da414b15c185a9ae8d07f9c25",
@@ -134,7 +134,7 @@
     "ai/claude/skills/skill-staleness-check/SKILL.md": "d9b491a93c3408f971abb26a2e1bdb59",
     "ai/claude/skills/subagent-completion-verify/SKILL.md": "516cc79dba4b45595a7bbd24f277ce7d",
     "ai/claude/skills/temp-bypass-tracker/SKILL.md": "41c06e143e671fb9e9fb8e9bf12d8b55",
-    "ai/claude/skills/ticket-close-sequence/SKILL.md": "3234c978da771fc1c516363740d4e42f",
+    "ai/claude/skills/ticket-close-sequence/SKILL.md": "98c9a2729a7a49f88d56bc4ad13dd649",
     "ai/claude/skills/ticket-write-verify/SKILL.md": "b207262b22981df756bd40b77836f9ed",
     "ai/claude/skills/update-config/SKILL.md": "5f158334d38e01bbd117cbfe114a9770",
     "ai/claude/skills/vault-entity-integrity-check/SKILL.md": "6a87c50aafa7f1c818db8ab0c647f8d7",
