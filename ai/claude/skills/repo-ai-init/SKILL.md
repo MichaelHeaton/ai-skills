@@ -1,7 +1,7 @@
 ---
-version: 1.2.0
+version: 1.3.0
 principles_version: 1.0.0
-last_updated: 2026-07-29
+last_updated: 2026-08-14
 updated_by: claude
 name: repo-ai-init
 description: Analyze an existing git repository and apply AI best practices — creating AGENTS.md (provider-agnostic context, or AGENT.md if that's the repo's existing convention), CLAUDE.md (Claude-specific overlay), and identifying documentation gaps. Makes old repos understandable to any AI agent, not just Claude. Use when pointed at a repo that has no AI context files, when AI tools feel "blind" to a codebase, or when onboarding a repo to Claude Code. Triggers on: "set up AI support for this repo", "add AI context to this project", "make this repo AI-ready", "create an AGENTS.md", "this repo has no CLAUDE.md", "AI doesn't understand this codebase".
@@ -32,6 +32,8 @@ bash <path-to-skill>/scripts/discover.sh [repo-path]
 The script produces a structured report covering: file structure, tech stack, existing AI context files, build/test commands, README, and git history patterns. Read it fully before forming any conclusions.
 
 After reading the report, also skim 2–3 key source files to understand the main patterns — the script shows you what exists, but reading the actual code builds the mental model. For docs repos, read the schema or template files instead.
+
+**Tech-stack blind-spot check (optional, cheap).** The TECH STACK section above checks a fixed list of manifest filenames — a repo using a build system outside that list (Deno, Composer, sbt, CMake) won't be flagged even though a manifest exists. Run `bash <path-to-skill>/scripts/check-tech-stack-coverage.sh <repo-path>` to independently scan for other common manifest patterns; a `MISSED:tech-stack:<file>` line means the discovery report likely missed part of the tech stack. Same coverage-audit pattern `agent-md-sync` uses for its own component detector — see that skill's `references/coverage-audit-pattern.md` for the general form.
 
 Build a working theory of:
 
