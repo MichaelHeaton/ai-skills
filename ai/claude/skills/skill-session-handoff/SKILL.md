@@ -1,7 +1,7 @@
 ---
-version: 1.2.0
+version: 1.3.0
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-14
 updated_by: claude
 name: skill-session-handoff
 description: Package the current session's skill activity and friction notes into a structured context block ready to pass to a sub-agent. Produces the SA1 output block that skill-review's sub-agent invocation pattern requires — run this in the parent session before spawning a sub-agent to run skill-review SA2–SA4. Also the right tool whenever the user just wants a self-contained context block to resume in a fresh session, not only ahead of a skill-review delegation. Triggers on: "package session skills for sub-agent", "build handoff block", "prepare skill context", "summarize session skills", "I'm about to spawn a skill-review sub-agent", "build the sub-agent context", "prep the handoff", "wrap up skills", "skill hygiene", "prep for skill review", "let's do skills before we close", "end of session skill stuff", "handoff prompt", "next session context", "where to pick up", "context for next session", "prompt for the next session", "start back up on this", or when skill-review's sub-agent pattern calls for an SA1 context block from the parent.
@@ -57,8 +57,10 @@ If this handoff is being generated standalone (not ahead of a skill-review deleg
 
 ## 5. Offer next step
 
-After outputting the block, ask:
+**Skip this question entirely when invoked from an auto-delegate caller** — session-close's Step 6 (or any workflow that already committed to running skill-review without asking, per its own instructions) — and proceed straight to spawning the subagent below. Only ask when this skill was invoked standalone, directly by the user, with no caller that already decided the answer.
+
+After outputting the block (standalone invocations only), ask:
 
 > → Ready to delegate this to the `skill-reviewer` subagent. Want me to do that now?
 
-If yes: use the Agent tool with `subagent_type: skill-reviewer` and the block above as the task prompt — it already has `skills: [skill-review]` preloaded and runs SA2–SA4 in its own isolated context. The Agent tool is a primary tool and should be available without any schema loading step. If `skill-reviewer` isn't deployed on this machine, fall back to a general-purpose Agent following the prompt template in skill-review's "Sub-agent invocation pattern" section. If neither responds, tell the user and ask them to copy the block into a new conversation manually.
+If yes (or if skipped per the auto-delegate case above): use the Agent tool with `subagent_type: skill-reviewer` and the block above as the task prompt — it already has `skills: [skill-review]` preloaded and runs SA2–SA4 in its own isolated context. The Agent tool is a primary tool and should be available without any schema loading step. If `skill-reviewer` isn't deployed on this machine, fall back to a general-purpose Agent following the prompt template in skill-review's "Sub-agent invocation pattern" section. If neither responds, tell the user and ask them to copy the block into a new conversation manually.

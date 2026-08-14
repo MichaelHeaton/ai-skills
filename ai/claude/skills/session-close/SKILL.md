@@ -1,7 +1,7 @@
 ---
-version: 1.16.0
+version: 1.16.1
 principles_version: 1.0.0
-last_updated: 2026-08-13
+last_updated: 2026-08-14
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
@@ -203,7 +203,7 @@ ls ~/.claude/skills/<name>/   # present → global: ai-skills
 find ~/Projects -maxdepth 4 -path "*/.claude/skills/<name>" -type d 2>/dev/null  # project
 ```
 
-Invoke `skill-session-handoff` *(global: ai-skills)* with this annotated list to assemble the SA1 context block. Then delegate that block to the **`skill-reviewer` subagent** (Agent tool, `subagent_type: skill-reviewer`) to run skill-review's SA2–SA4 in isolation. **Do not ask for confirmation before doing either step; both run automatically as part of session-close.**
+Invoke `skill-session-handoff` *(global: ai-skills)* with this annotated list to assemble the SA1 context block. Then delegate that block to the **`skill-reviewer` subagent** (Agent tool, `subagent_type: skill-reviewer`) to run skill-review's SA2–SA4 in isolation. **Do not ask for confirmation before doing either step; both run automatically as part of session-close** — this includes `skill-session-handoff`'s own Step 5 "Want me to do that now?" question, which that skill itself skips when it detects an auto-delegate caller like this one.
 
 The subagent returns only a findings table, a new-skill-ideas table, and a short summary — it does not create tickets or edit anything. **If `skill-reviewer` isn't available** (not deployed on this machine), fall back to invoking the `skill-review` skill directly in-session with the same annotated list as SA1 context.
 
