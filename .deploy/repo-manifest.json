@@ -1,11 +1,9 @@
 {
-  "generated_at": "2026-08-14T03:34:17Z",
+  "generated_at": "2026-08-14T15:50:31Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
     "ai/claude/CLAUDE.md": "b62158acb0ffaea6fc57681836306ed9",
-    "ai/claude/hooks/__pycache__/git-ops-reminder.cpython-311.pyc": "45a86d9ce55cbc0b81a8c581e2c63393",
-    "ai/claude/hooks/__pycache__/git-ops-track.cpython-311.pyc": "be3cbaadd31334bee80e890f58d205fd",
     "ai/claude/hooks/block-env-read.py": "20fd1d400aa2e546f72e3e7bec65574d",
     "ai/claude/hooks/check-ai-skills-sync.py": "997b8b2ee9ad740dd5cf11cc4f8a9fe4",
     "ai/claude/hooks/config-capture-watch.py": "0434241bc9170a569546d1dc1e41a30c",
@@ -89,7 +87,7 @@
     "ai/claude/skills/log-clip/scripts/clog.py": "493ea2fb17bf405f159ecd6402b64d92",
     "ai/claude/skills/memex-decide/SKILL.md": "5552982f66df706a9e3fb2f42b090414",
     "ai/claude/skills/memex-dump/SKILL.md": "a48ceddb9742c7eaa15792ec03200016",
-    "ai/claude/skills/milestone-reshape/SKILL.md": "1384291e87e9aecb0a69183b8c217d2f",
+    "ai/claude/skills/milestone-reshape/SKILL.md": "cdac9b4685996b4f1838327aa2261668",
     "ai/claude/skills/model-route/SKILL.md": "273f6f946154b8d3d3baf71322d89a82",
     "ai/claude/skills/prompt-draft/SKILL.md": "ebf9dece02d856e134e47523073ed8b6",
     "ai/claude/skills/repo-ai-init/SKILL.md": "0c920c690db85617324a667fad515405",

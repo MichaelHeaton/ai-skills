@@ -1,5 +1,5 @@
 ---
-version: 1.0.0
+version: 1.0.1
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
@@ -44,7 +44,7 @@ Present candidates with enough context (title, last updated, brief reason) for a
 
 ## 4. Execute — close vs. carry
 
-- **Close as superseded/stale**: use `ticket-close-sequence` _(global: ai-skills)_ for the comment-then-verify-then-transition ordering across the batch, rather than closing directly.
+- **Close as superseded/stale**: use `ticket-close-sequence` _(global: ai-skills)_ for the comment-then-verify-then-transition ordering across the batch, if it's installed. **If it isn't available**, apply the same ordering manually per ticket instead of skipping straight to close: comment with the reason, verify the comment landed, then transition — never transition before the comment is confirmed.
 - **Carry forward**: reassign to the new milestone via `gh issue edit <n> --milestone "<new-milestone>"`.
 
 ## 5. Close emptied milestones
