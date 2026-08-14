@@ -1,5 +1,5 @@
 ---
-version: 1.9.0
+version: 1.10.0
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
@@ -13,6 +13,8 @@ Create a new task in the right system based on where you're working. See `refere
 **Always use this skill for issue creation — user-initiated or autonomous.** If Claude is about to call `gh issue create` or `glab issue create` directly, or call a ticketing MCP tool directly such as `jira_create_issue` (Jira) or Linear's `save_issue` (triage, research, session-close, batch work), route through this skill instead. Direct CLI or MCP tool calls bypass routing, label seeding, task index, and project assignment.
 
 **This instruction is easiest to skip in a long, tool-heavy session** — not because the wording is unclear, but because "always route through this skill" competes with dozens of other tool calls for attention as a session goes on, and it's been observed being followed for some creates in a session while skipped for others in the same session. Before any direct `gh issue create`/`glab issue create`/`jira_create_issue`/`save_issue` call, treat it as a one-beat check: "should this go through issue-create instead?" — the same way git-ops's frontmatter reminds against proceeding from memory on a stale invocation.
+
+**Run to completion once triggered.** Once this skill starts, execute every step through to confirmation before returning to other work — don't let an unrelated question or investigation mid-flow pull focus away with the ticket half-created. If execution genuinely must pause (a missing field only the user can supply, a tool failure), say so explicitly rather than silently drifting into other tasks and leaving the user to guess whether the ticket exists.
 
 ## Steps
 
@@ -72,7 +74,7 @@ Select the most relevant component based on ticket content and repo name. Includ
 
 Draft the user story body using the template in §C2. **Critical**: pass the description body as a literal multi-line string — do **not** construct it with escaped `\n` characters. The Jira MCP requires real newlines; `\n` literals appear verbatim in the Jira UI.
 
-**Underscore-escaping survives backtick/monospace wrapping.** Jira's create/update API escapes underscores in identifiers (resource names, variable names) into `\_` — even when the identifier is wrapped in backticks or `{{...}}` monospace markers; that formatting is not a reliable workaround. After creating (or updating) an issue with underscore-heavy identifiers, verify the rendered result via `jira_get_issue` and correct via a follow-up `jira_update_issue` (or `jira_edit_comment` for comments) if mangled.
+**Two known Jira MCP corruption modes — both need the same verify-then-fix loop.** (1) Underscore-escaping survives backtick/monospace wrapping: Jira's create/update API escapes underscores in identifiers (resource names, variable names) into `\_` — even when the identifier is wrapped in backticks or `{{...}}` monospace markers; that formatting is not a reliable workaround. (2) Bracket-style tags in prose get silently stripped: a marker like `[STEP]` used as a step-name label can come back as `STEP` with the brackets gone, likely because the API reads it as malformed link syntax. Both have recurred together in the same session's create/update calls. After creating (or updating) an issue, verify the rendered result via `jira_get_issue` and correct via a follow-up `jira_update_issue` (or `jira_edit_comment` for comments) if either pattern shows up mangled.
 
 Create via Atlassian MCP `jira_create_issue` with `jira.project_key`, the component from A2 (if applicable), and the multi-line description.
 
