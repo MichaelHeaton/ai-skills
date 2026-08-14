@@ -1,5 +1,5 @@
 ---
-version: 1.5.0
+version: 1.5.1
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
@@ -112,6 +112,8 @@ Use the Atlassian MCP tools:
 See [[Agents/23-jira-rules|23-jira-rules]] for work Jira conventions (private vault rules).
 
 ### 3. Verify comment/description writes for markdown-escaping mangling
+
+For the fuller pre-check + auto-fix version of this step (including bracket-tag stripping and batch correction of already-corrupted tickets), see the `ticket-write-verify` skill _(global: ai-skills)_.
 
 Some ticket systems (Jira in particular) silently mangle plain-text markdown on write — underscores escaped to `\_`, bold markers (`**text**`) dropped or rendered as literal escaped asterisks, or `+` characters stripped. Backtick-wrapping helps inconsistently, so the only reliable check is to re-fetch and compare.
 
