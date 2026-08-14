@@ -1,11 +1,9 @@
 {
-  "generated_at": "2026-08-14T03:18:43Z",
+  "generated_at": "2026-08-14T15:52:51Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
     "ai/claude/CLAUDE.md": "b62158acb0ffaea6fc57681836306ed9",
-    "ai/claude/hooks/__pycache__/git-ops-reminder.cpython-311.pyc": "45a86d9ce55cbc0b81a8c581e2c63393",
-    "ai/claude/hooks/__pycache__/git-ops-track.cpython-311.pyc": "be3cbaadd31334bee80e890f58d205fd",
     "ai/claude/hooks/block-env-read.py": "20fd1d400aa2e546f72e3e7bec65574d",
     "ai/claude/hooks/check-ai-skills-sync.py": "997b8b2ee9ad740dd5cf11cc4f8a9fe4",
     "ai/claude/hooks/config-capture-watch.py": "0434241bc9170a569546d1dc1e41a30c",
@@ -69,7 +67,7 @@
     "ai/claude/skills/infra-state-verify/SKILL.md": "a1f9bf46486a97eee3adde93372fbfaf",
     "ai/claude/skills/interview-debrief/SKILL.md": "1eb93713920a4fe4ccac2223a96bcb1e",
     "ai/claude/skills/issue-batch/SKILL.md": "89670e7a4ae906f5e792c375e3773c80",
-    "ai/claude/skills/issue-create/SKILL.md": "e6768a09b7503d85bce7fe0b4d7c9876",
+    "ai/claude/skills/issue-create/SKILL.md": "3c20b2531db959d0a08afb63c112060f",
     "ai/claude/skills/issue-create/references/routing.md": "6edf046bb68f17b3321849c52ee4b5c1",
     "ai/claude/skills/issue-create/references/user-story-template.md": "afb62df7922911f2e032c1841935f827",
     "ai/claude/skills/issue-create/scripts/append-task-index.sh": "bcd50b2293f377c74fe82c9fd0554c55",
