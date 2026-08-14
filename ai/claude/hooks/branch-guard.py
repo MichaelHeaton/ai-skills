@@ -15,15 +15,51 @@ expectation for a repo records the current branch as the baseline and
 allows the commit, rather than blocking on a state that was never captured.
 
 An isolated `git worktree` checkout is immune to this class of collision —
-its branch is pinned to that worktree — so this always allows worktrees."""
+its branch is pinned to that worktree — so this always allows worktrees.
+
+Detects the actual `git ... commit` invocation by tokenizing each
+shell-separator-delimited fragment of the command with shlex, rather than
+substring-matching "git commit" anywhere in the raw text — a substring
+match false-positives on something like `echo about to run git commit
+later` and can't tell a real invocation from one mentioned inside a quoted
+argument (`git log --grep='git commit'`)."""
+import hashlib
 import json
 import re
+import shlex
 import subprocess
 import sys
 from pathlib import Path
 
-COMMIT_RE = re.compile(r"\bgit\s+(?:-C\s+(\S+)\s+)?commit\b")
 STATE_DIR = Path.home() / ".claude" / ".branch-guard-sessions"
+SEPARATOR_RE = re.compile(r"&&|\|\||[;|]")
+
+
+def find_git_invocation(command: str, subcommands: set[str]):
+    """Return (repo_path, subcommand) for the first fragment whose first
+    token is literally `git` and whose next real token (after an optional
+    `-C <path>`) is one of `subcommands`. None if nothing matches."""
+    for fragment in SEPARATOR_RE.split(command):
+        try:
+            tokens = shlex.split(fragment)
+        except ValueError:
+            continue
+        if not tokens or tokens[0] != "git":
+            continue
+        i = 1
+        repo_path = "."
+        if i < len(tokens) and tokens[i] == "-C" and i + 1 < len(tokens):
+            repo_path = tokens[i + 1]
+            i += 2
+        if i < len(tokens) and tokens[i] in subcommands:
+            return repo_path, tokens[i]
+    return None
+
+
+def state_key(session_id: str, toplevel: str) -> Path:
+    digest = hashlib.sha256(toplevel.encode()).hexdigest()[:16]
+    return STATE_DIR / f"{session_id}__{digest}"
+
 
 try:
     data = json.load(sys.stdin)
@@ -31,11 +67,11 @@ except Exception:
     sys.exit(0)
 
 command = str((data.get("tool_input", {}) or {}).get("command", ""))
-match = COMMIT_RE.search(command)
+match = find_git_invocation(command, {"commit"})
 if not match:
     sys.exit(0)
 
-repo_path = match.group(1) or "."
+repo_path, _ = match
 session_id = data.get("session_id") or "unknown"
 
 try:
@@ -59,9 +95,9 @@ try:
 except Exception:
     sys.exit(0)
 if not actual:
-    sys.exit(0)
+    sys.exit(0)  # detached HEAD — no branch name to compare against
 
-state_file = STATE_DIR / f"{session_id}__{toplevel.replace('/', '_')}"
+state_file = state_key(session_id, toplevel)
 if not state_file.exists():
     try:
         STATE_DIR.mkdir(parents=True, exist_ok=True)

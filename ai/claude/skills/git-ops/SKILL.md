@@ -1,5 +1,5 @@
 ---
-version: 1.19.0
+version: 1.19.1
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
@@ -194,7 +194,7 @@ bash ~/.claude/skills/git-ops/scripts/check-branch-identity.sh <repo-path> <expe
 }
 ```
 
-A worktree checkout is exempt (its branch is pinned) — this only fires against a shared, non-worktree checkout, the same scope as the manual script above.
+A worktree checkout is exempt (its branch is pinned) — this only fires against a shared, non-worktree checkout, the same scope as the manual script above. A detached-`HEAD` checkout has no branch name to compare against, so the hook fails open there too (no baseline recorded, no block) — it's scoped to branch collisions specifically, not a general "is this checkout in the state I expect" check.
 
 ---
 
