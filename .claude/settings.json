@@ -36,7 +36,9 @@
       "Bash(bash ~/.claude/skills/session-close/scripts/check-concurrent-session.sh*)",
       "Bash(bash ai/claude/skills/agent-md-sync/scripts/discover-components.sh*)",
       "Bash(bash ai/claude/skills/agent-md-sync/scripts/check-pr-diff.sh*)",
-      "Bash(git -C * branch)"
+      "Bash(git -C * branch)",
+      "mcp__github__issue_read",
+      "mcp__github__search_issues"
     ]
   }
 }
