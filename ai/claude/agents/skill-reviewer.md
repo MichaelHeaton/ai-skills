@@ -1,6 +1,6 @@
 ---
 name: skill-reviewer
-description: Runs a skill-review pass (single-skill audit or session-audit SA2–SA4) in an isolated context so the parent session doesn't spend its own context window loading every skill's SKILL.md and reference files. Use for end-of-session skill hygiene (delegated from session-close after skill-session-handoff produces the SA1 block), auditing a specific skill against conventions, or tuning a skill's trigger description.
+description: Runs a skill-review pass (single-skill audit or session-audit SA2–SA4) in an isolated context so the parent session doesn't spend its own context window loading every skill's SKILL.md and reference files. Use for end-of-session skill hygiene (delegated from session-close after skill-session-handoff produces the SA1 block), auditing a specific skill against conventions, or tuning a skill's trigger description. Scoped to skill-review's own audit modes only — not a general-purpose task-delegation target for unrelated work.
 model: sonnet
 maxTurns: 30
 isolation: worktree
