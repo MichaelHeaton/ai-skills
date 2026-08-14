@@ -1,9 +1,10 @@
 {
-  "generated_at": "2026-08-14T16:08:51Z",
+  "generated_at": "2026-08-14T20:03:59Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
     "ai/claude/CLAUDE.md": "b62158acb0ffaea6fc57681836306ed9",
+    "ai/claude/hooks/__pycache__/check-ai-skills-sync.cpython-314.pyc": "ad927197cfd60a0a4f83d8aad7009c32",
     "ai/claude/hooks/block-env-read.py": "20fd1d400aa2e546f72e3e7bec65574d",
     "ai/claude/hooks/check-ai-skills-sync.py": "997b8b2ee9ad740dd5cf11cc4f8a9fe4",
     "ai/claude/hooks/config-capture-watch.py": "0434241bc9170a569546d1dc1e41a30c",
@@ -138,7 +139,8 @@
     "ai/claude/skills/update-config/SKILL.md": "5f158334d38e01bbd117cbfe114a9770",
     "ai/claude/skills/vault-entity-integrity-check/SKILL.md": "6a87c50aafa7f1c818db8ab0c647f8d7",
     "ai/claude/skills/vault-phased-migration-tracker/SKILL.md": "282e2320f68785314ea7750ef011b1f2",
-    "ai/claude/skills/vault-support/SKILL.md": "3ff870e130c89e8e96401836d38c45da",
+    "ai/claude/skills/vault-pr-review/SKILL.md": "4827d4ac5ec38992017ebccbf7585f67",
+    "ai/claude/skills/vault-support/SKILL.md": "091a1f3f9928dbd8f70db0930ecea4fd",
     "ai/claude/skills/vault-support/references/background-agent-template.md": "1e623defa6a48335114d160f1314296a",
     "ai/claude/skills/vault-support/references/confluence-push.md": "a22654e7608e7ac401c3ef66619b9892",
     "ai/claude/skills/vault-support/references/gap-analysis.md": "3b78dcbc7e39c48e2237809ba546204b",
