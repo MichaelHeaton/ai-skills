@@ -1,5 +1,5 @@
 ---
-version: 1.18.0
+version: 1.19.0
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
@@ -178,6 +178,23 @@ bash ~/.claude/skills/git-ops/scripts/check-branch-identity.sh <repo-path> <expe
 - **`MATCH`** — proceed
 - **`WORKTREE:<actual>`** — this checkout is an isolated worktree; a branch swap in a _different_ checkout of the same repo can't collide with it here. Proceed.
 - **`MISMATCH:<actual>`** — the active branch changed unexpectedly in a shared checkout. **Stop before committing.** Confirm which branch is actually correct before proceeding — do not commit onto whatever happens to be checked out.
+
+**Mechanical enforcement, not just a manual check**: the script above is advisory — it only catches a collision if you remember to run it. `hooks/branch-guard.py` (`PreToolUse`, matcher `Bash`) enforces the same rule automatically, blocking the `git commit` call itself (non-zero exit) on a mismatch, paired with `hooks/branch-guard-track.py` (`PostToolUse`, matcher `Bash`) which updates the recorded expectation whenever this session explicitly runs `git checkout`/`git switch`. Not wired into any tracked `settings.json` by default — add both via the `update-config` skill:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/branch-guard.py" }] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/branch-guard-track.py" }] }
+    ]
+  }
+}
+```
+
+A worktree checkout is exempt (its branch is pinned) — this only fires against a shared, non-worktree checkout, the same scope as the manual script above.
 
 ---
 
