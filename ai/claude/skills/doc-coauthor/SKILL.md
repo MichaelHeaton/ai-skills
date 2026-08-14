@@ -1,10 +1,10 @@
 ---
-version: 1.3.1
+version: 1.4.0
 principles_version: 1.0.0
-last_updated: 2026-08-13
+last_updated: 2026-08-14
 updated_by: claude
 name: doc-coauthor
-description: Co-author work team documentation — either directly to the live Confluence wiki or staged through the git repo for team review. Handles the full workflow: template selection, context gathering, section-by-section drafting, frontmatter generation, and delivery — plus a lighter-weight path for editing already-existing content that skips template/frontmatter entirely. Use when writing or updating any team wiki page, runbook, how-to guide, customer guide, or architecture decision record. Triggers on: "write a runbook", "draft a how-to", "create a wiki page", "update the docs for X", "update the wiki", "write an ADR", "document this process", "new Confluence page", "doc for vault", "work team documentation", "update Confluence". A small, targeted correction to an existing page (fixing one fact, one link) can go through a direct MCP call instead of the full skill; a new page or a significant rewrite should go through this skill.
+description: Co-author work team documentation — either directly to the live Confluence wiki or staged through the git repo for team review. Handles the full workflow: template selection, context gathering, section-by-section drafting, frontmatter generation, and delivery — plus a lighter-weight path for editing already-existing content that skips template/frontmatter entirely. Use when writing or updating any team wiki page, runbook, how-to guide, customer guide, or architecture decision record. Triggers on: "write a runbook", "draft a how-to", "create a wiki page", "update the docs for X", "update the wiki", "write an ADR", "document this process", "new Confluence page", "doc for vault", "work team documentation", "update Confluence". A small, targeted correction to an existing page (fixing one fact, one link, one section) should go through the `confluence-section-edit` skill instead of this one; a new page or a significant rewrite goes through this skill.
 compatibility: Live mode requires Confluence MCP. Staged mode requires ${repos.work_docs} (local.json) to be cloned — run repo-setup if missing.
 ---
 
@@ -37,6 +37,8 @@ Before gathering context or drafting, ask: *"Given what's changed, does this pag
 ## Stage 0: Template Selection
 
 **Editing existing content?** If this is a straightforward edit to an already-existing page or section (not authoring something new), skip template selection and frontmatter generation entirely — jump to identifying what's stale vs. accurate in the existing content, then go straight to Stage 2 (Draft). Template selection and frontmatter are for new-page authoring; they add no value to correcting or extending a page that already exists.
+
+**Small enough to be one section?** If the edit is scoped to fixing or updating a single existing section (one fact, one link, one paragraph) rather than reworking multiple sections, use the `confluence-section-edit` skill instead of continuing here — it covers the section-scoped update call, the nested-list breakage gotcha, and the mandatory post-edit diff check that a quick edit needs but this skill's full Stage 0–4 flow doesn't spell out.
 
 Identify the document type:
 

@@ -1,10 +1,10 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
 name: contextual-pr-review
-description: Review a GitHub PR — your own or a teammate's — by first loading the target repo's own conventions (CLAUDE.md/AGENTS.md, sibling directories following the same structural pattern) so the review checks the diff against real repo-specific rules instead of generic best practice. Use when asked to "review this PR", "look over PR #N", "<name> asked for a review on <url>", when a bare GitHub PR URL is pasted, or when about to eyeball a diff casually and mostly trust the author's own testing instead of doing a real check. Works for any repo — the name is deliberately non-Vault-scoped, though the skill grew out of reviewing Terraform module and per-cluster config repos. Prefer this over /code-review for a bare "review PR #N"/"review this PR" request with no other flags; pick /code-review instead when the request names an explicit effort level or a --comment/--fix flag, or targets a diff/branch/path rather than a PR. Complements /code-review (does the same job but repo-agnostic, no context-gathering step) and the reviewer agent (this skill dispatches to it for larger diffs, loading its prompt with the gathered context first).
+description: Review a GitHub PR — your own or a teammate's — by first loading the target repo's own conventions (CLAUDE.md/AGENTS.md, sibling directories with the same structural pattern) so the review checks the diff against real repo-specific rules instead of generic best practice. Use for "review this PR", "look over PR #N", "<name> asked for a review on <url>", a bare PR URL, or before eyeballing a diff casually and trusting the author's own testing. Works for any repo, including GitHub Enterprise hosts (auto-detects GH_HOST from the remote) — deliberately non-Vault-scoped, though it grew out of Terraform module and per-cluster config repos. Prefer this over /code-review for a bare "review PR #N" with no flags; pick /code-review when the request names an effort level or a --comment/--fix flag, or targets a diff/branch/path rather than a PR. Complements /code-review (repo-agnostic, no context step) and the reviewer agent (dispatched for larger diffs, prompt front-loaded with context).
 ---
 
 # Contextual PR Review
@@ -28,6 +28,16 @@ Don't reconstruct a PR from memory or from what the title implies. Pull the real
 ```
 gh pr view <n> --repo <owner/repo>
 gh pr diff <n> --repo <owner/repo>
+```
+
+**GitHub Enterprise remotes**: these calls default to `github.com` and fail with an opaque GraphQL repository-resolution error against an Enterprise host. Before the first `gh` call, check the repo's remote and export `GH_HOST` if it isn't `github.com`:
+
+```bash
+url="$(git remote get-url origin)"
+host="${url#*://}"      # strip scheme:// if present (https://, ssh://, git://)
+host="${host#*@}"       # strip user@ if present (git@..., ssh://git@...)
+GH_HOST="${host%%[:/]*}" # cut at first : or / — leaves just the hostname
+[[ "$GH_HOST" == "github.com" ]] && unset GH_HOST || export GH_HOST
 ```
 
 If the PR is already merged, diff the merge commit's own commits against their parent rather than assuming `main`'s current state matches what was reviewed.

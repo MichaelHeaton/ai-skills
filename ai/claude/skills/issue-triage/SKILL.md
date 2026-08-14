@@ -1,11 +1,11 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-06-10
+last_updated: 2026-08-14
 updated_by: claude
 name: issue-triage
 description: Audit an oversized ticket, surface overlapping child issues, propose a focused scope split, create the replacement tickets, and close the original. Works across Jira and GitHub Issues. Use when the user says "this ticket is too big, split it", "let's triage PROJ-123", "split PROJ-123 into focused tickets", "audit this epic for overlaps", "this ticket needs to be broken up", or pastes a ticket URL and asks to decompose or scope it.
-compatibility: Requires gh CLI (GitHub path) or Atlassian MCP (Jira path).
+compatibility: GitHub path prefers gh CLI; falls back to mcp__github__* tools when gh is unavailable. Jira path requires Atlassian MCP.
 ---
 
 Audit a ticket's scope, identify overlaps, split into focused child tickets, then close the original.
@@ -19,7 +19,7 @@ Identify the system from the ID/URL (same logic as `issue-get`). Fetch full deta
 ### 2. Fetch sibling and child context
 
 **Jira:** `jira_get_project_issues` for the parent epic (or JQL: `"Epic Link" = <key>` / `parent = <key>`).
-**GitHub:** fetch issues with the same milestone or parent tracking issue.
+**GitHub:** fetch issues with the same milestone or parent tracking issue — `gh issue list`, or `mcp__github__list_issues` when `gh` is unavailable (see `issue-create`'s [gh-mcp-fallback.md](../issue-create/references/gh-mcp-fallback.md)).
 
 List all sibling/child tickets. Identify:
 
@@ -67,7 +67,7 @@ Decomposed into focused tickets:
 Closing original as superseded.
 ```
 
-Then close the original. For Jira: `jira_transition_issue` to Done/Won't Do. For GitHub: `gh issue close`.
+Then close the original. For Jira: `jira_transition_issue` to Done/Won't Do. For GitHub: `gh issue close`, or `mcp__github__issue_write` (method `update`, `state: "closed"`) when `gh` is unavailable.
 
 Update the task index: mark original `closed`, add new tickets as `open`.
 
