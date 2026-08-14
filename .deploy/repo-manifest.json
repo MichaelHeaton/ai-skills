@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-14T20:39:01Z",
+  "generated_at": "2026-08-14T20:43:00Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
@@ -139,6 +139,7 @@
     "ai/claude/skills/update-config/SKILL.md": "5f158334d38e01bbd117cbfe114a9770",
     "ai/claude/skills/vault-entity-integrity-check/SKILL.md": "6a87c50aafa7f1c818db8ab0c647f8d7",
     "ai/claude/skills/vault-phased-migration-tracker/SKILL.md": "282e2320f68785314ea7750ef011b1f2",
+    "ai/claude/skills/vault-pr-review/SKILL.md": "4827d4ac5ec38992017ebccbf7585f67",
     "ai/claude/skills/vault-support/SKILL.md": "091a1f3f9928dbd8f70db0930ecea4fd",
     "ai/claude/skills/vault-support/references/background-agent-template.md": "1e623defa6a48335114d160f1314296a",
     "ai/claude/skills/vault-support/references/confluence-push.md": "a22654e7608e7ac401c3ef66619b9892",
