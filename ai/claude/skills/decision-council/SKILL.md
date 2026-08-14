@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-07-27
+last_updated: 2026-08-14
 updated_by: claude
 name: decision-council
 description: Run any decision, plan, or tradeoff through 7 AI advisors with distinct thinking styles, a blind peer review round, and a final chairman synthesis. Based on Karpathy's LLM Council methodology. TRIGGERS: "council this", "decision council", "run the council", "war room this", "pressure-test this", "stress-test this", "debate my options", "gut check this", "get a second opinion on this", "talk me out of this". STRONG TRIGGERS when combined with a real decision: "should I X or Y", "which option", "I can't decide", "I'm torn between", "validate this decision". Do NOT trigger on: factual lookups, creation tasks (write me X), or casual questions without a meaningful tradeoff.
@@ -31,6 +31,7 @@ Before spawning advisors, do two things:
 2. Key context from the user's message
 3. Key context from memory (goals, constraints, relevant history or numbers)
 4. What's at stake — why a bad call here is costly
+5. **For infra/ops questions** (deployment topology, network reachability, CI/tooling choices, anything where "does the environment actually support this" changes the answer): explicitly ask for environmental constraints — LAN/network reachability, available CI runners, existing tooling gaps — as part of gathering context, not left for advisors to guess or peer review to catch after the fact. Advisors under-specifying these constraints in their framing, and peer review catching what framing should have, is a recurring pattern on infra councils specifically.
 
 Do not steer the framing. Hold the framed question in your context — include it verbatim in every advisor and reviewer prompt below.
 
@@ -38,7 +39,20 @@ If the question is too vague to frame, ask one clarifying question, then proceed
 
 ---
 
-## Step 2 — Convene the council (7 sub-agents in parallel)
+## Step 1.5 — Scale the council to the decision (optional)
+
+The full pipeline (7 advisors + 5 peer reviewers + chairman = 13 agent invocations) is the default and the right call for a first-pass, high-stakes decision. It is not mandatory for every invocation — before spawning anything, decide directly (no separate routing agent needed; this is a judgment call for the Architect step to make, the same way `dev-team`'s Manager is a conditional gate rather than a role that always runs) whether a lighter pass fits better:
+
+- **Full pipeline** — first-pass decisions, high-stakes calls, or anything genuinely uncertain across multiple dimensions.
+- **Lighter pass** — a follow-up round on a decision already framed by an earlier council run, or a medium-stakes call where the tradeoff space is narrower. Two forms, usable independently or together:
+  - **Fewer advisors** — spawn only the 2-3 personas whose perspective actually bears on this question (e.g. Executor + Investor for a narrow feasibility/cost follow-up) instead of all 7.
+  - **Skip peer review** — run the advisors, synthesize directly without the 5-reviewer round, when the advisor responses themselves are enough to decide.
+
+Existing behavior — all 7 advisors, full peer review, chairman synthesis — still applies by default whenever this step is skipped or a lighter pass isn't clearly warranted. Don't downgrade a decision that's actually high-stakes just to save tokens.
+
+---
+
+## Step 2 — Convene the council (7, or a routed subset, in parallel)
 
 Tell the user: "Running the decision council — spawning 7 advisors in parallel. This takes 2–4 minutes."
 
@@ -70,6 +84,14 @@ Question brought to the council:
 
 Respond from your perspective. Be direct and specific. Do not hedge. Lean fully into your assigned angle — the other advisors cover what you're not covering. 150–300 words, no preamble.
 ```
+
+---
+
+## Landslide-consensus shortcut (after Step 2, before Step 3)
+
+After collecting the advisor responses, do a quick scan: if 6 or more of the 7 converge independently on the same conclusion, skip Step 3 (peer review) and Step 4 (chairman synthesis) — synthesize the verdict directly from the advisor responses instead. Peer review and a chairman round add little when the council already agrees this strongly; running them anyway is process for its own sake.
+
+**When the shortcut is taken, say so in the output** — a line noting "6/7 advisors converged independently; peer review and chairman synthesis skipped" — rather than silently presenting a verdict that looks like it went through the full pipeline when it didn't. Anything short of a landslide (5 or fewer converging, or real disagreement) proceeds through the full Step 3 + Step 4 as normal.
 
 ---
 
