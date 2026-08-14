@@ -1,5 +1,5 @@
 ---
-version: 1.0.0
+version: 1.0.1
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
@@ -26,7 +26,7 @@ A mid-apply failure leaves state and the real infrastructure disagreeing about w
 terraform import 'aws_instance.web[0]' i-0123456789abcdef0
 ```
 
-**Quote the resource address** when it includes brackets (`[0]`, `["key"]`) — an unquoted `resource.name[0]` gets interpreted by the shell before Terraform ever sees it, producing a confusing "resource not found" that has nothing to do with the resource actually being missing.
+**Quote the resource address** when it includes brackets (`[0]`, `["key"]`). By default, bash leaves a non-matching glob pattern like `resource.name[0]` untouched, so it usually reaches Terraform intact unquoted — but if a file in the current directory happens to match the bracket pattern (or `nullglob`/`failglob` is set), the shell expands or drops it before Terraform ever sees it, producing a confusing "resource not found" that has nothing to do with the resource actually being missing. Quoting removes the risk entirely regardless of shell options, so do it unconditionally rather than relying on the default case holding.
 
 **Import can still fail with "not found" even when the resource genuinely exists.** Some providers read from a config/control-plane endpoint during import, not a direct existence check against the resource itself — a resource that exists but hasn't fully propagated to that endpoint, or lives in a different scope than the provider is configured for, produces a false "not found." Before concluding the resource is actually gone, verify existence through the provider's own console/API directly, independent of the import command's own error.
 

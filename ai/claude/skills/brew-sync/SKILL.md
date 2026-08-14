@@ -1,5 +1,5 @@
 ---
-version: 1.0.0
+version: 1.0.1
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
@@ -28,14 +28,17 @@ Compare against the config repo's tracked package list (`group_vars/all.yml` or 
 For untracked packages, sort by install time so the newest (most likely still relevant) appear first:
 
 ```bash
+STAT_FMT="-f %m"        # macOS/BSD
+[[ "$(uname)" == "Linux" ]] && STAT_FMT="-c %Y"
+
 for pkg in $(brew list --formula); do
   receipt="$(brew --cellar)/$pkg"/*/INSTALL_RECEIPT.json
-  ts=$(stat -f "%m" $receipt 2>/dev/null | sort -rn | head -1)
+  ts=$(stat $STAT_FMT $receipt 2>/dev/null | sort -rn | head -1)
   echo "$ts $pkg"
 done | sort -rn
 ```
 
-(On Linux, use `stat -c "%Y"` instead of `stat -f "%m"`.)
+`stat`'s flags differ between macOS/BSD (`-f "%m"`) and Linux/GNU (`-c "%Y"`) — the snippet above branches on `uname` so it actually works on both, not just documents the difference in prose.
 
 ## 4. Filter dependency noise
 
