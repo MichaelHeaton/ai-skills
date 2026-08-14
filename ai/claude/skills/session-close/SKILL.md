@@ -1,5 +1,5 @@
 ---
-version: 1.16.2
+version: 1.16.3
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
@@ -87,7 +87,7 @@ Invoke the `git-ops` skill *(global: ai-skills)* before Steps 2–4 — it cover
 
 **SSH port-22 fallback**: For all GitHub/GitLab SSH remote operations, use `scripts/git-ssh-fallback.sh <repo-path> <subcommand> [args...]` instead of raw `git`. It auto-detects port-22 blocks, switches to HTTPS, and retries transparently.
 
-**GH auth pre-flight:** Before processing any GitHub.com repo — personal or work/org — verify the active `gh` account matches that repo's owner and switch if needed, restoring the original account in Step 10. Full account-detection and switch commands: [references/gh-auth-preflight.md](references/gh-auth-preflight.md).
+**GH auth pre-flight:** Before processing any GitHub.com repo — personal or work/org — verify the active `gh` account matches that repo's owner and switch if needed, restoring the original account in Step 10. Full account-detection and switch commands: [references/gh-auth-preflight.md](references/gh-auth-preflight.md). This is the session-boundary version of the same check — for a mid-session `gh` call outside a session-close run, use the `gh-account-routing` skill *(global: ai-skills)* instead.
 
 ---
 
