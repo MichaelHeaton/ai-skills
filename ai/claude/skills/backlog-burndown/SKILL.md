@@ -1,5 +1,5 @@
 ---
-version: 1.0.0
+version: 1.0.1
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
@@ -32,6 +32,8 @@ For each ticket, check for a `## Test Plan` section (required on tickets created
 - **Legacy ticket, no checkable AC or Test Plan at all** — draft a concrete Test Plan via a **comment** on the ticket (never a body edit — see `issue-update`'s description-edit policy) before implementing, so the gate in step 4 has something to validate against.
 
 ## 3. Implement
+
+**Before implementing either lane**, run the two deterministic checks `dev-team`'s Architect step normally does first: is the ticket already resolved (check `git log`/`git blame` against the described files/behavior — a prior commit may have fixed it without referencing the ticket), and does its fix location resolve to a different repo than the one it's filed in (a symlink or deployed-copy convention — see `git-ops`'s "Worktree path safety when editing" section). The non-trivial lane gets both checks automatically as part of `dev-team`'s own Architect step; the trivial lane skips Architect entirely, so run them explicitly here instead of assuming a "quick" ticket is exempt from them.
 
 - **Trivial lane** — edit directly in this session, same branch/commit discipline `git-ops` requires for any change.
 - **Non-trivial lane** — run the ticket through `dev-team`'s full pipeline (Architect plan → approval → Coder → Tester → conditional Docs/Manager). Use `dev-team`'s own batch mode when working several non-trivial tickets in the same pass (batched plan approval, self-polled PR merge state, mandatory direct diff verification per ticket).
