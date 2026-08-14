@@ -1,10 +1,9 @@
 {
-  "generated_at": "2026-08-14T20:03:59Z",
+  "generated_at": "2026-08-14T20:43:00Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
     "ai/claude/CLAUDE.md": "b62158acb0ffaea6fc57681836306ed9",
-    "ai/claude/hooks/__pycache__/check-ai-skills-sync.cpython-314.pyc": "ad927197cfd60a0a4f83d8aad7009c32",
     "ai/claude/hooks/block-env-read.py": "20fd1d400aa2e546f72e3e7bec65574d",
     "ai/claude/hooks/check-ai-skills-sync.py": "997b8b2ee9ad740dd5cf11cc4f8a9fe4",
     "ai/claude/hooks/config-capture-watch.py": "0434241bc9170a569546d1dc1e41a30c",
@@ -75,6 +74,7 @@
     "ai/claude/skills/iac-triage/SKILL.md": "e4d9ee3713125fe015aaa4b488c67573",
     "ai/claude/skills/impl-preflight/SKILL.md": "a5f1bcefbabb7433e3a5b9bc5483cf37",
     "ai/claude/skills/incident-capture/SKILL.md": "5d6d96ace00c70eea626a7310c9176e5",
+    "ai/claude/skills/infra-rehearsal-session/SKILL.md": "8e4b32307199b141c285dca3460a17b8",
     "ai/claude/skills/infra-state-verify/SKILL.md": "a1f9bf46486a97eee3adde93372fbfaf",
     "ai/claude/skills/interview-debrief/SKILL.md": "1eb93713920a4fe4ccac2223a96bcb1e",
     "ai/claude/skills/issue-batch/SKILL.md": "89670e7a4ae906f5e792c375e3773c80",
