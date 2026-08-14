@@ -1,11 +1,11 @@
 ---
-version: 1.0.0
+version: 1.0.1
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
 name: post-merge-cleanup
 description: Clean up after a PR merges — pull main, remove the worktree, delete the local (and remote-if-needed) feature branch, and run the repo's redeploy/build step — without requiring a full session-close run. Use whenever the user says "that PR merged", "merged, can you clean up", "PR's in, sync main", or right after confirming a merge via gh/glab, in any repo. For end-of-session hygiene across multiple repos, use session-close instead — this skill is the single-repo, single-PR version of the same sequence.
-compatibility: Requires git; gh or glab for remote branch state.
+compatibility: Cloud-compatible — no local-machine-only paths or tooling; step 4's redeploy detection just skips silently where nothing applies. Requires git; gh or glab for remote branch state.
 ---
 
 # Post-Merge Cleanup

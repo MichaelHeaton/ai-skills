@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-07-24
+last_updated: 2026-08-14
 updated_by: claude
 ---
 
@@ -113,6 +113,20 @@ Brief orientation paragraph.
 - Write instructions in imperative form ("Do X", not "You should do X")
 - Explain *why* behind non-obvious steps
 - No comments in code blocks that only restate the code
+
+### Environment compatibility (local-only vs. cloud-compatible)
+
+"The skill exists in the repo" and "the skill will actually work in this session" are different facts once a cloud/web session (`claude.ai/code`) enters the picture — some skills assume local-machine state (`~/.config/ai-skills/local.json`, a local git clone at a hardcoded path, workstation-only tooling like `make install-system` or `launchd`) that a cloud container never has, no matter how current the deployed skill file is.
+
+Reuse the existing `compatibility` field for this rather than adding a new one:
+
+- **Local-machine-only skill**: lead the field with `Local machine only —` followed by what specifically breaks in a cloud session (a hardcoded path, a workstation CLI, an OS-specific mechanism), so a session can recognize the gap immediately instead of trying and hitting an error. Name a fallback if one exists.
+- **Cloud-compatible skill with tool dependencies**: state the tool/env requirements as before (`Requires gh CLI, git`) — these gate on tool *presence*, checkable and often satisfiable in either environment, not on local-machine-only assumptions.
+- **Explicitly cloud-compatible skill**: for a skill whose portability might otherwise be assumed to require a workstation (e.g. it neighbors local-only skills, or its name suggests deploy/install machinery), a short affirmative note (`Cloud-compatible — no local-machine-only paths or tooling`) is worth the one line, same as `post-merge-cleanup` does.
+
+**Fast-fail vs. soft warning** — default to a fast-fail with a clear message when a missing local dependency would otherwise make the skill do something silently wrong or partial (e.g. `issue-create`'s `append-task-index.sh` skipping cleanly with a warning rather than crashing). Use a soft warning only when the skill can still do most of its job usefully without the local piece.
+
+This declares a skill's own content assumptions — it does not by itself confirm the skill is *deployed* in the current session. See `CLAUDE.md`'s auto-invoke wording for the deployment-gap fallback (read the SKILL.md directly from a repo checkout when the `Skill` tool reports "Unknown skill").
 
 ## Attribution (adapting external skills)
 

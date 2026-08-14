@@ -1,11 +1,11 @@
 ---
-version: 1.1.0
+version: 1.1.1
 principles_version: 1.0.0
-last_updated: 2026-06-12
+last_updated: 2026-08-14
 updated_by: claude
 name: repo-setup
 description: Verify and set up project repositories on the current workstation. Covers repo cloning, git identity, gh CLI config via direnv, dependencies, and repo infrastructure conventions (Makefile, standard make targets, entry points). Triggers on set up workstation, clone repos, repo not found, missing work docs repo, new machine setup, wrong git account, fix git identity, add a Makefile, standard make targets, repo doesn't have a Makefile, repos should follow a standard structure, standardize repo structure, repo infrastructure.
-compatibility: Requires git, direnv (brew install direnv), jq, and ~/.config/ai-skills/local.json filled from config/local.template.json.
+compatibility: Local machine only — direnv and workstation-level git identity setup have no cloud/web-session equivalent. Requires git, direnv (brew install direnv), jq, and ~/.config/ai-skills/local.json filled from config/local.template.json.
 ---
 
 # Repo setup

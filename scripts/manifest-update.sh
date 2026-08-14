@@ -37,7 +37,7 @@ if claude.is_dir():
         if not root.is_dir():
             continue
         for f in sorted(root.rglob("*")):
-            if f.is_file() and ".git" not in f.parts:
+            if f.is_file() and ".git" not in f.parts and "__pycache__" not in f.parts and f.suffix != ".pyc":
                 add_file(f)
     cm = claude / "CLAUDE.md"
     if cm.is_file():

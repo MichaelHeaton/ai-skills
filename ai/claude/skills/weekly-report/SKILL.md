@@ -1,11 +1,11 @@
 ---
-version: 1.3.0
+version: 1.3.1
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-14
 updated_by: claude
 name: weekly-report
 description: Generate paste-ready weekly status files for two standing rhythms defined in local.json — typically a client-contract deck update and an employer team wiki (PPP). Routes by user intent and weekly_reports.* keys in ~/.config/ai-skills/local.json. Triggers on weekly report, client deck update, slides 8-10, dedicated defense update, team wiki weekly, PPP, Thursday meeting prep, weekly repost, PPP update, weekly PPP, problems plans people, write my weekly, problems and plans, team week update, or when the user names either rhythm from their private config labels.
-compatibility: Vault paths in Memex; Jira MCP when work_team path needs it; requires ~/.config/ai-skills/local.json.
+compatibility: Local machine only — needs a local Memex vault checkout and ~/.config/ai-skills/local.json; neither exists in a cloud/web session. Jira MCP needed when the work_team path is used. No cloud fallback.
 ---
 
 # Weekly Report
