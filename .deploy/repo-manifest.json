@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-14T16:08:51Z",
+  "generated_at": "2026-08-14T20:39:01Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
@@ -74,6 +74,7 @@
     "ai/claude/skills/iac-triage/SKILL.md": "e4d9ee3713125fe015aaa4b488c67573",
     "ai/claude/skills/impl-preflight/SKILL.md": "a5f1bcefbabb7433e3a5b9bc5483cf37",
     "ai/claude/skills/incident-capture/SKILL.md": "5d6d96ace00c70eea626a7310c9176e5",
+    "ai/claude/skills/infra-rehearsal-session/SKILL.md": "8e4b32307199b141c285dca3460a17b8",
     "ai/claude/skills/infra-state-verify/SKILL.md": "a1f9bf46486a97eee3adde93372fbfaf",
     "ai/claude/skills/interview-debrief/SKILL.md": "1eb93713920a4fe4ccac2223a96bcb1e",
     "ai/claude/skills/issue-batch/SKILL.md": "89670e7a4ae906f5e792c375e3773c80",
@@ -138,7 +139,7 @@
     "ai/claude/skills/update-config/SKILL.md": "5f158334d38e01bbd117cbfe114a9770",
     "ai/claude/skills/vault-entity-integrity-check/SKILL.md": "6a87c50aafa7f1c818db8ab0c647f8d7",
     "ai/claude/skills/vault-phased-migration-tracker/SKILL.md": "282e2320f68785314ea7750ef011b1f2",
-    "ai/claude/skills/vault-support/SKILL.md": "3ff870e130c89e8e96401836d38c45da",
+    "ai/claude/skills/vault-support/SKILL.md": "091a1f3f9928dbd8f70db0930ecea4fd",
     "ai/claude/skills/vault-support/references/background-agent-template.md": "1e623defa6a48335114d160f1314296a",
     "ai/claude/skills/vault-support/references/confluence-push.md": "a22654e7608e7ac401c3ef66619b9892",
     "ai/claude/skills/vault-support/references/gap-analysis.md": "3b78dcbc7e39c48e2237809ba546204b",
