@@ -1,5 +1,5 @@
 ---
-version: 1.10.0
+version: 1.10.1
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
@@ -74,7 +74,7 @@ Select the most relevant component based on ticket content and repo name. Includ
 
 Draft the user story body using the template in §C2. **Critical**: pass the description body as a literal multi-line string — do **not** construct it with escaped `\n` characters. The Jira MCP requires real newlines; `\n` literals appear verbatim in the Jira UI.
 
-**Two known Jira MCP corruption modes — both need the same verify-then-fix loop.** (1) Underscore-escaping survives backtick/monospace wrapping: Jira's create/update API escapes underscores in identifiers (resource names, variable names) into `\_` — even when the identifier is wrapped in backticks or `{{...}}` monospace markers; that formatting is not a reliable workaround. (2) Bracket-style tags in prose get silently stripped: a marker like `[STEP]` used as a step-name label can come back as `STEP` with the brackets gone, likely because the API reads it as malformed link syntax. Both have recurred together in the same session's create/update calls. After creating (or updating) an issue, verify the rendered result via `jira_get_issue` and correct via a follow-up `jira_update_issue` (or `jira_edit_comment` for comments) if either pattern shows up mangled.
+**Two known Jira MCP corruption modes — both need the same verify-then-fix loop.** (For the fuller pre-check + auto-fix version of this loop, including Confluence and batch correction of already-corrupted tickets, see the `ticket-write-verify` skill _(global: ai-skills)_.) (1) Underscore-escaping survives backtick/monospace wrapping: Jira's create/update API escapes underscores in identifiers (resource names, variable names) into `\_` — even when the identifier is wrapped in backticks or `{{...}}` monospace markers; that formatting is not a reliable workaround. (2) Bracket-style tags in prose get silently stripped: a marker like `[STEP]` used as a step-name label can come back as `STEP` with the brackets gone, likely because the API reads it as malformed link syntax. Both have recurred together in the same session's create/update calls. After creating (or updating) an issue, verify the rendered result via `jira_get_issue` and correct via a follow-up `jira_update_issue` (or `jira_edit_comment` for comments) if either pattern shows up mangled.
 
 Create via Atlassian MCP `jira_create_issue` with `jira.project_key`, the component from A2 (if applicable), and the multi-line description.
 
@@ -105,7 +105,7 @@ bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
 
 ### A5.5. Freshness re-check (optional, cheap)
 
-The de-dupe check in "Detect routing target" only searches *before* creation — it can't catch activity that lands on the ticket's own key right after it's created (a webhook-driven comment, an automation-added field). Before finalizing the confirmation message, do one fresh `jira_get_issue` fetch on the ticket just created. If it already carries comments or field changes that weren't part of the draft in A3, surface them in the A6 confirmation instead of confirming as if the ticket were still exactly as drafted.
+The de-dupe check in "Detect routing target" only searches _before_ creation — it can't catch activity that lands on the ticket's own key right after it's created (a webhook-driven comment, an automation-added field). Before finalizing the confirmation message, do one fresh `jira_get_issue` fetch on the ticket just created. If it already carries comments or field changes that weren't part of the draft in A3, surface them in the A6 confirmation instead of confirming as if the ticket were still exactly as drafted.
 
 ### A6. Confirm
 
