@@ -1,13 +1,19 @@
 ---
-version: 1.2.0
+version: 1.2.1
 principles_version: 1.0.0
-last_updated: 2026-06-11
+last_updated: 2026-08-14
 updated_by: claude
 name: vault-support
 description: "Analyze vault support content — Slack threads, Jira tickets, direct research questions, or documentation gap sessions — to fact-check the team bot, identify documentation gaps, and generate knowledge-extraction questions. Use when the user pastes a Slack thread, references a vault ticket, asks a vault behavior/config question directly, or wants to identify what's missing in the wiki. Triggers on: vault questions, bot responses, AppRole, policy PRs, KV2, seal, onboarding pasted from Slack, vault ticket, vault runbook, vault restore procedure, vault behavior, researching vault, how does vault handle, look at this vault ticket, wiki gaps, documentation backlog, doc backlog, what's missing in the wiki, identify documentation gaps, audit our docs, build a doc backlog, find wiki gaps, what are we missing in the docs."
 ---
 
 # Vault Support Analyzer
+
+## Scope
+
+Covers **server/policy-side Vault administration**: KV2, AppRole, Vault Agent config, MCP setup, secret rotation, policy compliance, and wiki/doc-gap analysis for the support bot.
+
+Does **not** cover **client-tooling or auth-method migration issues** — e.g. migrating a local CLI wrapper from one auth backend to another (Okta → OIDC). Those are diagnosed by reading the relevant client tool's own repo directly, not by expecting this skill to be the diagnostic path.
 
 ## Configuration (required)
 
