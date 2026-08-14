@@ -1,11 +1,11 @@
 ---
-version: 1.0.1
+version: 1.0.2
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
 name: local-automation-setup
 description: Set up recurring *local* automation (macOS launchd, or cron on Linux) for tasks that need local filesystem or install access — the built-in schedule/Routine tooling only creates cloud agents with no local machine access. Use when a recurring task needs to read local files, hit localhost services, or run installed CLI tools, and the built-in cloud scheduler isn't the right fit. Triggers on "set up a recurring local check", "schedule this to run locally", "make this a launchd job", "add a cron job for this", or after discovering a cloud-scheduled task actually needs local access.
-compatibility: macOS (launchd) or Linux (cron). Requires shell access to the target machine.
+compatibility: Local machine only — launchd/cron have no cloud/web-session equivalent; use the built-in Routine scheduler (create_trigger) there instead. macOS (launchd) or Linux (cron). Requires shell access to the target machine.
 ---
 
 # Local Automation Setup
