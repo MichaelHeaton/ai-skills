@@ -1,5 +1,5 @@
 ---
-version: 1.0.0
+version: 1.0.1
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
@@ -37,14 +37,16 @@ Place it somewhere durable, e.g. `~/.local/bin/<job-name>.sh`, and `chmod +x` it
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Label</key><string>com.user.<job-name></string>
+  <key>Label</key><string>com.user.JOB_NAME</string>
   <key>ProgramArguments</key>
-  <array><string>/bin/bash</string><string>/Users/<you>/.local/bin/<job-name>.sh</string></array>
+  <array><string>/bin/bash</string><string>/Users/YOUR_USERNAME/.local/bin/JOB_NAME.sh</string></array>
   <key>StartInterval</key><integer>3600</integer>
   <key>RunAtLoad</key><false/>
 </dict>
 </plist>
 ```
+
+Replace `JOB_NAME` and `YOUR_USERNAME` with real values — angle-bracket placeholders (`<job-name>`) collide with XML's own tag syntax here and produce a plist launchd will refuse to load, unlike in the shell commands below where angle brackets are harmless.
 
 Save to `~/Library/LaunchAgents/com.user.<job-name>.plist`, then load it:
 
