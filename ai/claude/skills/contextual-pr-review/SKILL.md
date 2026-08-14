@@ -1,13 +1,13 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
-name: vault-pr-review
-description: Review a GitHub PR — your own or a teammate's — by first loading the target repo's own conventions (CLAUDE.md/AGENTS.md, sibling directories following the same structural pattern) so the review checks the diff against real repo-specific rules instead of generic best practice. Use when asked to "review this PR", "look over PR #N", "<name> asked for a review on <url>", when a bare GitHub PR URL is pasted, or when about to eyeball a diff casually and mostly trust the author's own testing instead of doing a real check. Works for any repo, not just Vault ones, though it grew out of reviewing Terraform module and per-cluster config repos. Complements /code-review (does the same job but repo-agnostic, no context-gathering step) and the reviewer agent (this skill dispatches to it for larger diffs, loading its prompt with the gathered context first).
+name: contextual-pr-review
+description: Review a GitHub PR — your own or a teammate's — by first loading the target repo's own conventions (CLAUDE.md/AGENTS.md, sibling directories following the same structural pattern) so the review checks the diff against real repo-specific rules instead of generic best practice. Use when asked to "review this PR", "look over PR #N", "<name> asked for a review on <url>", when a bare GitHub PR URL is pasted, or when about to eyeball a diff casually and mostly trust the author's own testing instead of doing a real check. Works for any repo — the name is deliberately non-Vault-scoped, though the skill grew out of reviewing Terraform module and per-cluster config repos. Prefer this over /code-review for a bare "review PR #N"/"review this PR" request with no other flags; pick /code-review instead when the request names an explicit effort level or a --comment/--fix flag, or targets a diff/branch/path rather than a PR. Complements /code-review (does the same job but repo-agnostic, no context-gathering step) and the reviewer agent (this skill dispatches to it for larger diffs, loading its prompt with the gathered context first).
 ---
 
-# Vault PR Review
+# Contextual PR Review
 
 A PR review is only as good as what it's checked against. A generic "does this look right" pass misses the things that actually bite: a naming convention a downstream tool depends on, a capability grant that looks right but maps to no real API endpoint, a pattern every sibling workspace follows that this PR quietly breaks. This skill's job is to load that context *before* reviewing, then pick the right review mechanism for the size of the change.
 
