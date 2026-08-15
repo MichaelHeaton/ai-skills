@@ -1,11 +1,11 @@
 ---
-version: 1.10.1
+version: 1.11.0
 principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
 name: issue-create
 description: Create a new task, issue, or story in the right system — GitHub Issues (Memex), Linear, or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", "this should be its own ticket", "separate ticket for X", "let's decompose", "track this for later", or similar. Also fires autonomously — always use this skill when Claude itself decides to create any issue (during triage, research, session-close, or any workflow), when creating multiple issues in a batch, or whenever about to call gh issue create or glab issue create directly, or whenever about to call a ticketing MCP tool directly such as jira_create_issue (Jira) or save_issue (Linear). Work org remotes → Jira Story; personal → GitHub Issue (Memex default); Linear only via routing file ticket_system=Linear.
-compatibility: Requires gh CLI, Atlassian MCP (Jira path only).
+compatibility: GitHub paths (B/C) prefer gh CLI; fall back to mcp__github__* MCP tools when gh is unavailable — see references/gh-mcp-fallback.md. Jira path (A) requires Atlassian MCP. Memex path (C) writes to a local vault clone when present, skips gracefully with a warning when not.
 ---
 
 Create a new task in the right system based on where you're working. See `references/routing.md` for routing rules. Once created, the description is frozen — all updates go in comments (see description edit policy in `issue-update`).
@@ -18,6 +18,25 @@ Create a new task in the right system based on where you're working. See `refere
 
 ## Steps
 
+### 0. Environment setup
+
+Resolve the skill's own script directory once, before running any script below — deployment layout varies (flat `~/.claude/skills/issue-create/` vs. `~/.claude/skills/synced/issue-create/`), and a hardcoded path silently fails in the other layout:
+
+```bash
+SKILL_DIR="$HOME/.claude/skills/issue-create"
+[[ -d "$SKILL_DIR/scripts" ]] || SKILL_DIR="$HOME/.claude/skills/synced/issue-create"
+```
+
+Use `"$SKILL_DIR/scripts/<name>.sh"` for every script invocation below instead of a literal path.
+
+**gh CLI availability** — some environments (cloud/web sessions) have no `gh`/`hub` binary at all, only `mcp__github__*` MCP tools:
+
+```bash
+command -v gh >/dev/null 2>&1 && echo present || echo absent
+```
+
+If absent, every `gh`-dependent step below (de-dupe check, B0, B2–B5, C3, C4, C7) has an MCP equivalent — see [references/gh-mcp-fallback.md](references/gh-mcp-fallback.md). Jira (Path A) and Linear (Path D) already use MCP tools exclusively and are unaffected.
+
 ### 1. Detect routing target
 
 **Explicit repo override (SR-847, SR-901):** If the user's request names a specific repo (e.g. "in claude-skills", "in MichaelHeaton/workstation-devops"), that repo takes precedence over `detect-context.sh` output — skip the script and route directly to the named repo. Only run `detect-context.sh` when no repo is named. When running the script for a named repo that differs from Claude's CWD, `cd` to that repo's directory first (or the script will return the wrong target).
@@ -25,7 +44,7 @@ Create a new task in the right system based on where you're working. See `refere
 **Explicit Jira override (SR-840):** If the user explicitly says "jira", provides a Jira-style key (e.g. `PROJ-123` or an ALL-CAPS-NNN pattern), or pastes a URL matching the configured Jira instance hostname, route to Path A regardless of what `detect-context.sh` returns. Explicit intent always wins over script output.
 
 ```bash
-bash ~/.claude/skills/issue-create/scripts/detect-context.sh
+bash "$SKILL_DIR/scripts/detect-context.sh"
 ```
 
 The output tells you which path to follow:
@@ -45,7 +64,7 @@ The output tells you which path to follow:
 **De-dupe check (SR-928):** Before drafting, run a quick keyword search in the target system using the proposed title. If 1–3 close matches are found, show them and ask: "Create new, or update an existing one?" If no matches, proceed silently. Skip the check when the user explicitly says "create a new ticket" or has already confirmed uniqueness.
 
 - **Jira (Path A):** `jira_search_issues(jql="project=<key> AND summary ~ \"<keywords>\" AND status != Done ORDER BY created DESC")`
-- **GitHub (Path B/C):** `gh issue list --repo <owner/repo> --search "<keywords>" --state open --json number,title,url`
+- **GitHub (Path B/C):** `gh issue list --repo <owner/repo> --search "<keywords>" --state open --json number,title,url` (no `gh`? see [references/gh-mcp-fallback.md](references/gh-mcp-fallback.md))
 - **Linear (Path D):** Linear MCP `list_issues` with `query: "<keywords>"`
 
 ---
@@ -94,7 +113,7 @@ This gives bidirectional traceability even without native issue links. When the 
 ### A5. Append to task index
 
 ```bash
-bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
+bash "$SKILL_DIR/scripts/append-task-index.sh" \
   --system jira \
   --id "<KEY>" \
   --url "<url>" \
@@ -125,6 +144,8 @@ Report: ticket key, URL, epic it was linked to, predecessor link (if applicable)
 gh repo view <owner/repo> --json isPrivate -q '.isPrivate'
 ```
 
+No `gh`? See [references/gh-mcp-fallback.md](references/gh-mcp-fallback.md) for the MCP equivalent.
+
 If output is `false` (public repo): print `⚠️ Public repo — no internal hostnames, Jira keys, or sensitive details in ticket content.` before proceeding to B1. No blocking gate — just a visible reminder before drafting starts.
 
 ### B1. Gather information
@@ -140,6 +161,8 @@ Draft the body using the user story template in §C2.
 ### B2–B5
 
 Seed labels, `gh issue create`, append task index with `--system github`. Before confirming, same freshness re-check as Path A's A5.5: `gh issue view <NUMBER> --repo <owner/repo> --json comments,updatedAt` — surface anything unexpected in the confirmation rather than confirming silently.
+
+No `gh`? See [references/gh-mcp-fallback.md](references/gh-mcp-fallback.md) for the `mcp__github__*` equivalents of both calls.
 
 ---
 
@@ -174,7 +197,7 @@ glab label create --repo <namespace/repo> --name "priority/<priority>" --color "
 ### B2-3. Append to task index
 
 ```bash
-bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
+bash "$SKILL_DIR/scripts/append-task-index.sh" \
   --system gitlab \
   --id "<issue-number>" \
   --url "<url>" \
@@ -227,6 +250,8 @@ gh issue create \
 
 Capture the returned URL and extract the issue number.
 
+No `gh`? See [references/gh-mcp-fallback.md](references/gh-mcp-fallback.md).
+
 ### C3.5. Back-link the vault note (if applicable)
 
 If a vault note was detected in C1 and the note file exists on disk:
@@ -246,6 +271,8 @@ Use the domain → project routing from `references/routing.md`:
 gh project item-add <PROJECT_NUMBER> --owner ${GITHUB_PERSONAL_USER} --url <ISSUE_URL>
 ```
 
+No MCP equivalent exists for GitHub Projects (v2) — when `gh` is unavailable, skip this step the same way as the missing-scope case below and report it in C7.
+
 If the command fails with `missing required scopes [read:project]`, **do not exit or abort** — continue to C5. Set a flag so C7 can report the skip. Print exactly:
 
 ```
@@ -263,7 +290,7 @@ Append to `~/Projects/personal/memex/Raw/_GitHub-Issues-log.jsonl`.
 ### C6. Append to task index
 
 ```bash
-bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
+bash "$SKILL_DIR/scripts/append-task-index.sh" \
   --system github \
   --repo "${GITHUB_PERSONAL_USER}/memex" \
   --id "<NUMBER>" \
@@ -275,7 +302,7 @@ bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
 
 ### C7. Confirm
 
-Before confirming, same freshness re-check as Path A's A5.5: `gh issue view <NUMBER> --repo ${GITHUB_PERSONAL_USER}/memex --json comments,updatedAt` — surface anything unexpected in the confirmation rather than confirming silently.
+Before confirming, same freshness re-check as Path A's A5.5: `gh issue view <NUMBER> --repo ${GITHUB_PERSONAL_USER}/memex --json comments,updatedAt` — surface anything unexpected in the confirmation rather than confirming silently. No `gh`? See [references/gh-mcp-fallback.md](references/gh-mcp-fallback.md).
 
 Report: issue number and URL as a markdown link, project it was added to (or skipped with reason), labels applied, and vault note link status (if applicable).
 
@@ -320,7 +347,7 @@ Priority: `high` → 2, `medium` → 3, `low` → 4.
 ### D4. Append to task index
 
 ```bash
-bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
+bash "$SKILL_DIR/scripts/append-task-index.sh" \
   --system linear \
   --id "<SR-NNN>" \
   --url "<url>" \
@@ -347,7 +374,7 @@ When creating 3+ issues at once, parallel `gh issue create` calls are fine for s
 2. After all issues are created, run the task index append for each one sequentially:
 
 ```bash
-bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
+bash "$SKILL_DIR/scripts/append-task-index.sh" \
   --system github --repo "<owner/repo>" \
   --id "<NUMBER>" --url "<url>" \
   --title "<title>" --domain "<domain>"
