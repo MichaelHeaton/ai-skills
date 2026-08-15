@@ -18,4 +18,4 @@ updated_by: claude
 | `gh project item-add <PROJECT_NUMBER> --owner ... --url ...` | C4 | **No MCP equivalent** — GitHub Projects (v2) isn't exposed by this MCP server. Skip the step and report it in the confirmation, same as the existing missing-`read:project`-scope path. |
 | `gh issue close <N> --repo ...` | `issue-triage` step 5 | `issue_write(method: "update", owner, repo, issue_number: N, state: "closed", state_reason: "not_planned" \| "completed")` |
 
-Jira (Path A) and Linear (Path D) already use MCP tools exclusively — nothing to substitute there.
+Jira (Path A) already uses MCP tools exclusively — nothing to substitute there.

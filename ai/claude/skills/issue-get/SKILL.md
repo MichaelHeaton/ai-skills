@@ -4,7 +4,7 @@ principles_version: 1.0.0
 last_updated: 2026-06-10
 updated_by: claude
 name: issue-get
-description: Fetch the full details of a specific task or ticket by ID. Works across Linear, GitHub Issues, and Jira. Use when the user references SR-42, #94, PROJ-12345, or similar — or pastes a bare ticket URL (GitHub, Jira, or Linear).
+description: Fetch the full details of a specific task or ticket by ID. Works across GitHub Issues and Jira. Use when the user references #94, PROJ-12345, or similar — or pastes a bare ticket URL (GitHub or Jira).
 ---
 
 Fetch full details for a specific task from its source system and present them clearly.
@@ -17,16 +17,12 @@ Check `~/Projects/personal/memex/Raw/_task-index.jsonl` first — find the recor
 
 - If found: use `system` and `repo` fields to know which API to call.
 - If not found: infer from the ID format or URL:
-  - `SR-NNN` / `LIN-NNN` → Linear (`linear`)
   - `#NNN` or plain integer → GitHub; check index `repo` or detect-context
   - `PROJ-12345` → Work Jira (`jira`)
   - `https://github.com/<owner>/<repo>/issues/<N>` → GitHub; extract `owner/repo` and issue number
   - `https://*.atlassian.net/browse/<KEY>-<N>` → Jira; extract ticket key
-  - `https://linear.app/*/issue/<ID>` → Linear; extract identifier
 
 ### 2. Fetch from source system
-
-**Linear:** Use Linear MCP `get_issue` with the identifier.
 
 **GitHub Issues:**
 
@@ -60,4 +56,4 @@ Show:
 
 ### 4. Sync task index if status has drifted
 
-If the live status differs from the index record, update the index line. Linear: `completed`/`canceled` → `closed`.
+If the live status differs from the index record, update the index line.

@@ -1,18 +1,18 @@
 ---
-version: 1.11.0
+version: 2.0.0
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-08-15
 updated_by: claude
 name: issue-create
-description: Create a new task, issue, or story in the right system — GitHub Issues (Memex), Linear, or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", "this should be its own ticket", "separate ticket for X", "let's decompose", "track this for later", or similar. Also fires autonomously — always use this skill when Claude itself decides to create any issue (during triage, research, session-close, or any workflow), when creating multiple issues in a batch, or whenever about to call gh issue create or glab issue create directly, or whenever about to call a ticketing MCP tool directly such as jira_create_issue (Jira) or save_issue (Linear). Work org remotes → Jira Story; personal → GitHub Issue (Memex default); Linear only via routing file ticket_system=Linear.
+description: Create a new task, issue, or story in the right system — GitHub Issues (Memex) or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", "this should be its own ticket", "separate ticket for X", "let's decompose", "track this for later", or similar. Also fires autonomously — always use this skill when Claude itself decides to create any issue (during triage, research, session-close, or any workflow), when creating multiple issues in a batch, or whenever about to call gh issue create or glab issue create directly, or whenever about to call a ticketing MCP tool directly such as jira_create_issue (Jira). Work org remotes → Jira Story; everything else → GitHub Issue (current repo, or Memex when no repo context).
 compatibility: GitHub paths (B/C) prefer gh CLI; fall back to mcp__github__* MCP tools when gh is unavailable — see references/gh-mcp-fallback.md. Jira path (A) requires Atlassian MCP. Memex path (C) writes to a local vault clone when present, skips gracefully with a warning when not.
 ---
 
 Create a new task in the right system based on where you're working. See `references/routing.md` for routing rules. Once created, the description is frozen — all updates go in comments (see description edit policy in `issue-update`).
 
-**Always use this skill for issue creation — user-initiated or autonomous.** If Claude is about to call `gh issue create` or `glab issue create` directly, or call a ticketing MCP tool directly such as `jira_create_issue` (Jira) or Linear's `save_issue` (triage, research, session-close, batch work), route through this skill instead. Direct CLI or MCP tool calls bypass routing, label seeding, task index, and project assignment.
+**Always use this skill for issue creation — user-initiated or autonomous.** If Claude is about to call `gh issue create` or `glab issue create` directly, or call a ticketing MCP tool directly such as `jira_create_issue` (Jira) (triage, research, session-close, batch work), route through this skill instead. Direct CLI or MCP tool calls bypass routing, label seeding, task index, and project assignment.
 
-**This instruction is easiest to skip in a long, tool-heavy session** — not because the wording is unclear, but because "always route through this skill" competes with dozens of other tool calls for attention as a session goes on, and it's been observed being followed for some creates in a session while skipped for others in the same session. Before any direct `gh issue create`/`glab issue create`/`jira_create_issue`/`save_issue` call, treat it as a one-beat check: "should this go through issue-create instead?" — the same way git-ops's frontmatter reminds against proceeding from memory on a stale invocation.
+**This instruction is easiest to skip in a long, tool-heavy session** — not because the wording is unclear, but because "always route through this skill" competes with dozens of other tool calls for attention as a session goes on, and it's been observed being followed for some creates in a session while skipped for others in the same session. Before any direct `gh issue create`/`glab issue create`/`jira_create_issue` call, treat it as a one-beat check: "should this go through issue-create instead?" — the same way git-ops's frontmatter reminds against proceeding from memory on a stale invocation.
 
 **Run to completion once triggered.** Once this skill starts, execute every step through to confirmation before returning to other work — don't let an unrelated question or investigation mid-flow pull focus away with the ticket half-created. If execution genuinely must pause (a missing field only the user can supply, a tool failure), say so explicitly rather than silently drifting into other tasks and leaving the user to guess whether the ticket exists.
 
@@ -35,7 +35,7 @@ Use `"$SKILL_DIR/scripts/<name>.sh"` for every script invocation below instead o
 command -v gh >/dev/null 2>&1 && echo present || echo absent
 ```
 
-If absent, every `gh`-dependent step below (de-dupe check, B0, B2–B5, C3, C4, C7) has an MCP equivalent — see [references/gh-mcp-fallback.md](references/gh-mcp-fallback.md). Jira (Path A) and Linear (Path D) already use MCP tools exclusively and are unaffected.
+If absent, every `gh`-dependent step below (de-dupe check, B0, B2–B5, C3, C4, C7) has an MCP equivalent — see [references/gh-mcp-fallback.md](references/gh-mcp-fallback.md). Jira (Path A) already uses MCP tools exclusively and is unaffected.
 
 ### 1. Detect routing target
 
@@ -53,11 +53,8 @@ The output tells you which path to follow:
 - `github-current:<owner/repo>` → Path B (GitHub Issue in that repo)
 - `memex` → Path C (GitHub Issue in Memex)
 - `gitlab-current:<namespace/repo>` → Path B2 (GitLab Issue)
-- `linear:<project>` → Path D (Linear issue — only when routing file sets `ticket_system=Linear`)
 
 **Player / tester / playtest reports:** set `export ISSUE_ROUTE=github` before detect-context, or use Path B when the user explicitly asks for a GitHub issue.
-
-**Personal GitHub orgs → Linear:** To force Linear routing for personal GitHub orgs (rather than GitHub Issues), set `PERSONAL_GITHUB_ORGS=org1,org2` in your shell or add `"personal_github_orgs": ["org1"]` to `~/.config/ai-skills/local.json`. Any repo whose GitHub org matches routes to `linear:<heuristic_project>`.
 
 **Voice transcription aliases**: If the repo name sounds like a voice transcription artifact, confirm with the user before routing.
 
@@ -65,7 +62,6 @@ The output tells you which path to follow:
 
 - **Jira (Path A):** `jira_search_issues(jql="project=<key> AND summary ~ \"<keywords>\" AND status != Done ORDER BY created DESC")`
 - **GitHub (Path B/C):** `gh issue list --repo <owner/repo> --search "<keywords>" --state open --json number,title,url` (no `gh`? see [references/gh-mcp-fallback.md](references/gh-mcp-fallback.md))
-- **Linear (Path D):** Linear MCP `list_issues` with `query: "<keywords>"`
 
 ---
 
@@ -310,57 +306,6 @@ Report: issue number and URL as a markdown link, project it was added to (or ski
 - With vault note linked: `"Created [#97 — ...](https://github.com/...) → HomeLab project, priority/medium. Linked in vault note: CRM/People/jane.md."`
 - Vault note not found: `"Created [#97 — ...](https://github.com/...) — vault note 'jane.md' not found on disk; add the issue link manually."`
 - Project add skipped: `"Created [#97 — ...](https://github.com/...) — not added to project (missing read:project scope; run \`gh auth refresh -s read:project\` to fix), priority/medium."`
-
----
-
-## Path D — Linear issue (explicit opt-in only)
-
-Only used when `~/.config/ai-skills/repo-routing.json` sets `ticket_system=Linear` for a repo.
-
-Read `linear.team` from `~/.config/ai-skills/local.json` (e.g. `SpecterRealm`).
-
-### D1. Gather information
-
-- **Title**: imperative verb + clear description
-- **Project**: from `linear:<project>` output
-- **Domain**: map from project — see `references/routing.md`
-- **Priority**: `high`, `medium`, or `low`
-
-### D2. Draft the description — use the user story template from §C2
-
-### D3. Create the Linear issue
-
-Use Linear MCP `save_issue`:
-
-```json
-{
-  "title": "<title>",
-  "team": "<linear.team from local.json>",
-  "project": "<project from linear: output>",
-  "description": "<rendered user story body>",
-  "priority": 3
-}
-```
-
-Priority: `high` → 2, `medium` → 3, `low` → 4.
-
-### D4. Append to task index
-
-```bash
-bash "$SKILL_DIR/scripts/append-task-index.sh" \
-  --system linear \
-  --id "<SR-NNN>" \
-  --url "<url>" \
-  --title "<title>" \
-  --domain "<domain>" \
-  --project "<Linear project name>"
-```
-
-### D5. Confirm
-
-Before confirming, same freshness re-check as Path A's A5.5: Linear MCP `get_issue` on the created identifier — surface any unexpected comments or field changes in the confirmation rather than confirming silently.
-
-Report: Linear identifier, URL, project, and priority.
 
 ---
 

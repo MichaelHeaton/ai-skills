@@ -173,7 +173,7 @@ Max 1024 characters.
 **Good descriptions — front-load the action and include a "when" clause:**
 
 ```
-✅ "Create Linear tickets from rough notes or brain-dumps. Use when capturing
+✅ "Create GitHub tickets from rough notes or brain-dumps. Use when capturing
    tasks, logging ideas, turning meeting notes into tickets, or when the user
    says 'make a ticket for this' or 'log this as an issue'."
 
@@ -187,7 +187,7 @@ Max 1024 characters.
 ```
 ✗ "A comprehensive guide to ticket creation." (no "when" clause)
 ✗ "Helps with performance." (too generic — won't trigger reliably)
-✗ "Use this skill to create tickets in Linear." (passive; no trigger phrases)
+✗ "Use this skill to create tickets in GitHub." (passive; no trigger phrases)
 ```
 
 ### Writing the body

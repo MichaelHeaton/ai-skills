@@ -4,7 +4,7 @@ principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
 name: issue-list
-description: Get a list of open tasks/tickets — across all systems (Linear, GitHub, Jira) or scoped to a project, label, or priority. Always syncs status back to the task index. Browsing/listing only — when the request names one or more specific known ticket IDs (e.g. "list PROJ-123 and PROJ-456", "show me #47, #52, #61"), that's a fetch request, not a browse request: use `issue-get` instead of this skill.
+description: Get a list of open tasks/tickets — across all systems (GitHub, Jira) or scoped to a project, label, or priority. Always syncs status back to the task index. Browsing/listing only — when the request names one or more specific known ticket IDs (e.g. "list PROJ-123 and PROJ-456", "show me #47, #52, #61"), that's a fetch request, not a browse request: use `issue-get` instead of this skill.
 ---
 
 Fetch open tasks from all active systems, sync any status changes back to the task index, then present results.
@@ -13,7 +13,7 @@ Fetch open tasks from all active systems, sync any status changes back to the ta
 
 **Before running Step 1**, check whether the user's request names one or more specific ticket IDs (`PROJ-123`, `#47`, a bare issue number in context, etc.) rather than asking to browse or filter a backlog. A request like "list these 4 tickets: PROJ-100, PROJ-101, PROJ-102, PROJ-103" is a fetch request, not a browse request — delegate it to `issue-get` (or call the fetch tool/API directly per-ID) and skip the rest of this skill's flow entirely.
 
-Browsing requests ("show me my open work", "what's in the backlog", "my Linear tasks") still follow the full list flow below as normal — this short-circuit only applies when the request already names the specific ID(s) it wants.
+Browsing requests ("show me my open work", "what's in the backlog", "my GitHub issues") still follow the full list flow below as normal — this short-circuit only applies when the request already names the specific ID(s) it wants.
 
 ## Steps
 
@@ -26,8 +26,6 @@ export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")
 ```
 
 ### 1. Sync closed issues → task index
-
-**Linear:** `list_issues` with `assignee: "me"`, `team` from `linear.team` in local.json. Sync completed/canceled issues to index (`system: linear`).
 
 **GitHub:** Find index records still `open` that GitHub closed (group by `repo` from index, not only memex):
 
@@ -78,8 +76,6 @@ Report any synced closures before presenting the list.
 
 ### 2. Query live systems
 
-**Linear (default personal backlog):** `list_issues` with `team` from local.json, `assignee: "me"`. Filter by `project` when scoped.
-
 **GitHub Issues — repo-scoped** (when user asks about GitHub issues in a repo):
 
 ```bash
@@ -112,7 +108,7 @@ Group by domain. For each open task show:
 
 ```
 ## Homelab
-- [SR-12](url) Review DNS config [medium]
+- [#12](url) Review DNS config [medium]
 - PROJ-12345 — Document security ticket timeline delays
 ```
 
@@ -124,7 +120,7 @@ If the user specifies a domain, project, system, or label, filter before present
 
 - "show me my work tasks" → `domain: work-primary`
 - "what's open in HomeLab" → `project: HomeLab`
-- "my Linear tasks" → `system: linear`
+- "my GitHub issues" → `system: github`
 - "my Jira tickets" → `system: jira`
 
 **By label (pass to `--label` in the `gh` call, or filter post-fetch for Jira):**
