@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T22:23:06Z",
+  "generated_at": "2026-08-15T22:44:30Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
@@ -94,7 +94,7 @@
     "ai/claude/skills/issue-create/scripts/detect-context.sh": "2672e0ddf94c4b3dc6c44b0c30a616a2",
     "ai/claude/skills/issue-create/scripts/seed-labels-gitlab.sh": "b3eed316173f0082d09b69dee18c5ef3",
     "ai/claude/skills/issue-create/scripts/seed-labels.sh": "43864190bea54e86200838a98ba763ea",
-    "ai/claude/skills/issue-focus/SKILL.md": "8cb72456472771d57492cea988e4d162",
+    "ai/claude/skills/issue-focus/SKILL.md": "e007a8b2b567b38151161971c6a12f39",
     "ai/claude/skills/issue-get/SKILL.md": "2717ee12165c4a60e9c0f2d1f2e840b7",
     "ai/claude/skills/issue-label/SKILL.md": "007c82c2179a27692a844db872e9fe71",
     "ai/claude/skills/issue-list/SKILL.md": "512eaafcce8d6b2c2ef72d3c966b0504",
