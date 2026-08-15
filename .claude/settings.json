@@ -38,7 +38,9 @@
       "Bash(bash ai/claude/skills/agent-md-sync/scripts/check-pr-diff.sh*)",
       "Bash(git -C * branch)",
       "mcp__github__issue_read",
-      "mcp__github__search_issues"
+      "mcp__github__search_issues",
+      "mcp__github__pull_request_read",
+      "mcp__github__list_issues"
     ]
   }
 }
