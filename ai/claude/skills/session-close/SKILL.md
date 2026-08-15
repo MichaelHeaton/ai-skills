@@ -1,5 +1,5 @@
 ---
-version: 1.17.0
+version: 1.18.0
 principles_version: 1.0.0
 last_updated: 2026-08-15
 updated_by: claude
@@ -221,6 +221,31 @@ The subagent returns only a findings table, a new-skill-ideas table, and a short
 **Reminder**: ai-skills is a public repo. Ticket content must be scrubbed of Employer-internal hostnames, internal ticket keys used as examples, security details, and anything sensitive. This scrub is the parent session's responsibility (SA5) — it does not happen inside the subagent.
 
 **After the subagent returns:** Automatically create an ai-skills ticket for **every finding** — existing skills to improve and new skill ideas alike — without prompting for confirmation. Use `issue-create` Path B targeting `${GITHUB_PERSONAL_USER}/ai-skills`. Each ticket body must include: the finding description, proposed change, skill name + source (`global: ai-skills` or `project: <repo>`), and a one-line session context note. Run the security scrub before writing any ticket content. After all tickets are created, report: "Created N ai-skills tickets — [list with #IDs]" and continue to Step 7. If the subagent returns no findings, note "no skill changes identified — nothing to ticket" and continue.
+
+---
+
+## Step 6b — Memory diff review
+
+Invoke the `memory-refine` skill *(global: ai-skills)* automatically — no
+confirmation needed to *check*. It reflects on this session for
+evidence-backed corrections to a project memory file
+(`~/.claude/projects/<project-hash>/memory/*.md`) and proposes at most one
+small diff to at most one file.
+
+**Run this in the main session, not a subagent.** Unlike Step 6, this step
+cannot be delegated: the whole point is that the proposed diff — if
+`memory-refine` finds one — requires the user's explicit approve/reject in
+this same conversational turn, with the user actually present to answer. A
+subagent has no way to get that answer back into this turn.
+
+The proposed diff itself always requires the user's explicit approve/reject
+before it's applied — this step never auto-applies a memory edit, even
+though the review that produces it runs without asking permission first.
+
+If `memory-refine` reports "no memory changes identified this session",
+note that and continue to Step 7. If a diff was approved, note which file
+changed in the Step 10 summary; if rejected, no action needed — the file is
+confirmed unchanged.
 
 ---
 
