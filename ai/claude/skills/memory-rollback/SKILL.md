@@ -17,7 +17,10 @@ that the opt-in `memory-snapshot` hook auto-commits on every edit.
 NOT wired into any tracked `settings.json` by default — it must be enabled
 first via the `update-config` skill (`ai/claude/hooks/memory-snapshot.py`,
 `PostToolUse`, matcher `Edit|Write`). If no `.git` directory exists in the
-memory directory, no snapshots were ever taken; say so and stop.
+memory directory, or one exists but has zero commits (the first snapshot
+attempt failed — check `.memory-snapshot.log` in the memory dir for why, a
+missing git identity is the common cause), no snapshots were ever taken;
+say so and stop.
 
 ## 1. Identify the target file
 
@@ -37,8 +40,8 @@ bash ai/claude/skills/memory-rollback/scripts/list-snapshots.sh \
 ```
 
 This prints each commit as `<rev>:<iso-date>:<subject>`, newest first. If the
-script reports no git repo or no such file, tell the user there is nothing
-to roll back and stop here — do not attempt manual git commands as a
+script reports "no snapshots yet" or "no such file", tell the user there is
+nothing to roll back and stop here — do not attempt manual git commands as a
 fallback, since that would create snapshots outside the hook's control.
 
 Present the list to the user in a readable form (date and subject are

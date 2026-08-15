@@ -12,12 +12,25 @@ Enable it via the `update-config` skill, matching the existing precedent at
 ai/claude/hooks/skill-review-reminder.py.
 
 Advisory only: always exits 0, all logic wrapped in try/except, so a hook
-failure can never block the user's actual edit."""
+failure can never block the user's actual edit. A failed commit (e.g. no
+resolvable git identity) is still non-blocking, but is logged to
+.memory-snapshot.log in the memory dir instead of failing silently — a
+rollback tool that can lose its one job with zero signal defeats the point
+of having it."""
 import json
 import re
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
+
+
+def _log_failure(memory_dir: Path, filename: str, stderr: str) -> None:
+    reason = stderr.strip().splitlines()[-1] if stderr.strip() else "unknown error"
+    timestamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    with open(memory_dir / ".memory-snapshot.log", "a") as f:
+        f.write(f"{timestamp} FAILED to snapshot {filename}: {reason}\n")
+
 
 try:
     data = json.load(sys.stdin)
@@ -55,12 +68,19 @@ try:
         capture_output=True,
         check=False,
     )
-    subprocess.run(
+    commit_result = subprocess.run(
         ["git", "commit", "-m", f"auto-snapshot: {path.name}"],
         cwd=memory_dir,
         capture_output=True,
         check=False,
     )
+
+    if commit_result.returncode != 0:
+        stderr = commit_result.stderr.decode("utf-8", "replace")
+        # "nothing to commit" means the content didn't actually change
+        # (e.g. a re-save with identical content) - not a real failure.
+        if "nothing to commit" not in stderr.lower():
+            _log_failure(memory_dir, path.name, stderr)
 except Exception:
     pass
 

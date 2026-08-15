@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T21:38:31Z",
+  "generated_at": "2026-08-15T21:46:57Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
@@ -13,7 +13,7 @@
     "ai/claude/hooks/git-ops-track.py": "c389053c1e9b01643322fe27bb1aa1c1",
     "ai/claude/hooks/inline-bash-hooks.md": "72e69490c3d0c659cafb244a98f50f96",
     "ai/claude/hooks/lean-context-reminder.py": "f3e292978c8a701cc59e88a7e4a569e9",
-    "ai/claude/hooks/memory-snapshot.py": "77eea28a4915b527565bce03e558a7b9",
+    "ai/claude/hooks/memory-snapshot.py": "2ea9f1edb8bcbcd00e483956f9bb6c5d",
     "ai/claude/hooks/pre-commit": "212c30f37d74a080d576d6161b01077b",
     "ai/claude/hooks/skill-review-reminder.py": "587069f84cb54983612a9fb82c63e9cf",
     "ai/claude/memory/MEMORY.md": "e7d251d3380f509c1df4b9359a03e052",
@@ -109,8 +109,8 @@
     "ai/claude/skills/log-clip/scripts/clog.py": "493ea2fb17bf405f159ecd6402b64d92",
     "ai/claude/skills/memex-decide/SKILL.md": "5552982f66df706a9e3fb2f42b090414",
     "ai/claude/skills/memex-dump/SKILL.md": "f835ba60fed87dd83862e867d33ce309",
-    "ai/claude/skills/memory-rollback/SKILL.md": "b8a6562244cf28df8963f877357b5685",
-    "ai/claude/skills/memory-rollback/scripts/list-snapshots.sh": "8793ff32f6163d2679b0a22ee57e9984",
+    "ai/claude/skills/memory-rollback/SKILL.md": "5880c62233b49bab4736277bf65c314a",
+    "ai/claude/skills/memory-rollback/scripts/list-snapshots.sh": "14a8edea2b617598d10e7c99ea02a531",
     "ai/claude/skills/milestone-reshape/SKILL.md": "cdac9b4685996b4f1838327aa2261668",
     "ai/claude/skills/model-route/SKILL.md": "273f6f946154b8d3d3baf71322d89a82",
     "ai/claude/skills/ops-runbook-update/SKILL.md": "04eeb3721b6bef1d51dd23eb4812159b",
