@@ -25,8 +25,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-def _log_failure(memory_dir: Path, filename: str, stderr: str) -> None:
-    reason = stderr.strip().splitlines()[-1] if stderr.strip() else "unknown error"
+def _log_failure(memory_dir: Path, filename: str, output: str) -> None:
+    reason = output.strip().splitlines()[-1] if output.strip() else "unknown error"
     timestamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
     with open(memory_dir / ".memory-snapshot.log", "a") as f:
         f.write(f"{timestamp} FAILED to snapshot {filename}: {reason}\n")
@@ -76,11 +76,13 @@ try:
     )
 
     if commit_result.returncode != 0:
+        stdout = commit_result.stdout.decode("utf-8", "replace")
         stderr = commit_result.stderr.decode("utf-8", "replace")
-        # "nothing to commit" means the content didn't actually change
-        # (e.g. a re-save with identical content) - not a real failure.
-        if "nothing to commit" not in stderr.lower():
-            _log_failure(memory_dir, path.name, stderr)
+        # git writes "nothing to commit" to STDOUT, not stderr - the content
+        # didn't actually change (e.g. a re-save with identical content),
+        # not a real failure. Check both so a real failure is never missed.
+        if "nothing to commit" not in (stdout + stderr).lower():
+            _log_failure(memory_dir, path.name, stderr or stdout)
 except Exception:
     pass
 

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T21:46:57Z",
+  "generated_at": "2026-08-15T21:51:07Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
@@ -13,7 +13,7 @@
     "ai/claude/hooks/git-ops-track.py": "c389053c1e9b01643322fe27bb1aa1c1",
     "ai/claude/hooks/inline-bash-hooks.md": "72e69490c3d0c659cafb244a98f50f96",
     "ai/claude/hooks/lean-context-reminder.py": "f3e292978c8a701cc59e88a7e4a569e9",
-    "ai/claude/hooks/memory-snapshot.py": "2ea9f1edb8bcbcd00e483956f9bb6c5d",
+    "ai/claude/hooks/memory-snapshot.py": "28f38eac2ea32cfc2315a1bdea779949",
     "ai/claude/hooks/pre-commit": "212c30f37d74a080d576d6161b01077b",
     "ai/claude/hooks/skill-review-reminder.py": "587069f84cb54983612a9fb82c63e9cf",
     "ai/claude/memory/MEMORY.md": "e7d251d3380f509c1df4b9359a03e052",
