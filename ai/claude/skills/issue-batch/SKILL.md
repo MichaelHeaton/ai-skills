@@ -5,7 +5,7 @@ last_updated: 2026-08-14
 updated_by: claude
 name: issue-batch
 description: Create several tickets at once from a natural-language list, each with a properly structured body and task-index entry, in a single pass instead of repeated one-off issue-create invocations. Use when the user describes 5-15 work items at once — "make tickets for X, Y, Z, and W", "break this list into issues", "file these as separate tickets" — and they all belong in the same system/repo. For a single ticket, or items that need to land in different systems, use issue-create directly.
-compatibility: Requires gh CLI, Atlassian MCP, or Linear MCP depending on target system.
+compatibility: Requires gh CLI or Atlassian MCP depending on target system.
 ---
 
 # Issue Batch
@@ -46,7 +46,7 @@ Show a summary table before creating anything — this step never skips, even wh
 
 Once approved:
 
-1. Run all creation calls (`gh issue create`, `jira_create_issue`, or Linear's `save_issue`) in parallel for speed.
+1. Run all creation calls (`gh issue create` or `jira_create_issue`) in parallel for speed.
 2. After all creations return, append each one to the task index **sequentially** — per `issue-create`'s own batch-creation guidance, this step is never optional even when the per-issue flow was skipped for parallelism; a missing index entry means the ticket won't surface in `session-close` or `issue-list`.
 
 ## 6. Confirm

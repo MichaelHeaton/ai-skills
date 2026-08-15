@@ -44,11 +44,6 @@
     "work_github_orgs": []
   },
 
-  "linear": {
-    "team": "YOUR_LINEAR_TEAM",
-    "default_project": "Personal"
-  },
-
   "notion": {
     "repositories_data_source": "collection://YOUR-NOTION-DATA-SOURCE-UUID"
   },

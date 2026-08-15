@@ -46,7 +46,7 @@ For each open ticket that matches session activity (and, for PR-linked updates, 
 - If work is **paused** → add a comment with where things stand so the next session picks up cleanly
 - If work is **blocked** → add a blocker comment and transition to Blocked
 
-**Ordering — always comment before transitioning, for every ticket system (Jira, Linear, GitHub):**
+**Ordering — always comment before transitioning, for every ticket system (Jira, GitHub):**
 
 1. Add the comment (closing note, status update, PR link, etc.)
 2. Verify the comment was created (check the response from the MCP or CLI)
@@ -54,4 +54,4 @@ For each open ticket that matches session activity (and, for PR-linked updates, 
 
 Never run the comment and transition in parallel. A failed comment on a closed ticket has no audit trail — the ticket closes without context, which is worse than leaving it open. If the comment fails, keep the ticket open and flag it in the session summary.
 
-For Jira: call `jira_get_transitions` first to get valid transition IDs (never guess — IDs vary per project), then `jira_add_comment` → `jira_transition_issue`. For GitHub: `gh issue comment` → `gh issue close`. For Linear: `save_comment` → `save_issue`. Update `status` in `_task-index.jsonl` to reflect the new state.
+For Jira: call `jira_get_transitions` first to get valid transition IDs (never guess — IDs vary per project), then `jira_add_comment` → `jira_transition_issue`. For GitHub: `gh issue comment` → `gh issue close`. Update `status` in `_task-index.jsonl` to reflect the new state.

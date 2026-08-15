@@ -5,7 +5,7 @@ last_updated: 2026-06-12
 updated_by: claude
 name: brain-dump
 description: Run a brain-dump intake session — accept raw items one at a time, hold them without acting, then ask a single round of clarifying questions across all items at once before creating tickets in batch. Use this when the user wants to dump a backlog of unstructured thoughts into tickets, or says "I want to do a brain dump", "let me drop some items", "I'll give you a list of things to ticket", "I need to dump my backlog", "I have a bunch of ideas to capture", "brain dump mode", or opens with "I'll drop them one at a time and let you know when I'm done".
-compatibility: Requires at least one ticket system (GitHub Issues, GitLab Issues, Jira, or Linear) reachable via MCP or CLI.
+compatibility: Requires at least one ticket system (GitHub Issues, GitLab Issues, or Jira) reachable via MCP or CLI.
 ---
 
 # Brain Dump
@@ -62,7 +62,7 @@ A few questions before I create the tickets:
 - **All items**: Default priority Medium — override any?
 ```
 
-Ask only questions that affect routing, title, or priority. Do not ask questions you can answer yourself from context (e.g. don't ask which Linear team if there's only one). Keep this round to ≤6 questions. If you have no questions, skip this phase and say so.
+Ask only questions that affect routing, title, or priority. Do not ask questions you can answer yourself from context (e.g. don't ask which GitHub repo if there's only one candidate). Keep this round to ≤6 questions. If you have no questions, skip this phase and say so.
 
 Wait for the user's answers before proceeding.
 
@@ -72,14 +72,14 @@ Wait for the user's answers before proceeding.
 
 After the user answers (or if Phase 3 was skipped), determine the target ticket system for each item. Use this priority order:
 
-1. **Explicit signal** — user said "this is a Linear ticket" or "goes in GitHub"
+1. **Explicit signal** — user said "this is a Jira ticket" or "goes in GitHub"
 2. **Repo context** — if the item references a specific repo or codebase, use that repo's ticket system
 3. **Conversation context** — if the session has been in a specific project context, default there
 4. **Ask** — if genuinely ambiguous and it matters (e.g. no default system, or the item could go to work Jira or personal GitHub), ask once
 
 For each item, note:
 
-- Target system: GitHub / GitLab / Jira / Linear
+- Target system: GitHub / GitLab / Jira
 - Target project/repo/board
 - Type: bug / feature / chore / question / spike
 - Priority: Urgent / High / Medium (default) / Low
@@ -96,7 +96,7 @@ Show the user the full batch before creating anything:
 Ready to create N tickets:
 
 1. [Title] → GitHub: owner/repo (bug, medium)
-2. [Title] → Linear: Team / Project (feature, medium)
+2. [Title] → Jira: PROJ (feature, medium)
 ...
 
 Create all? Or any changes first?

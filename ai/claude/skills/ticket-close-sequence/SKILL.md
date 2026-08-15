@@ -5,7 +5,7 @@ last_updated: 2026-08-14
 updated_by: claude
 name: ticket-close-sequence
 description: Close or re-parent a batch of related tickets using a fixed validate-then-comment-then-verify-then-transition order, so a batch run never leaves a ticket transitioned without its fix actually being checked against the ticket's test plan and its rationale landing first. Use when closing several related tickets at once (a milestone wrap-up, a superseded-by cleanup, re-parenting sub-issues), or whenever asked to "close these tickets", "batch-close", "close all the X tickets", or "clean up this group of issues". For a single ticket, issue-update alone is enough — this skill is for the ordering discipline across a batch.
-compatibility: Works across Jira, GitHub Issues, GitLab Issues, and Linear via issue-update's per-system commands.
+compatibility: Works across Jira, GitHub Issues, and GitLab Issues via issue-update's per-system commands.
 ---
 
 # Ticket Close Sequence

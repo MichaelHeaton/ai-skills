@@ -1,11 +1,11 @@
 ---
-version: 2.0.0
+version: 2.1.0
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-15
 updated_by: claude
 name: memex-dump
-description: Quickly capture raw ideas before they're lost. Creates a GitHub Issue in Memex by default, tagged for triage. Workstation ideas → domain/homelab (Workstation DevOps project); skill/AI-workflow → domain/learning (AI Skills project). Routes to Linear only when a repo's routing file sets ticket_system=Linear, and to Jira only when a named epic is in session. Use for brain dump, quick capture, "dump this to memex", etc.
-compatibility: Requires gh CLI. Linear MCP only for opt-in Linear routing. GitHub path (modpack repo) for player/tester reports.
+description: Quickly capture raw ideas before they're lost. Creates a GitHub Issue in Memex by default, tagged for triage. Workstation ideas → domain/homelab (Workstation DevOps project); skill/AI-workflow → domain/learning (AI Skills project). Routes to Jira only when a named epic is in session. Use for brain dump, quick capture, "dump this to memex", etc.
+compatibility: Requires gh CLI. GitHub path (modpack repo) for player/tester reports.
 ---
 
 # Memex Dump
@@ -39,7 +39,6 @@ bash ~/.claude/skills/issue-create/scripts/detect-context.sh
 | `memex` (no remote) | Path M — GitHub Issue in Memex (default) |
 | `github-current:*` | Path M unless player/tester or explicit request for that repo |
 | `jira-work` | Path M (`domain/adobe`) unless a named epic is in session → Path J |
-| `linear:<project>` | Path Li — only reached when the repo's routing file explicitly sets `ticket_system=Linear` |
 
 Default: **Path M — GitHub Issue in Memex**, `domain/personal` unless the topic table above matches.
 
@@ -94,20 +93,6 @@ bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
 
 `export ISSUE_ROUTE=github` then `gh issue create` in the modpack repo. Append task index with `--system github`.
 
-**Path Li — Linear (opt-in only)**
-
-Only when `~/.config/ai-skills/repo-routing.json` sets `ticket_system=Linear` for the current repo, or the user explicitly asks for Linear. Linear MCP `save_issue` with `team` from `linear.team` in local.json, labels `brain-dump`, `needs-grooming`.
-
-```bash
-bash ~/.claude/skills/issue-create/scripts/append-task-index.sh \
-  --system linear \
-  --id "<SR-NNN>" \
-  --url "<url>" \
-  --title "<title>" \
-  --domain "<domain>" \
-  --project "<Linear project>"
-```
-
 **Path J — Jira (active epic in session only)**
 
 Read `jira.*` from `~/.config/ai-skills/local.json`. Fetch project components first to avoid "Component/s is required" errors:
@@ -145,5 +130,3 @@ All created IDs must appear. If any are missing, re-run the append step for thos
 ### 4. Confirm
 
 Single: one-line with issue number (markdown link) and project. Batch: summary table.
-
-**Deprecated:** direct Linear `save_issue` calls bypassing routing — Linear free-tier limits mean unrouted captures should default to GitHub; Linear is reached only via the GitHub→Linear mirror or explicit opt-in (Path Li).

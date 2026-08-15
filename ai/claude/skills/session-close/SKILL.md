@@ -240,7 +240,7 @@ Reflect on context discipline. Exempt: session-close itself. Flag if observed: l
 
 ## Step 9 — Update in-progress tickets
 
-Do not ask the user if they worked on tickets. Find them from the task index and the session's git activity (commit messages, branch names, PR titles), then update status — comment before transitioning, never in parallel, so a failed comment never leaves a ticket closed without an audit trail. A branch/commit-message match is only a candidate; confirm via `gh pr view` that the PR itself references the ticket before asserting the linkage anywhere, including the Step 10 summary. Full procedure (index lookup query, git cross-reference, PR-verification, per-system commands for Jira/GitHub/Linear): [references/ticket-cross-referencing.md](references/ticket-cross-referencing.md).
+Do not ask the user if they worked on tickets. Find them from the task index and the session's git activity (commit messages, branch names, PR titles), then update status — comment before transitioning, never in parallel, so a failed comment never leaves a ticket closed without an audit trail. A branch/commit-message match is only a candidate; confirm via `gh pr view` that the PR itself references the ticket before asserting the linkage anywhere, including the Step 10 summary. Full procedure (index lookup query, git cross-reference, PR-verification, per-system commands for Jira/GitHub): [references/ticket-cross-referencing.md](references/ticket-cross-referencing.md).
 
 **If no matches are found**: skip silently — no open question needed.
 

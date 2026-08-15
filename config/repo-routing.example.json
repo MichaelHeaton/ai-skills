@@ -5,23 +5,19 @@
   "synced_at": "YYYY-MM-DD",
   "defaults": {
     "no_remote": {
-      "ticket_system": "Linear",
-      "linear_project": "Personal"
+      "ticket_system": "GitHub"
     }
   },
   "repos": {
     "YOUR_USER/ai-skills": {
-      "ticket_system": "Linear",
-      "linear_project": "AI Skills"
+      "ticket_system": "GitHub"
     },
-    "YOUR_USER/workstation-devops": {
-      "ticket_system": "Linear",
-      "linear_project": "Workstation DevOps"
+    "YOUR_WORK_ORG/some-work-repo": {
+      "ticket_system": "Jira"
     },
     "YOUR_USER/minecraft-modpack-example": {
-      "ticket_system": "Linear",
-      "linear_project": "Minecraft Modpacks",
-      "notes": "Player/tester reports → GitHub with ISSUE_ROUTE=github"
+      "ticket_system": "GitHub",
+      "notes": "Dev and player/tester reports both route to GitHub in this repo"
     }
   }
 }

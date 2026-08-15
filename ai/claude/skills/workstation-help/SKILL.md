@@ -109,7 +109,6 @@ Run `make` or `make help` from `~/Projects/personal/workstation-devops` to see t
 | `make secrets-help` | List all secret setup commands |
 | `make secrets-vault-okta` | Vault Okta password → Keychain |
 | `make secrets-notion` | Notion MCP token → Keychain |
-| `make secrets-linear` | Linear MCP API key → Keychain |
 | `make secrets-atlassian` | Atlassian tokens + config file |
 
 ---

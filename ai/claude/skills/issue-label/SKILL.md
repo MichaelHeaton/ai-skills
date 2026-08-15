@@ -4,8 +4,8 @@ principles_version: 1.0.0
 last_updated: 2026-08-14
 updated_by: claude
 name: issue-label
-description: Audit a project's unlabeled tickets, propose a minimal label taxonomy, create missing labels, and apply them in bulk. Use when a backlog has grown unfilterable, or the user says "add labels to tickets", "triage the backlog", "organize tickets with labels", "label all the issues in X", or "this backlog needs labels". Works on GitHub Issues and Linear. For labeling a single ticket, use issue-update instead.
-compatibility: Requires gh CLI (GitHub) or Linear MCP.
+description: Audit a project's unlabeled tickets, propose a minimal label taxonomy, create missing labels, and apply them in bulk. Use when a backlog has grown unfilterable, or the user says "add labels to tickets", "triage the backlog", "organize tickets with labels", "label all the issues in X", or "this backlog needs labels". Works on GitHub Issues. For labeling a single ticket, use issue-update instead.
+compatibility: Requires gh CLI (GitHub).
 ---
 
 # Issue Label
@@ -15,8 +15,6 @@ Bulk-label a messy backlog without hand-tagging every ticket. The taxonomy is pr
 ## 1. Fetch the backlog
 
 **GitHub**: `gh issue list --repo <owner/repo> --state open --json number,title,body,labels --limit 200` (paginate if the repo is large — see `issue-list`'s large-result-set fallback if the count exceeds a few hundred).
-
-**Linear**: `list_issues` scoped to the target team/project.
 
 ## 2. Propose a taxonomy
 
@@ -39,8 +37,6 @@ Proposed labels:
 Once approved, create any labels that don't already exist in the target system, with sensible colors (group related labels into a consistent color family — all `type/*` one hue, all `area/*` another).
 
 **GitHub**: `gh label create "<name>" --repo <owner/repo> --color "<hex>" --description "<desc>"`
-
-**Linear**: use the Linear MCP's label-creation call, scoped to the team.
 
 ## 4. Apply labels
 

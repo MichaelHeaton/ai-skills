@@ -5,7 +5,7 @@ last_updated: 2026-08-14
 updated_by: claude
 name: backlog-burndown
 description: Orchestrated ticket-cleanup pass over a project's open backlog — pulls tickets, groups them by size/risk, makes sure each one has a real Test Plan before touching code, routes implementation through dev-team or a direct edit depending on size, validates every diff against its Test Plan before closing, and reports a per-ticket summary. Use for a batch backlog cleanup session, "burn down the backlog", "close out these tickets", "process the open ticket queue", or an unattended/scheduled cleanup pass. Complements issue-triage (splits an oversized ticket, doesn't implement anything) and dev-team (builds one ticket end-to-end, doesn't orchestrate a batch or gate on Test Plans).
-compatibility: Requires gh CLI, glab CLI, or Jira/Linear MCP depending on target system. Orchestrates the issue-list, dev-team, ac-conformance-check, and ticket-close-sequence skills rather than reimplementing them.
+compatibility: Requires gh CLI, glab CLI, or Jira MCP depending on target system. Orchestrates the issue-list, dev-team, ac-conformance-check, and ticket-close-sequence skills rather than reimplementing them.
 ---
 
 # Backlog Burndown
