@@ -1,7 +1,7 @@
 ---
-version: 1.16.3
+version: 1.17.0
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-08-15
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
@@ -20,6 +20,8 @@ MEMEX_ROOT="$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null)"
 ```
 
 Falls back to the standard workstation path when `$PWD` isn't a memex checkout (or `git rev-parse` fails). On a normal workstation session this resolves to the same directory as the hardcoded default, so nothing changes there.
+
+**No local vault at all?** Check `[[ -d "$MEMEX_ROOT/Raw" ]]` once, right after resolving the path above — same test `issue-create`'s `append-task-index.sh` already uses. A cloud/web session commonly has no local memex clone, which leaves Steps 9–10 with nothing to write to. Set a `NO_VAULT=1` flag here if the check fails — Steps 9 and 10 below cover what to do about it; nothing needs to happen at this point beyond setting the flag, since there's no session activity yet to record.
 
 **Context check before starting**: session-close runs at the tail of what's often an already-long session — the multi-repo scan and Step 6's skill review add real weight on top of that. If this has been a long conversation (many tool calls, multiple tasks), say so before beginning — as a user action, not something the agent can trigger, since `/compact` is a slash command only the user can run: *"This has been a long session — consider typing `/compact` now for a controlled compact before this checklist adds more weight, then say continue. Otherwise I'll proceed as-is."* Proceed with whatever they answer — don't block on it.
 
@@ -242,6 +244,8 @@ Do not ask the user if they worked on tickets. Find them from the task index and
 
 **If no matches are found**: skip silently — no open question needed.
 
+**If `NO_VAULT=1`** (set above): skip the task-index lookup itself — there's no index to query — but still gather the same ticket list from git/PR activity, since the Step 10 fallback ticket needs it.
+
 ---
 
 ## Step 10 — Session summary
@@ -253,6 +257,12 @@ if [[ -n "${ORIGINAL_GH_ACCOUNT:-}" ]]; then
   gh auth switch --hostname github.com --user "${ORIGINAL_GH_ACCOUNT}" 2>/dev/null || true
 fi
 ```
+
+**If `NO_VAULT=1`** (set before Step 1): this step's job — producing the close-out record — still needs to happen, it just can't be a local file write. By now Step 6's findings, Step 8's context note, and Step 9's git/PR-derived ticket list are all known, so this is the one point in the run with everything the record needs.
+
+- **Nothing worth recording** (no commits, no ticket updates, no Step 6 findings, no other reportable activity this session) — skip the fallback entirely, no placeholder ticket.
+- **Otherwise** — draft the same content the summary template below would have produced, then file it as a ticket via `issue-create` Path C, targeting `${GITHUB_PERSONAL_USER}/memex` (`domain/learning` fits unless the session's actual work suggests a more specific domain), labeled `needs-local-session` (description: "Blocked in a cloud/vault-less session — needs a local session with the vault cloned to finish"). Create the label first if the repo doesn't have it yet: `gh label create needs-local-session --repo ${GITHUB_PERSONAL_USER}/memex --description "Blocked in a cloud/vault-less session — needs a local session with the vault cloned to finish" --color ededed` (ignore a "already exists" error). **Skip Path C's C5** (`Raw/_GitHub-Issues-log.jsonl` append) when running this fallback — it's an unguarded write into the same `Raw/` directory this section just confirmed is missing, unlike C4 and C6 which already tolerate that. C6 itself is safe to run as normal; `append-task-index.sh` no-ops cleanly when `Raw/` is absent.
+- Skip the local file write below entirely either way, and confirm the ticket's URL (or "nothing to record") in the close-out reply instead of a summary-file path.
 
 Produce a brief close-out summary using the template in [references/session-summary-template.md](references/session-summary-template.md). Save to `$MEMEX_ROOT/Outputs/Session/session-close-[date].md` if non-trivial.
 

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-14T23:59:17Z",
+  "generated_at": "2026-08-15T17:28:58Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
@@ -120,7 +120,7 @@
     "ai/claude/skills/repo-setup/SKILL.md": "3d3d54dce056cae0997f7667ac2a28f7",
     "ai/claude/skills/repo-setup/scripts/setup-account.sh": "d719c2e41565f341b6d0162d3ac40852",
     "ai/claude/skills/review-tooling-coverage-audit/SKILL.md": "c15414a75337ddea1de38a8b939a22d0",
-    "ai/claude/skills/session-close/SKILL.md": "e5b20bb2120c5fc7288b55ac05c1217d",
+    "ai/claude/skills/session-close/SKILL.md": "c427ed40f5319649b0c8bb1c23992d9c",
     "ai/claude/skills/session-close/references/concurrent-session-check.md": "c83f594a9de49b82b004a6542b9b9972",
     "ai/claude/skills/session-close/references/gh-auth-preflight.md": "ddc0b45001aaeca042653a6162969a17",
     "ai/claude/skills/session-close/references/merged-branch-push-safety.md": "db1fa478f9135447165a779790512750",
