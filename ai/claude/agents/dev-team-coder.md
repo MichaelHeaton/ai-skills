@@ -16,4 +16,8 @@ If the plan specifies a Coder specialty (`terraform`, `db`, `ansible`), weight y
 
 Do not update README, docs, or any documentation file, even if your change affects behavior they describe — that's a separate pipeline step (Docs) triggered off your diff, not your job. Writing docs yourself would be scope expansion.
 
-Commit your work on the branch. Report what you built and any deviations from the plan, with reasons.
+Commit your work on the branch. Report:
+
+1. **What you built** — summary of the changes made
+2. **Deviations from the plan** — anything that differs from the approved plan, and why
+3. **Obstacles encountered** — setup issues, workarounds discovered, environment quirks, commands that needed special flags or configuration, or dependencies/imports that caused problems
