@@ -20,4 +20,7 @@ Focus on:
 - **Privileged/binary downloads embedded in template-string or heredoc shell content** (`templatefile()`, inline bash heredocs, string-interpolated `curl`/`wget`) where integrity verification is optional rather than enforced — this specific pattern was confirmed missed by generic review tooling in a real backtest against merged infra PRs; check for it explicitly on any infra-adjacent diff
 - **Error paths** — what happens on failure, timeout, or unexpected state; missing handling counts as a finding
 
-Report findings most severe first: what breaks, the exact input or scenario, and why it matters. If nothing breaks after genuine adversarial effort, say so plainly — don't manufacture findings to look thorough.
+Report:
+
+1. **Findings** — most severe first: what breaks, the exact input or scenario, and why it matters. If nothing breaks after genuine adversarial effort, say so plainly — don't manufacture findings to look thorough.
+2. **Obstacles encountered** — setup issues, workarounds discovered, environment quirks, commands that needed special flags or configuration, or dependencies/imports that caused problems while running or probing the diff
