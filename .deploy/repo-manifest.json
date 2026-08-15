@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T17:28:58Z",
+  "generated_at": "2026-08-15T20:05:46Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
@@ -101,6 +101,8 @@
     "ai/claude/skills/issue-list/SKILL.md": "702bf7b42f81776dffc0658f300cc830",
     "ai/claude/skills/issue-triage/SKILL.md": "5ab46cd92067a99bdb1c86e739d0e5e7",
     "ai/claude/skills/issue-update/SKILL.md": "b4096403a2c549fd5644e9cbf680f767",
+    "ai/claude/skills/kb-entity-integrity-check/SKILL.md": "82f0a6104a994b4c8f5bfcd8c519973e",
+    "ai/claude/skills/kb-phased-migration-tracker/SKILL.md": "02f809c20871feedd3cd19a5b6213397",
     "ai/claude/skills/lean-context/SKILL.md": "c081ba1878a60aaf5fa5476e21588eb8",
     "ai/claude/skills/local-automation-setup/SKILL.md": "e6840dcc219cac4f62c525a7331327e4",
     "ai/claude/skills/log-clip/SKILL.md": "5f30120403eece47179c14f81cb585ab",
@@ -147,8 +149,6 @@
     "ai/claude/skills/ticket-write-verify/references/confluence-large-restructuring.md": "ec8aba9a57c82f8a695dcc2a8b03b2ad",
     "ai/claude/skills/ticket-write-verify/references/confluence-macros.md": "aae0c57e48ef29b486ef2043ec522093",
     "ai/claude/skills/update-config/SKILL.md": "5f158334d38e01bbd117cbfe114a9770",
-    "ai/claude/skills/vault-entity-integrity-check/SKILL.md": "6a87c50aafa7f1c818db8ab0c647f8d7",
-    "ai/claude/skills/vault-phased-migration-tracker/SKILL.md": "282e2320f68785314ea7750ef011b1f2",
     "ai/claude/skills/vault-support/SKILL.md": "091a1f3f9928dbd8f70db0930ecea4fd",
     "ai/claude/skills/vault-support/references/background-agent-template.md": "1e623defa6a48335114d160f1314296a",
     "ai/claude/skills/vault-support/references/confluence-push.md": "a22654e7608e7ac401c3ef66619b9892",

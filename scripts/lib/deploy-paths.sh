@@ -31,7 +31,7 @@ SYSTEM_MANIFEST="$REPO_DIR/.deploy/system-manifest.json"
 LAST_SYNC="$REPO_DIR/.deploy/last-sync.json"
 
 # Skills removed from repo — delete from ~/.claude/skills on install
-RETIRED_SKILLS=(uv-weekly pr-slack)
+RETIRED_SKILLS=(uv-weekly pr-slack vault-entity-integrity-check vault-phased-migration-tracker)
 
 # Cursor rules removed from repo — delete from ~/.cursor/rules on install
 RETIRED_CURSOR_RULES=()
