@@ -23,7 +23,7 @@ Migration from [claude-skills](https://github.com/MichaelHeaton/claude-skills) t
 - [x] `ai/claude/` — skills, hooks, memory, `CLAUDE.md` (import from claude-skills)
 - [x] `ai/cursor/rules/` — user rules → `~/.cursor/rules/` via `make install-system`
 - [x] `.deploy/repo-manifest.json` — `principles/` + `ai/claude/` + `ai/cursor/rules/`
-- [x] `.pre-commit-config.yaml`, `.markdownlint.json`, `.github/workflows/lint.yml` — markdown lint (MD060), YAML, SKILL.md secrets scan, Tier A version frontmatter; `make lint`, `make hooks-install`
+- [x] `.pre-commit-config.yaml`, `.markdownlint.json`, `.gitleaks.toml`, `.github/workflows/lint.yml` — markdown lint (MD060), YAML, repo-wide secrets scan (gitleaks), SKILL.md PII scan, Tier A version frontmatter; `make lint`, `make hooks-install`
 
 ## Planned (not yet in tree)
 
