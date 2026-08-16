@@ -28,5 +28,6 @@ print(
     "[git-ops] The git-ops skill hasn't been invoked yet this session — its "
     "AGENT.md freshness check and pre-PR humanizer pass haven't been "
     "confirmed for this run. Consider invoking the git-ops skill before "
-    "this commit/push/PR."
+    "this commit/push/PR.",
+    file=sys.stderr,
 )
