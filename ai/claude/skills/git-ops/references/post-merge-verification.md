@@ -1,11 +1,13 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-08-13
+last_updated: 2026-08-16
 updated_by: claude
 ---
 
 # Post-merge issue verification
+
+This is the post-merge backstop. `verify-closes.sh` also supports a `--pre-merge` mode, run automatically right after PR creation (see the non-negotiable callout near the top of `SKILL.md`) — it checks the same referenced issues against the PR's own `closingIssuesReferences` instead of issue state, catching a malformed multi-issue clause before merge instead of after.
 
 After merging a PR whose `## Refs` section claims to close one or more issues, verify each one actually closed — GitHub's auto-close is silent on failure, so a malformed keyword (comma-list, typo'd number, wrong repo) leaves an issue open with no error anywhere.
 
