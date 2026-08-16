@@ -1,7 +1,7 @@
 ---
-version: 1.19.1
+version: 1.20.0
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-08-16
 updated_by: claude
 name: git-ops
 description: Universal git hygiene guide — fires on the *first* git commit, push, PR, or MR operation in a session and every one after, not only retroactively at session-close. Covers branching rules, commit message format, PR/MR description format, and pre-commit checks scoped to modified files (including terraform fmt). Applies regardless of which other skills are active. Trigger on: any request to commit, push, open a PR or MR, "git commit", "create a PR", "push this", "open a pull request", "submit a MR", "ready to merge", or any variation of committing or sharing code changes.
@@ -200,7 +200,7 @@ A worktree checkout is exempt (its branch is pinned) — this only fires against
 
 ## Live concurrent-session detection
 
-Distinct from the "Shared checkout branch-identity check" above, which only catches a branch swap _after_ it's already happened. Before committing, check whether a second Claude Code session is actively writing to this same repo right now — via `ps aux` for another process with `--add-dir` on this repo, plus a file-mtime check against this session's own start time. Full detection commands and the "don't touch the other session's in-progress edit; move to a fresh branch off updated main once it's done" recovery: [references/live-concurrent-session.md](references/live-concurrent-session.md).
+Distinct from the "Shared checkout branch-identity check" above, which only catches a branch swap _after_ it's already happened. Before committing, check whether a second Claude Code session is actively writing to this same repo right now — via `ps aux` for another process with `--add-dir` on this repo, plus a file-mtime check against this session's own start time. Full detection commands and the "don't touch the other session's in-progress edit; move to a fresh branch off updated main once it's done" recovery: [references/live-concurrent-session.md](references/live-concurrent-session.md). The same reference also covers a signal-triggered nudge that fires earlier than any of the above — before the first Edit/Write in a repo already showing recent-activity or branch-churn signals, not just before committing.
 
 ---
 
