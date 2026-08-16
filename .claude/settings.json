@@ -41,6 +41,7 @@
       "Bash(gh issue view *)",
       "Bash(gh issue list *)",
       "Bash(git -C * diff*)",
+      "Bash(git -C * status*)",
       "Bash(git merge-base *)",
       "mcp__github__issue_read",
       "mcp__github__search_issues",
