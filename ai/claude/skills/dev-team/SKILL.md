@@ -1,10 +1,10 @@
 ---
-version: 1.5.0
+version: 1.6.0
 principles_version: 1.0.0
-last_updated: 2026-08-13
+last_updated: 2026-08-16
 updated_by: claude
 name: dev-team
-description: Run a ticket through a lightweight multi-agent build pipeline — Architect plans and asks clarifying questions, Coder implements, Tester adversarially checks the diff, Docs updates stale documentation, and a conditional Manager gates on risk. Use when working a ticket end-to-end and you want plan approval before code gets written, or when you say "run this through dev-team", "spin up the dev team on this ticket", "architect this ticket", or "build this with the team". Complements decision-council (which resolves opinions/tradeoffs, not builds) and reuses model-route for per-role model selection. Do NOT use for a quick one-line fix — the Architect step exists to catch ambiguity on real work, not to gate trivial changes.
+description: Run a ticket through a lightweight multi-agent build pipeline — Architect plans and asks clarifying questions, Coder implements, Tester adversarially checks the diff, Docs updates stale documentation, and a conditional Manager gates on risk. Use when working a ticket end-to-end and you want plan approval before code gets written, or when you say "run this through dev-team", "spin up the dev team on this ticket", "architect this ticket", "build this with the team" — or open with plain ticket-start phrasing like "start #NNN", "let's work #NNN", "pick up #NNN", or "work on #NNN". Offer or invoke on that phrasing instead of defaulting to in-session coding — triggering only surfaces the Architect plan; Coder never runs until you approve it. Complements decision-council (which resolves opinions/tradeoffs, not builds) and reuses model-route for per-role model selection. Do NOT use for a quick one-line fix — the Architect step exists to catch ambiguity on real work, not to gate trivial changes.
 compatibility: Requires ai/claude/agents/dev-team-coder.md, dev-team-tester.md, dev-team-manager.md, dev-team-docs.md (deployed via `make install-system`)
 ---
 
@@ -70,6 +70,8 @@ Spawn `dev-team-tester` with the diff Coder produced **and the ticket's stated a
 
 **Same hard cap as Step 2**: after two resumes without a complete verdict, stop resuming and flag it as a Tester defect to the user instead of treating it as an indefinite Architect-side verification loop.
 
+**No automatic Reviewer step.** This pipeline has no `dev-team-reviewer` role, and code review does not auto-run after Tester clears. Tester and the `reviewer` subagent (`ai/claude/agents/reviewer.md`) answer different questions and are separate invocation decisions: Tester is adversarial diff testing scoped to what Coder just shipped — does it break, does it hide an unverified privileged download — and reports findings without judging the PR as a whole. Reviewer is broader hygiene against repo conventions, security, and correctness across the full diff. If you want that broader pass, spawn `reviewer` yourself once Tester clears; it never runs automatically.
+
 ## Step 4 — Docs (background subagent, deterministic trigger only)
 
 **Coder never writes or updates documentation.** Its file list from Step 1 is implementation files only — that's enforced by `dev-team-coder.md` explicitly refusing doc edits. Detecting that docs are now stale, and writing the update, is entirely Docs' job. This step exists to make that detection concrete instead of assuming it happens by default.
@@ -89,7 +91,7 @@ Docs runs the `humanizer` skill on any doc text it drafts so documentation stays
 
 Spawn `dev-team-manager` only if either is true:
 
-- Tester flagged anything
+- **Tester flagged anything at any point during its review** — including a round-1 flag that got fixed and re-verified as SHIP before Tester's final report. A resolved flag still means real risk surfaced during this ticket, and Manager's process-verification job (below) is about whether the right tooling ran on that risk, not just about the final verdict text. Reading the final report alone and skipping Manager because it says SHIP is the wrong call.
 - The diff crosses a size/risk threshold (touches `auth/`, `payments/`, IAM, or is large relative to the ticket's scope)
 
 Otherwise skip Manager and go straight to your summary — most tickets don't need a fourth agent.
@@ -103,7 +105,7 @@ Manager does two things, not one:
 
 If Manager escalates, it reports back to you and to the Architect step (this session) — not a silent loop. **Hard cap**: after 2 rounds of flag → replan → recode, stop and escalate to the user regardless of Manager's verdict.
 
-**Rework fallback — `dev-team-coder`'s isolation mode always creates a fresh worktree; there is no parameter to target an existing one.** When Manager returns rework and the fix needs to land in the *same* worktree Coder already committed to in round 1 (e.g. fixing a collision Tester flagged in a shared module), do not re-spawn Coder — its `EnterWorktree`/`ExitWorktree` calls will create a second, unrelated worktree rather than reusing the first. Instead, apply the fix directly in the Architect session (this session), inside the existing worktree path, then re-run Tester against the updated diff. If a future Coder isolation mode adds support for targeting an existing worktree, prefer that over this fallback.
+**Rework fallback — `dev-team-coder`'s isolation mode always creates a fresh worktree; there is no parameter to target an existing one.** This applies whenever a rework round needs to land in the *same* worktree Coder already committed to in round 1, regardless of which role triggered the rework — a Manager rework verdict, or a Tester-only REWORK round that gets fixed and re-verified before Manager ever spawns (e.g. fixing a collision Tester flagged in a shared module). In either case, do not re-spawn Coder — its `EnterWorktree`/`ExitWorktree` calls will create a second, unrelated worktree rather than reusing the first. Instead, apply the fix directly in the Architect session (this session), inside the existing worktree path, then re-run Tester against the updated diff. If a future Coder isolation mode adds support for targeting an existing worktree, prefer that over this fallback.
 
 ## Step 6 — Hand off to git-ops for the PR
 
