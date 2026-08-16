@@ -1,7 +1,7 @@
 ---
-version: 1.19.1
+version: 1.20.0
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-08-16
 updated_by: claude
 name: git-ops
 description: Universal git hygiene guide — fires on the *first* git commit, push, PR, or MR operation in a session and every one after, not only retroactively at session-close. Covers branching rules, commit message format, PR/MR description format, and pre-commit checks scoped to modified files (including terraform fmt). Applies regardless of which other skills are active. Trigger on: any request to commit, push, open a PR or MR, "git commit", "create a PR", "push this", "open a pull request", "submit a MR", "ready to merge", or any variation of committing or sharing code changes.
@@ -15,6 +15,14 @@ Apply these rules for every git operation, in every repo. They complement repo-s
 > 2. **humanizer pass** on the PR Summary/Test plan — see "PR / MR descriptions" below
 >
 > Both are cheap (seconds) and both have been skipped in practice when the skill was recalled rather than re-invoked. If you're not certain these already ran this session, re-invoke the `Skill` tool on `git-ops` rather than proceeding from memory.
+
+> **Non-negotiable immediately after `gh pr create` / `create_pull_request`, whenever the body's Closes/Fixes/Resolves clause references more than one issue**:
+>
+> ```bash
+> bash ~/.claude/skills/git-ops/scripts/verify-closes.sh --pre-merge <pr-number> [owner/repo]
+> ```
+>
+> A `NOT-LINKED:<N>` line means GitHub didn't parse that reference — the exact silent failure the "Closing multiple issues from one PR" rule below exists to prevent, but caught before merge instead of after. Rewrite the clause to repeat the keyword once per issue, update the PR body, and re-run the check clean before treating the PR as ready. This runs in addition to, not instead of, the post-merge check in "Post-merge issue verification" below — that one confirms the issues actually closed; this one confirms GitHub recognized the references in the first place.
 
 **If you already read this file fresh earlier in this session** (a formal `Skill` tool invocation, or having directly read/edited it), apply these rules directly rather than re-reading or reprinting the full body again for a second commit/PR in the same session — the freshness requirement above is about the content being current in context, not about the specific mechanism that put it there.
 
@@ -145,6 +153,7 @@ Do not skip this check. It is lightweight (pure git diff + file stat) and runs i
   ```
 
   or inline per GitHub's documented multi-issue syntax: `Closes #141, closes #134, closes #157`. Same rule applies across repos — `Closes owner/repo#NN` for each cross-repo reference.
+- **Verify the branch reached the remote before calling `gh pr create` / `glab mr create`**: `git rev-parse --verify -q origin/<branch> >/dev/null || git push -u origin <branch>`. A worktree branch committed by a subagent (e.g. `dev-team-coder`'s isolated worktree) often exists only in that worktree and was never pushed — `gh pr create` on an unpushed branch fails with a confusing GraphQL error (`Head sha can't be blank, Base sha can't be blank, No commits between main and , Head ref must be a branch`). Push first, then create the PR.
 - **Before running `gh pr create` / `glab mr create`**, invoke the `humanizer` skill _(global: ai-skills)_ on the composed Summary and Test plan bullets — same "check before creation" pattern as the AGENT.md step above. Strips AI-writing tells while every fact, ticket ref, and checklist item survives unchanged.
 - Always `cd` into the repo before running `gh pr create` — the `--repo` flag handles routing but `gh` still needs local git context to resolve the remote
 - **Always pass `--repo owner/repo --head branch-name`** on `gh pr create` for any org repo — don't wait for a failure first. This isn't just an SSH-alias workaround: an org repo's ambient git context is more likely to disagree with the target repo than a personal one. (SSH alias remotes are one concrete trigger — if `origin` uses an SSH config alias, e.g. `git@github.com-personal:owner/repo`, `gh pr create` can fail with "must first push branch" even when the branch is already pushed — but the flags are the default regardless of remote type.) Full rule: [references/multi-account-operations.md](references/multi-account-operations.md).
@@ -179,7 +188,9 @@ bash ~/.claude/skills/git-ops/scripts/check-branch-identity.sh <repo-path> <expe
 - **`WORKTREE:<actual>`** — this checkout is an isolated worktree; a branch swap in a _different_ checkout of the same repo can't collide with it here. Proceed.
 - **`MISMATCH:<actual>`** — the active branch changed unexpectedly in a shared checkout. **Stop before committing.** Confirm which branch is actually correct before proceeding — do not commit onto whatever happens to be checked out.
 
-**Mechanical enforcement, not just a manual check**: the script above is advisory — it only catches a collision if you remember to run it. `hooks/branch-guard.py` (`PreToolUse`, matcher `Bash`) enforces the same rule automatically, blocking the `git commit` call itself (non-zero exit) on a mismatch, paired with `hooks/branch-guard-track.py` (`PostToolUse`, matcher `Bash`) which updates the recorded expectation whenever this session explicitly runs `git checkout`/`git switch`. Not wired into any tracked `settings.json` by default — add both via the `update-config` skill:
+**Mechanical enforcement, not just a manual check**: the script above is advisory — it only catches a collision if you remember to run it. `hooks/branch-guard.py` (`PreToolUse`, matcher `Bash`) enforces the same rule automatically, blocking the `git commit` call itself (non-zero exit) on a mismatch, paired with `hooks/branch-guard-track.py` (`PostToolUse`, matcher `Bash`) which updates the recorded expectation whenever this session explicitly runs `git checkout`/`git switch`.
+
+**Installed by default in this repo (`ai-skills`)**: both hooks are wired into this repo's tracked `.claude/settings.json`, so any session working inside `ai-skills` gets the enforcement automatically — no opt-in step required. A PR here can't reach a user's live global `~/.claude/settings.json` (it's outside the repo and on Claude's own `Edit` deny-list — see `hooks/inline-bash-hooks.md`) or any *other* repo's checkout, so that's the actual boundary of what's enforced by default: this repo's own checkouts, not every repo everywhere. For any other repo where this collision risk matters, add the same block via the `update-config` skill, routed to that repo's own `.claude/settings.json` (or to global if it should apply everywhere you work):
 
 ```json
 {
@@ -238,7 +249,7 @@ Before committing a change to a file that's shared and frequently touched across
 
 ## Post-merge issue verification
 
-After merging a PR whose `## Refs` section claims to close one or more issues, verify each one actually closed — GitHub's auto-close is silent on failure, so a malformed keyword (comma-list, typo'd number, wrong repo) leaves an issue open with no error anywhere.
+See also the mandatory pre-merge check in the callout near the top of this file — it catches a malformed multi-issue `Closes` clause right after PR creation, before merge. This section is the backstop: after merging a PR whose `## Refs` section claims to close one or more issues, verify each one actually closed — GitHub's auto-close is silent on failure, so a malformed keyword (comma-list, typo'd number, wrong repo) leaves an issue open with no error anywhere.
 
 ```bash
 bash ~/.claude/skills/git-ops/scripts/verify-closes.sh <pr-number> [owner/repo]
@@ -304,14 +315,18 @@ When committing, pushing, or creating PRs across more than one repo in the same 
 
 ---
 
-## Optional: automated reminder hook
+## Automated reminder hook (installed by default in this repo)
 
 The rule "invoke git-ops on the first git commit/push/PR and every one after" (frontmatter, above) is easy to follow correctly from habit while never actually re-invoking the `Skill` tool — meaning its own freshness gate (AGENT.md check, humanizer pass) was never confirmed satisfied that session, even though the underlying git commands were run correctly by memory. Two companion hooks close this gap without blocking anything:
 
 - `hooks/git-ops-track.py` (`PostToolUse`, matcher `Skill`) — records that git-ops fired, once per session
 - `hooks/git-ops-reminder.py` (`PreToolUse`, matcher `Bash`) — prints a one-line nudge before a `git commit` / `git push` / `gh pr create` / `glab mr create` if git-ops hasn't fired yet this session
 
-Both are advisory only (always exit 0) and never block a command. They aren't wired into any tracked `settings.json` by default — this repo has no mechanism to write to a user's live `~/.claude/settings.json` on their behalf, so making them default-on isn't something a PR here can actually deliver. **This gap has recurred more than once** even with the hooks available (see ai-skills#330, #347) — if it's bitten you before, the fix is cheap: add them via the `update-config` skill now rather than waiting for a third recurrence.
+Both are advisory only (always exit 0, confirmed by reading both scripts) and never block a command.
+
+**Installed by default in this repo (`ai-skills`)**: both hooks are wired into this repo's tracked `.claude/settings.json`, so any session working inside `ai-skills` gets the reminder automatically. **This gap had recurred more than once even with the hooks available and documented** (see ai-skills#330, #347) — the repeat cause was that "documented, opt-in" isn't the same as "on," so this repo now wires them by default rather than leaving that step to be remembered.
+
+That default-on scope is limited to this repo's own checkouts — a PR here can't write to a user's live global `~/.claude/settings.json` (outside the repo, on Claude's own `Edit` deny-list — see `hooks/inline-bash-hooks.md`) or to any other repo's tracked settings. For any other repo where this reminder is wanted, add the same block via the `update-config` skill, routed to that repo's `.claude/settings.json` (or global, if it should apply everywhere):
 
 ```json
 {

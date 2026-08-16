@@ -48,5 +48,30 @@
       "mcp__github__pull_request_read",
       "mcp__github__list_issues"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "python3 ~/.claude/hooks/branch-guard.py" },
+          { "type": "command", "command": "python3 ~/.claude/hooks/git-ops-reminder.py" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          { "type": "command", "command": "python3 ~/.claude/hooks/git-ops-track.py" }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "python3 ~/.claude/hooks/branch-guard-track.py" }
+        ]
+      }
+    ]
   }
 }
