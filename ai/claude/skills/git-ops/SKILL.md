@@ -15,7 +15,7 @@ Apply these rules for every git operation, in every repo. They complement repo-s
 > 2. **humanizer pass** on the PR Summary/Test plan — see "PR / MR descriptions" below
 >
 > Both are cheap (seconds) and both have been skipped in practice when the skill was recalled rather than re-invoked. If you're not certain these already ran this session, re-invoke the `Skill` tool on `git-ops` rather than proceeding from memory.
-
+>
 > **Non-negotiable immediately after `gh pr create` / `create_pull_request`, whenever the body's Closes/Fixes/Resolves clause references more than one issue**:
 >
 > ```bash
@@ -190,7 +190,7 @@ bash ~/.claude/skills/git-ops/scripts/check-branch-identity.sh <repo-path> <expe
 
 **Mechanical enforcement, not just a manual check**: the script above is advisory — it only catches a collision if you remember to run it. `hooks/branch-guard.py` (`PreToolUse`, matcher `Bash`) enforces the same rule automatically, blocking the `git commit` call itself (non-zero exit) on a mismatch, paired with `hooks/branch-guard-track.py` (`PostToolUse`, matcher `Bash`) which updates the recorded expectation whenever this session explicitly runs `git checkout`/`git switch`.
 
-**Installed by default in this repo (`ai-skills`)**: both hooks are wired into this repo's tracked `.claude/settings.json`, so any session working inside `ai-skills` gets the enforcement automatically — no opt-in step required. A PR here can't reach a user's live global `~/.claude/settings.json` (it's outside the repo and on Claude's own `Edit` deny-list — see `hooks/inline-bash-hooks.md`) or any *other* repo's checkout, so that's the actual boundary of what's enforced by default: this repo's own checkouts, not every repo everywhere. For any other repo where this collision risk matters, add the same block via the `update-config` skill, routed to that repo's own `.claude/settings.json` (or to global if it should apply everywhere you work):
+**Installed by default in this repo (`ai-skills`)**: both hooks are wired into this repo's tracked `.claude/settings.json`, so any session working inside `ai-skills` gets the enforcement automatically — no opt-in step required. A PR here can't reach a user's live global `~/.claude/settings.json` (it's outside the repo and on Claude's own `Edit` deny-list — see `hooks/inline-bash-hooks.md`) or any _other_ repo's checkout, so that's the actual boundary of what's enforced by default: this repo's own checkouts, not every repo everywhere. For any other repo where this collision risk matters, add the same block via the `update-config` skill, routed to that repo's own `.claude/settings.json` (or to global if it should apply everywhere you work):
 
 ```json
 {
