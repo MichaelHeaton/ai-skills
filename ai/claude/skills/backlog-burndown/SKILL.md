@@ -1,7 +1,7 @@
 ---
-version: 1.0.1
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-08-16
 updated_by: claude
 name: backlog-burndown
 description: Orchestrated ticket-cleanup pass over a project's open backlog — pulls tickets, groups them by size/risk, makes sure each one has a real Test Plan before touching code, routes implementation through dev-team or a direct edit depending on size, validates every diff against its Test Plan before closing, and reports a per-ticket summary. Use for a batch backlog cleanup session, "burn down the backlog", "close out these tickets", "process the open ticket queue", or an unattended/scheduled cleanup pass. Complements issue-triage (splits an oversized ticket, doesn't implement anything) and dev-team (builds one ticket end-to-end, doesn't orchestrate a batch or gate on Test Plans).
@@ -11,6 +11,8 @@ compatibility: Requires gh CLI, glab CLI, or Jira MCP depending on target system
 # Backlog Burndown
 
 This is the orchestration layer, not a new implementation or closing mechanism — every step below delegates to a skill that already owns that piece, so a burndown pass can't drift from the guarantees each one already provides (dev-team's adversarial Tester pass, ticket-close-sequence's validate-before-transition gate).
+
+**Known limitation for scheduled/unattended runs**: if this skill is invoked via a fresh-session Routine (`create_trigger` with `create_new_session_on_fire: true`), the spawned session currently has no way to attach push access to the target repo — see `local-automation-setup`'s "Known limitation: fresh-session Routines can't attach repo access" section _(global: ai-skills)_, tracked in [ai-skills#379](https://github.com/MichaelHeaton/ai-skills/issues/379). Until that's resolved, run scheduled burndown passes interactively in a session that already has repo access, or bind the Routine to an already-attached persistent session (trading away completion notifications, per that same section) — don't rely on a bare fresh-session weekly trigger to actually close anything.
 
 ## 1. Pull and group tickets
 

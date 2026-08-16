@@ -1,7 +1,7 @@
 ---
-version: 1.2.0
+version: 1.3.0
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-08-16
 updated_by: claude
 name: ticket-write-verify
 description: Pre-check and auto-fix ticket-system writes (Jira, Confluence, GitHub) against known markdown/wiki-conversion corruption — underscore-escaping, bracket-tag stripping, dropped bold markers, stripped `+` characters, and structural drift on large edits. Wraps fragile identifiers before submit, then re-fetches and diffs after every create/comment/edit, auto-retrying with a correcting edit when corruption is found. Use for ad hoc Jira/Confluence writes outside issue-create/issue-update flows, correcting a batch of corrupted tickets, restructuring a Confluence page, building Confluence macros or internal links, or when asked "fix the mangled ticket text", "why did my underscores get escaped", "the brackets got stripped", "verify this ticket rendered correctly", or "why is this internal link broken". Also fires autonomously before any direct `confluence_update_page`/`jira_update_issue`/`jira_add_comment` call outside issue-create/issue-update's own flows.
@@ -64,3 +64,29 @@ Summarize what was checked and what needed fixing:
 ✓ 3 comments verified clean
 ✗ 2 corrected — PROJ-123 (bracket-tag stripping), PROJ-124 (underscore-escaping)
 ```
+
+---
+
+## Optional: automated reminder hook
+
+This skill is designed to fire autonomously before any direct `jira_add_comment`/`jira_update_issue`/`confluence_update_page` call made outside `issue-create`/`issue-update`'s own flows — but that's easy to miss from habit, matching this skill's trigger description closely without the `Skill` tool ever actually being invoked. A real session made several such direct calls with no corruption found on manual re-check, but the dedicated skill was never reached for. Two companion hooks close this gap without blocking anything, mirroring `git-ops`'s own `git-ops-track.py`/`git-ops-reminder.py` pattern:
+
+- `hooks/ticket-write-verify-track.py` (`PostToolUse`, matcher `Skill`) — records that `ticket-write-verify`, `issue-create`, or `issue-update` fired this session (all three cover the same corruption check, so any one of them satisfies it)
+- `hooks/ticket-write-verify-reminder.py` (`PreToolUse`, matcher on tool name) — prints a one-line nudge before a direct `jira_add_comment` / `jira_update_issue` / `confluence_update_page` call if none of those three skills has fired yet this session
+
+Both are advisory only (always exit 0) and never block a call. They aren't wired into any tracked `settings.json` by default — this repo has no mechanism to write to a user's live `~/.claude/settings.json` on their behalf, so making them default-on isn't something a PR here can actually deliver. If direct ticket writes have slipped past this skill before, the fix is cheap: add them via the `update-config` skill now rather than waiting for a corruption incident.
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      { "matcher": "Skill", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/ticket-write-verify-track.py" }] }
+    ],
+    "PreToolUse": [
+      { "matcher": "mcp__.*(jira_add_comment|jira_update_issue|confluence_update_page)", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/ticket-write-verify-reminder.py" }] }
+    ]
+  }
+}
+```
+
+The `PreToolUse` matcher is a regex over the tool name, matched loosely (`mcp__.*(...)`) since the MCP server prefix (e.g. `mcp__atlassian__jira_add_comment`) varies by how the Atlassian MCP server is configured. The hook script itself re-checks the tool name against the same three method names before printing anything, so an unexpected matcher match on an unrelated tool is a no-op rather than a false nudge.

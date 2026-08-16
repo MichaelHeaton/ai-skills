@@ -16,3 +16,6 @@ config/local.yaml
 .DS_Store
 __pycache__/
 *.pyc
+
+# Claude Code agent worktrees — local, per-session scratch checkouts
+.claude/worktrees/

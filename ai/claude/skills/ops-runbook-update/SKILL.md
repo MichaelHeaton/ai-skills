@@ -1,10 +1,10 @@
 ---
-version: 1.0.0
+version: 1.0.1
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-08-16
 updated_by: claude
 name: ops-runbook-update
-description: Given a triggering ops event (a disk wearing out, a migration, a network change), find the relevant runbook, update it with what actually happened, cross-link the tracking issue, and bump its date — keeping runbooks and tickets in sync instead of letting the runbook drift stale after the ticket closes. Use right after resolving an infra event that has (or should have) a runbook, or when asked "update the runbook for this", "does this event need a runbook change", or "sync the runbook with what we just did".
+description: Given a triggering ops event (a disk wearing out, a migration, a network change, resolving a live incident), find the relevant runbook, update it with what actually happened, cross-link the tracking issue, and bump its date — keeping runbooks and tickets in sync instead of letting the runbook drift stale after the ticket closes. Use right after resolving an infra event that has (or should have) a runbook — this includes the moment just before hand-editing an existing runbook file directly (adding a section, correcting a step) post-incident; that edit is this skill's job, not a plain file edit to make on generic judgment alone. Also use when asked "update the runbook for this", "does this event need a runbook change", or "sync the runbook with what we just did". Trigger on this even deep inside a long session that already covered a lot of unrelated ground before the incident — don't rely on the moment standing out organically.
 compatibility: Requires access to the repo/wiki where runbooks live.
 ---
 
@@ -15,6 +15,8 @@ Runbooks decay silently — an event happens, gets fixed, the ticket closes, and
 ## 1. Find the relevant runbook
 
 Search for a runbook matching the event's category (by resource type, by procedure name) — don't assume none exists just because the event felt novel; check first. If genuinely none exists, that's a signal this event is worth turning into a first runbook, not a reason to skip documentation.
+
+Treat any direct hand-edit to a runbook file, made right after resolving an infra event, as this skill's own job — even when it looks like "just a quick edit" to make with generic judgment. Run an explicit self-check before editing: "Did an infra event just get resolved, and am I about to touch a runbook?" If yes, this skill applies now — don't rely on it standing out organically in a long session.
 
 ## 2. Determine what changed
 
