@@ -1,10 +1,10 @@
 ---
-version: 1.0.0
+version: 1.0.1
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-08-16
 updated_by: claude
 name: infra-rehearsal-session
-description: "Structured, checkpointed investigation for hands-on infra rebuild/migration rehearsal — multi-day troubleshooting diagnosing failures against live CLI/Terraform/log output, testing hypotheses before committing to a fix. Keeps a running plan doc in sync as decisions are made, gates live-system changes behind the IaC path (git → PR → Terraform) with query/describe/lookup always allowed, and hands validated findings to dev-team once the fix is confirmed. Use when starting a multi-day infra rehearsal/migration session, troubleshooting live infra via hypotheses (e.g. 'transit gateway or VPC peering issue?'), pasting Terraform/CLI/log output for diagnosis, or saying 'rehearse this migration', 'infra rehearsal session', 'troubleshoot this cluster rebuild'. Complements dev-team (builds once there's a validated fix), iac-triage (reviews a plan/diff, not an open session), decision-council (one decision, not an ongoing investigation)."
+description: "Structured, checkpointed investigation for hands-on infra troubleshooting — covers both multi-day infra rebuild/migration rehearsals and a single long session working a live incident end-to-end, diagnosing failures against live CLI/Terraform/log output and testing hypotheses before committing to a fix (e.g. 'transit gateway or VPC peering issue?'). Keeps a running plan doc in sync, gates live-system changes behind the IaC path (git → PR → Terraform) with query/describe/lookup always allowed, and hands validated findings to dev-team once confirmed. Use when starting a multi-day infra rehearsal/migration session, when working a live incident hypothesis-by-hypothesis in one sitting (a chain of related failures, each needing its own tested theory before a fix), pasting Terraform/CLI/log output for diagnosis, or saying 'rehearse this migration', 'infra rehearsal session', 'troubleshoot this cluster rebuild'. Complements dev-team, iac-triage, incident-capture (post-mortem after resolution), decision-council."
 ---
 
 # Infra Rehearsal Session
