@@ -1,11 +1,11 @@
 ---
-version: 2.0.0
+version: 2.1.0
 principles_version: 1.0.0
-last_updated: 2026-08-15
+last_updated: 2026-08-16
 updated_by: claude
 name: issue-create
 description: Create a new task, issue, or story in the right system — GitHub Issues (Memex) or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", "this should be its own ticket", "separate ticket for X", "let's decompose", "track this for later", or similar. Also fires autonomously — always use this skill when Claude itself decides to create any issue (during triage, research, session-close, or any workflow), when creating multiple issues in a batch, or whenever about to call gh issue create or glab issue create directly, or whenever about to call a ticketing MCP tool directly such as jira_create_issue (Jira). Work org remotes → Jira Story; everything else → GitHub Issue (current repo, or Memex when no repo context).
-compatibility: GitHub paths (B/C) prefer gh CLI; fall back to mcp__github__* MCP tools when gh is unavailable — see references/gh-mcp-fallback.md. Jira path (A) requires Atlassian MCP. Memex path (C) writes to a local vault clone when present, skips gracefully with a warning when not.
+compatibility: GitHub paths (B/C) prefer gh CLI; fall back to mcp__github__* MCP tools when gh is unavailable — see references/gh-mcp-fallback.md. Jira path (A) requires Atlassian MCP; if it's unreachable rather than merely absent, see references/atlassian-mcp-fallback.md. Memex path (C) writes to a local vault clone when present, skips gracefully with a warning when not.
 ---
 
 Create a new task in the right system based on where you're working. See `references/routing.md` for routing rules. Once created, the description is frozen — all updates go in comments (see description edit policy in `issue-update`).
@@ -68,6 +68,8 @@ The output tells you which path to follow:
 ## Path A — Jira (work)
 
 Read `jira.*` from `~/.config/ai-skills/local.json` before creating issues.
+
+**Atlassian MCP unreachable?** This path has no CLI fallback the way GitHub paths fall back from `gh` to `mcp__github__*` — a connection/auth/timeout failure on `jira_get_project_components` or `jira_create_issue` (as opposed to a normal Jira API error) means the ticket was not created. Don't proceed as if it was. See [references/atlassian-mcp-fallback.md](references/atlassian-mcp-fallback.md) for the surface-and-choose sequence: defer, or fall back to a GitHub Issue as a placeholder.
 
 ### A1. Gather information
 
@@ -328,3 +330,31 @@ bash "$SKILL_DIR/scripts/append-task-index.sh" \
 1. Verify all IDs appear in the index before confirming to the user.
 
 Even when the full per-issue skill flow is skipped for parallelism, the task index step is never optional. A missing entry means the issue won't surface in session-close or open-ticket reviews.
+
+---
+
+## Optional: automated reminder hooks
+
+"Always route through this skill" (frontmatter, above) is easy to follow for the first ticket of a session and drift away from later — the exact gap this section's own risk callout describes: one ticket created correctly through the skill, later near-identical tickets created via a direct `jira_create_issue`/`save_issue`/`gh issue create`/`glab issue create` call instead, with the dedupe-search and task-index steps either skipped or manually replicated. Two companion hooks close this gap without blocking anything, mirroring `git-ops`'s own `git-ops-track.py`/`git-ops-reminder.py` pattern:
+
+- `hooks/issue-create-track.py` (`PostToolUse`, matcher `Skill`) — records that issue-create fired, once per session
+- `hooks/issue-create-reminder.py` (`PreToolUse`) — prints a one-line nudge before a direct `gh issue create` / `glab issue create` Bash command, or a direct `jira_create_issue` / `save_issue` MCP tool call, if issue-create hasn't fired yet this session
+
+Both are advisory only (always exit 0) and never block a command. They aren't wired into any tracked `settings.json` by default — this repo has no mechanism to write to a user's live `~/.claude/settings.json` on their behalf, so making them default-on isn't something a PR here can actually deliver. If this gap has bitten you before, the fix is cheap: add them via the `update-config` skill now rather than waiting for a repeat.
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      { "matcher": "Skill", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/issue-create-track.py" }] }
+    ],
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/issue-create-reminder.py" }] },
+      { "matcher": "mcp__.*jira_create_issue", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/issue-create-reminder.py" }] },
+      { "matcher": "mcp__.*save_issue", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/issue-create-reminder.py" }] }
+    ]
+  }
+}
+```
+
+**Why three `PreToolUse` matchers, not one:** `gh issue create`/`glab issue create` arrive as `Bash` commands, so the hook reads `tool_input.command`. `jira_create_issue`/`save_issue` arrive as direct MCP tool calls with no shell command to inspect — the hook instead matches on the tool name itself, which the `Bash` matcher can't see. The exact MCP server prefix (`mcp__atlassian__...`, `mcp__linear__...`, etc.) varies by environment, so the matcher regex anchors on the method name suffix rather than a hardcoded prefix.
