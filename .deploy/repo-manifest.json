@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T22:44:30Z",
+  "generated_at": "2026-08-16T03:57:33Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
@@ -16,6 +16,8 @@
     "ai/claude/hooks/memory-snapshot.py": "28f38eac2ea32cfc2315a1bdea779949",
     "ai/claude/hooks/pre-commit": "212c30f37d74a080d576d6161b01077b",
     "ai/claude/hooks/skill-review-reminder.py": "587069f84cb54983612a9fb82c63e9cf",
+    "ai/claude/hooks/ticket-write-verify-reminder.py": "7b4416cbb95228764f4c23bf302e0fc9",
+    "ai/claude/hooks/ticket-write-verify-track.py": "16e6a517d1daf95cce1917f7da629d84",
     "ai/claude/memory/MEMORY.md": "e7d251d3380f509c1df4b9359a03e052",
     "ai/claude/memory/feedback_commits.md": "6d582c7b460bb64db60546aa911d52f0",
     "ai/claude/memory/feedback_reload.md": "f18761901eeba70e40bb2a1d4ff0df37",
@@ -147,7 +149,7 @@
     "ai/claude/skills/subagent-completion-verify/SKILL.md": "516cc79dba4b45595a7bbd24f277ce7d",
     "ai/claude/skills/temp-bypass-tracker/SKILL.md": "41c06e143e671fb9e9fb8e9bf12d8b55",
     "ai/claude/skills/ticket-close-sequence/SKILL.md": "ce8b18e39f281003862108dd64233d15",
-    "ai/claude/skills/ticket-write-verify/SKILL.md": "7affd0c9789ab2bdd623577067cefa37",
+    "ai/claude/skills/ticket-write-verify/SKILL.md": "ce8ccb8f02eb27943bc9ef51b8a50d56",
     "ai/claude/skills/ticket-write-verify/references/confluence-large-restructuring.md": "ec8aba9a57c82f8a695dcc2a8b03b2ad",
     "ai/claude/skills/ticket-write-verify/references/confluence-macros.md": "aae0c57e48ef29b486ef2043ec522093",
     "ai/claude/skills/update-config/SKILL.md": "5f158334d38e01bbd117cbfe114a9770",
