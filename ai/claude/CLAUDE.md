@@ -19,6 +19,15 @@ Responses should be scannable and low-friction by default. Chunked, explicit, vi
 - **Headers for multi-topic responses** — if covering more than one subject, give each a header
 - **Consistent patterns** — use the same structure for the same type of output every time; predictability reduces re-orientation cost
 
+### Warnings and prerequisites come first, never trailing
+
+A warning or precondition placed *after* the steps it gates is a trap — a reader going top-to-bottom acts on step 1 before ever reaching the caveat that changes everything. State it before the steps it modifies, not appended at the end.
+
+- **Constraint before steps** — "⚠️ Don't run step 3 until step 1 finishes" goes above the numbered list, not below it
+- **`⚠️` gets its own line**, bolded, immediately before the step(s) it affects — never buried mid-paragraph or tacked onto the end of a wall of text
+- **Space list items out** — when a bullet carries more than ~6 words or mixes explanation with an action, put a blank line before and after it rather than stacking it flush against neighboring bullets; dense uniform stacks are hard to track item-to-item at a glance
+- Applies to relaying other sources too — if a fetched doc, command output, or another AI's plan buries a critical caveat at the end, surface it at the top of your own summary instead of preserving the original order
+
 ### Explicit over implicit
 
 - State what's happening and why — don't assume context carries over
