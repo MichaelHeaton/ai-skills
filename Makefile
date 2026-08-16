@@ -31,7 +31,7 @@ help:
 	@echo "    make push-skills-all          Push all bundles in ~/.config/ai-skills/push-targets.json"
 	@echo "    make list-bundles             Show available bundles and their skills"
 	@echo ""
-	@echo "  Lint (pre-commit — markdown, YAML, secrets on SKILL.md):"
+	@echo "  Lint (pre-commit — markdown, YAML, repo-wide secrets via gitleaks, PII on SKILL.md):"
 	@echo "    make hooks-install            Install git hooks (commit, pre-push, post-commit, post-merge)"
 	@echo "    make lint                     Run all hooks on the repo"
 	@echo "    make lint-fix                 Same as lint (hooks auto-fix markdown)"
