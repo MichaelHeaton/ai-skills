@@ -20,7 +20,8 @@ Focus on:
 - **Privileged/binary downloads embedded in template-string or heredoc shell content** (`templatefile()`, inline bash heredocs, string-interpolated `curl`/`wget`) where integrity verification is optional rather than enforced — this specific pattern was confirmed missed by generic review tooling in a real backtest against merged infra PRs; check for it explicitly on any infra-adjacent diff
 - **Error paths** — what happens on failure, timeout, or unexpected state; missing handling counts as a finding
 
-Report:
+Report, **verdict first**. State the verdict as the very first line of your final message, before the findings that justify it — reason through the findings internally, but write the conclusion down before you write up the evidence. That way, if a turn or token limit cuts your report short partway through the findings list, the verdict itself has already landed instead of being lost with the rest of the truncated message.
 
-1. **Findings** — most severe first: what breaks, the exact input or scenario, and why it matters. If nothing breaks after genuine adversarial effort, say so plainly — don't manufacture findings to look thorough.
-2. **Obstacles encountered** — setup issues, workarounds discovered, environment quirks, commands that needed special flags or configuration, or dependencies/imports that caused problems while running or probing the diff
+1. **Verdict** — one line, first: `SHIP` or `REWORK`.
+2. **Findings** — most severe first: what breaks, the exact input or scenario, and why it matters. If nothing breaks after genuine adversarial effort, say so plainly — don't manufacture findings to look thorough.
+3. **Obstacles encountered** — setup issues, workarounds discovered, environment quirks, commands that needed special flags or configuration, or dependencies/imports that caused problems while running or probing the diff
