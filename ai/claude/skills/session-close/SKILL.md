@@ -1,7 +1,7 @@
 ---
-version: 1.18.0
+version: 1.19.0
 principles_version: 1.0.0
-last_updated: 2026-08-15
+last_updated: 2026-08-16
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
@@ -69,7 +69,15 @@ gh pr list --head <branch> --state all --json number,state,title \
   --repo <owner>/<repo>
 ```
 
-- **Merged PR found** → flag this repo: *"Branch `<branch>` in `<repo>` has a merged PR — you are still checked out on a stale branch. Switch to `main` before starting the next session."* Include in Step 10 summary under a "Branch hygiene" header.
+- **Merged PR found** → before flagging just a stale branch, check whether the branch also carries commits the merged PR never brought into `main` — pushed after the PR's own merge point, or added to the branch afterward, either way invisible to `main` and undetected by any other check:
+
+  ```bash
+  git -C <repo> fetch origin --quiet 2>/dev/null
+  git -C <repo> log origin/main..<branch> --oneline
+  ```
+
+  - **Non-empty** → these are stranded commits: real work that exists only on this branch, with no open or merged PR left to pull it into `main`. Flag prominently: *"Branch `<branch>` in `<repo>` has N commit(s) not reachable from `main` despite its PR already being merged — stranded, will be silently lost if the branch is ever deleted."* Recovery: cherry-pick them onto a fresh branch off `main` and open a new PR (git-ops's merged-branch recovery), or get explicit confirmation the commits are intentionally abandoned before Step 5 touches this branch. Include in Step 10 under "Branch hygiene," called out separately from the plain stale-branch case below.
+  - **Empty** → the plain stale-branch case: *"Branch `<branch>` in `<repo>` has a merged PR — you are still checked out on a stale branch. Switch to `main` before starting the next session."* Include in Step 10 summary under a "Branch hygiene" header.
 - **Open PR found** → no action; this is expected while the PR is in review.
 - **No PR found** → no action; the branch is actively in progress.
 
@@ -79,6 +87,10 @@ Run this check for GitHub repos only. Skip GitLab, Bitbucket, or repos with no `
 
 Before committing anything in a repo, check for a second session already operating on it — a stale-state check alone only catches a *past* session, not one running right now. **Hard gate, per repo, not a one-time audit**: do not begin Step 2 for a given repo until this check has completed for that specific repo. Detection commands, `LIVE`/`STALE` signal handling, and the gate's interaction with stale-branch resolution: [references/concurrent-session-check.md](references/concurrent-session-check.md).
 
+### Transcript-vs-working-tree reconciliation check
+
+`discover-repos.sh`'s `CHANGES` count is a snapshot of the working tree, not of what this session actually did — a concurrent session sharing the same non-worktree checkout can pick up this session's own uncommitted Edit/Write changes into its own `git stash`, silently, before either session commits them. The working tree then looks clean and `CHANGES` reads low, even though real edits from this session are gone. For every repo this session made Edit/Write calls against, reconcile the transcript's own record of what was touched against the repo's actual state before trusting a clean result: procedure, mismatch handling, and stash/reflog recovery: [references/transcript-reconciliation.md](references/transcript-reconciliation.md).
+
 ---
 
 ## Step 1b — Git-ops pre-flight
@@ -86,6 +98,14 @@ Before committing anything in a repo, check for a second session already operati
 Invoke the `git-ops` skill *(global: ai-skills)* before Steps 2–4 — it covers branching rules, commit format, PR format, and pre-commit checks. The short version: work GitHub and GitLab repos always get a branch + PR; personal KB uses branch + PR like work repos. Full rules in `~/.claude/references/branching.md`.
 
 **Do not ask for confirmation before invoking git-ops.** It is a required pre-flight for every session-close run.
+
+**Branch-identity check — name the script, don't rely on recalling git-ops's full body.** For every non-worktree repo in scope, before Step 2's commit flow begins for that repo, run it directly:
+
+```bash
+bash ~/.claude/skills/git-ops/scripts/check-branch-identity.sh <repo-path> <expected-branch>
+```
+
+`<expected-branch>` is whatever branch this session most recently created or checked out for that repo (Step 1's `BRANCH` field, unless a later step switched it). `MATCH` or `WORKTREE:<actual>` → proceed to Step 2. `MISMATCH:<actual>` → stop before committing; the active branch changed unexpectedly in a shared checkout, so confirm which branch is actually correct first. This is the same check git-ops's "Shared checkout branch-identity check" section documents — it's called out here by name because a generic "invoke git-ops" instruction has been recalled without this specific script call actually firing.
 
 **SSH port-22 fallback**: For all GitHub/GitLab SSH remote operations, use `scripts/git-ssh-fallback.sh <repo-path> <subcommand> [args...]` instead of raw `git`. It auto-detects port-22 blocks, switches to HTTPS, and retries transparently.
 
@@ -119,6 +139,8 @@ For each repo with `CHANGES > 0` **whose Step 1 branch-hygiene check has already
    > - **Discard** — revert all changes (confirm destructive)
 5. If committing: run the standard commit flow (stage relevant files, write message, push)
 6. If leaving: note it in the session summary as "pending"
+
+**Pre-commit hook blocked by pre-existing, unrelated debt.** If a hook fails on content this commit didn't touch — e.g. a markdownlint hook blocking a one-line, unrelated change because of broken links elsewhere in the same file that predate this session — this is a "hook blocks a small unrelated commit due to pre-existing debt" pattern, not specific to any one linter. Don't silently expand scope to fix the debt inline under time pressure. Pick one: **split a minimal separate fix commit** scoped only to what the hook actually demands, then retry the original commit; or **note the blocker in the Step 10 summary as pending debt** and leave the original change for next session if a minimal fix isn't safely scoped. Never reach for `--no-verify` to route around this (git-ops's pre-commit checks).
 
 **Drafts meant for manual human follow-up (wiki pastes, external-system content) need a durable home, not a scratchpad.** Any output this session is deferring to a future session for manual action — "paste this into the wiki," "someone needs to copy this into X" — should be written to a durable, git-tracked location (e.g. `Outputs/Drafts/` in the relevant repo) rather than left at an ephemeral scratchpad path. A scratchpad gets cleaned up between sessions with no warning; a genuinely finished draft sitting there can be lost outright, not just inconvenient to re-find. If such a draft already exists at a scratchpad path when Step 10 runs, copy it to the durable location before writing the summary, and flag it in the Pending section as an **at-risk item needing relocation** — not a normal pending task — so it can't be silently dropped by a routine scratchpad cleanup.
 7. If discarding, use concrete commands — never `rm -rf`, which some workstations block outright via a recursive-delete safety hook:

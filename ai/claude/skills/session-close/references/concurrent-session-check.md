@@ -1,7 +1,7 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-16
 updated_by: claude
 ---
 
@@ -23,5 +23,13 @@ git -C <repo> log HEAD..origin/main --oneline
 The PPID-ancestor walk alone can miss a process that's genuinely "this session" but isn't a direct ancestor of the script's own `$$` (e.g. a sibling helper process). To catch that, the script also compares each remaining candidate's `--add-dir` argument list against its own session's — an exact match is treated as self and excluded, even without an ancestry link. Regression test: `scripts/check-concurrent-session.test.sh`.
 
 If either signal fires — a `LIVE` match, or unexpected commits on `origin/main` this session didn't make — surface a warning before proceeding: *"Another session may be operating on `<repo>` — origin has moved / a concurrent process was found. Proceed carefully or check with the user before committing."* Ignore `STALE` matches; they aren't evidence of a live collision. This is best-effort, not a hard gate — don't block the run over it, and don't over-trust a clean result as proof no one else is active.
+
+**Supplementary signal — reflog freshness.** Both checks above have come back clean against a real, live collision in practice — a second session actively committing to the same checkout, invisible to `check-concurrent-session.sh` and the origin-move check alike, only caught afterward via anomalous `git reflog` entries. As a cheap additional cross-check, capture `SESSION_START_TS=$(date +%s)` once, at the very start of Step 1, before any git command runs — then compare the repo's reflog against it:
+
+```bash
+git -C <repo> reflog --since="@${SESSION_START_TS}" --oneline
+```
+
+Every entry here should map to something this session itself did (its own checkouts, commits, merges). An entry that doesn't — a commit, checkout, or stash this session didn't perform — is treated the same as a `LIVE` match: surface the same warning before proceeding. This signal is strongest early in a session, before its own git activity has piled up enough reflog entries to make "mine vs. not mine" tedious to eyeball; it's still best-effort, not a substitute for the two checks above.
 
 **Hard gate — per repo, not a one-time audit.** Completing this check for one repo does not clear the gate for any other repo still pending. Do not begin Step 2 for a given repo until this check has completed for that specific repo. If the check flags a merged PR (stale branch) **and** the repo has uncommitted changes, resolve those changes first via Step 2's normal flow (commit+push to the stale branch, discard, or leave pending) **while still on the stale branch**. Only once the working tree is clean, switch to `main` (`git checkout main && git pull`). Never check out `main` while changes are uncommitted, and never commit directly on `main` — any further work after switching needs a new branch per git-ops first. A repo skipped due to a `gh` failure does not satisfy this gate — flag it in Step 10 as "branch state unverified" and treat it as if a stale branch were possible (don't let Step 2 silently assume it's clean).
