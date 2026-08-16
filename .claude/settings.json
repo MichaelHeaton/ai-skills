@@ -46,7 +46,8 @@
       "mcp__github__issue_read",
       "mcp__github__search_issues",
       "mcp__github__pull_request_read",
-      "mcp__github__list_issues"
+      "mcp__github__list_issues",
+      "Bash(bash ~/.claude/skills/git-ops/scripts/verify-closes.sh*)"
     ]
   },
   "hooks": {
