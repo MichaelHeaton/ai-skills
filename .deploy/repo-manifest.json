@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T22:44:30Z",
+  "generated_at": "2026-08-16T03:58:51Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
@@ -12,6 +12,8 @@
     "ai/claude/hooks/git-ops-reminder.py": "9bd92872ee94d1013b91ce594a7f9bf5",
     "ai/claude/hooks/git-ops-track.py": "c389053c1e9b01643322fe27bb1aa1c1",
     "ai/claude/hooks/inline-bash-hooks.md": "72e69490c3d0c659cafb244a98f50f96",
+    "ai/claude/hooks/issue-create-reminder.py": "b34baaa12a980cb364e72cdc63991a19",
+    "ai/claude/hooks/issue-create-track.py": "e58e249e2e91284329bef2d929d004d2",
     "ai/claude/hooks/lean-context-reminder.py": "f3e292978c8a701cc59e88a7e4a569e9",
     "ai/claude/hooks/memory-snapshot.py": "28f38eac2ea32cfc2315a1bdea779949",
     "ai/claude/hooks/pre-commit": "212c30f37d74a080d576d6161b01077b",
@@ -86,7 +88,8 @@
     "ai/claude/skills/infra-state-verify/SKILL.md": "a1f9bf46486a97eee3adde93372fbfaf",
     "ai/claude/skills/interview-debrief/SKILL.md": "1eb93713920a4fe4ccac2223a96bcb1e",
     "ai/claude/skills/issue-batch/SKILL.md": "dbaa28f3bb63fd9a5bcaa5421ff1ec48",
-    "ai/claude/skills/issue-create/SKILL.md": "689c36f87484f9289c344de456b53717",
+    "ai/claude/skills/issue-create/SKILL.md": "d038635ee36ab332e4e7c78cda325bfb",
+    "ai/claude/skills/issue-create/references/atlassian-mcp-fallback.md": "3904cac94097d0abc63cb773b25ceb16",
     "ai/claude/skills/issue-create/references/gh-mcp-fallback.md": "e8c2fbff811f4d614048e1e5e1cb3232",
     "ai/claude/skills/issue-create/references/routing.md": "4a190e5674cf69676a6ff4a36ba2a1e0",
     "ai/claude/skills/issue-create/references/user-story-template.md": "e52dfc3fc716a55264094fea644ab3c7",
