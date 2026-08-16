@@ -1,7 +1,7 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-08-16
 updated_by: claude
 name: impl-preflight
 description: Run a quick structured check before starting implementation on a ticket — are its dependencies actually deployed (not just marked done), what existing code patterns apply, what resource decisions need to be locked in first, and are there known constraints that would otherwise surface mid-work as a surprise. Use right before starting work on a ticket, or when asked "is there anything to check before I start X", "is the environment ready for this ticket", "pre-flight before starting <ticket>", or "what do I need before starting this".
@@ -39,15 +39,25 @@ Some tickets have an implicit decision point that isn't spelled out in the AC (w
 
 Anything documented elsewhere (a runbook, a past incident writeup, a comment in adjacent code) that would constrain this implementation — a rate limit, a known fragile integration, a "don't do X here, it broke Y last time." Read commit history and comments near the code this ticket will touch, not just the ticket itself.
 
+**For each AC that is a live network check** (a curl/health-check/API call against a real running endpoint, not a mock or a unit test), verify the test conditions can actually be met before coding starts:
+
+- **TLS trust**: if the AC hits `https://`, does the runner's trust store accept that endpoint's certificate? A self-signed or internally-issued cert will fail `curl` without `-k` regardless of whether the implementation is correct.
+- **Reachable path**: is the endpoint's host/path actually resolvable and routable from wherever the check will run (DNS, network segment, VPN, firewall)?
+- **Correct port**: does the port in the AC match what the service actually listens on?
+
+A failure here is an **unmet test precondition, not an implementation failure** — a self-signed cert rejected by `curl` doesn't mean the health check is broken, it means the check as written can't pass in this environment yet. Report it as a `✗` blocker (same as an unready dependency in Step 2), not as something to debug mid-implementation.
+
 ## 6. Report
 
 ```
 Preflight: #142 — add retry to sync job
 ✓ Dependency: #138 (queue priority change) — merged, verified in main
 ✗ Dependency: staging endpoint — ticket says deployed, endpoint returns 503
+✗ Live-AC test condition: GET https://service.example/health — runner's trust store
+  rejects the endpoint's self-signed cert without -k (unmet precondition, not a bug)
 Pattern: follow the retry wrapper in jobs/email_sync.py
 Decision needed: exponential vs. fixed backoff — not specified in AC
 Constraint: this queue has a known rate limit (see #98's postmortem)
 ```
 
-A `✗` dependency is a blocker — flag it clearly rather than starting work that assumes it's ready.
+A `✗` dependency is a blocker — flag it clearly rather than starting work that assumes it's ready. The same applies to a `✗` live-AC test condition: it means the check as written can't pass here yet, not that the implementation is wrong.
