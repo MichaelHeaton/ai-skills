@@ -1,7 +1,7 @@
 ---
-version: 1.2.0
+version: 1.3.0
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-08-16
 updated_by: claude
 name: decision-council
 description: Run any decision, plan, or tradeoff through 7 AI advisors with distinct thinking styles, a blind peer review round, and a final chairman synthesis. Based on Karpathy's LLM Council methodology. TRIGGERS: "council this", "decision council", "run the council", "war room this", "pressure-test this", "stress-test this", "debate my options", "gut check this", "get a second opinion on this", "talk me out of this". STRONG TRIGGERS when combined with a real decision: "should I X or Y", "which option", "I can't decide", "I'm torn between", "validate this decision". Do NOT trigger on: factual lookups, creation tasks (write me X), or casual questions without a meaningful tradeoff.
@@ -40,6 +40,8 @@ If the question is too vague to frame, ask one clarifying question, then proceed
 ---
 
 ## Step 1.5 — Scale the council to the decision (optional)
+
+**Don't bundle unrelated questions into one pass to save cost.** If two or more questions are genuinely separate decisions (different stakes, different stakeholders, only coincidentally pending at the same time — e.g. a ticket-sequencing call and a repo-architecture call), run separate council passes and scale each one with the levers below. Bundling them into a single framed question breaks assumptions downstream: advisors have to split 150–300 words across topics instead of engaging either one fully, and the landslide-consensus shortcut below cannot tell "converged on everything" from "converged on one thing, split on the other" without per-question tracking it isn't built for. If the questions are facets of one real decision (same stakeholders, same stakes, an answer to one changes the other), keep them as one framed question — that's not bundling, that's correct framing. When cost is the actual concern, use the levers below instead:
 
 The full pipeline (7 advisors + 5 peer reviewers + chairman = 13 agent invocations) is the default and the right call for a first-pass, high-stakes decision. It is not mandatory for every invocation — before spawning anything, decide directly (no separate routing agent needed; this is a judgment call for the Architect step to make, the same way `dev-team`'s Manager is a conditional gate rather than a role that always runs) whether a lighter pass fits better:
 
@@ -92,6 +94,8 @@ Respond from your perspective. Be direct and specific. Do not hedge. Lean fully 
 After collecting the advisor responses, do a quick scan: if 6 or more of the 7 converge independently on the same conclusion, skip Step 3 (peer review) and Step 4 (chairman synthesis) — synthesize the verdict directly from the advisor responses instead. Peer review and a chairman round add little when the council already agrees this strongly; running them anyway is process for its own sake.
 
 **When the shortcut is taken, say so in the output** — a line noting "6/7 advisors converged independently; peer review and chairman synthesis skipped" — rather than silently presenting a verdict that looks like it went through the full pipeline when it didn't. Anything short of a landslide (5 or fewer converging, or real disagreement) proceeds through the full Step 3 + Step 4 as normal.
+
+**Scope: this shortcut is defined for one question per pass.** It assumes "converge on the same conclusion" is unambiguous — true for a single question, not guaranteed for a bundled one (see Step 1.5: bundling is discouraged for this reason). If a pass ever does cover more than one question anyway, evaluate convergence separately per question and only take the shortcut if *every* question in the pass independently clears 6-of-7 — one question landsliding does not license skipping peer review for another question riding along in the same responses. If any question falls short, run the full Step 3 + Step 4 for the whole pass; there is no partial shortcut that reviews one question and not the other.
 
 ---
 
