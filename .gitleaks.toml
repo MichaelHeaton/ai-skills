@@ -1,0 +1,8 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Machine-generated MD5 content hashes in the deploy manifest, not secrets"
+paths = [
+  '''\.deploy/repo-manifest\.json''',
+]
