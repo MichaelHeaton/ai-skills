@@ -1,5 +1,5 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
 last_updated: 2026-08-18
 updated_by: claude
@@ -24,7 +24,10 @@ Then flag any pair where a skeptical reader could read the two claims as
 contradicting each other, even if they're technically compatible.
 
 Separately, flag any phrase-family that appears more than once making
-essentially the same pre-emptive rebuttal in different words.
+essentially the same pre-emptive rebuttal in different words. Do not flag
+a repeated correction-disclosure pattern (e.g. "(corrected 2026-08-14)",
+"previously believed X, actually Y") as a rebuttal — that is transparent
+versioning, not defensiveness, and should stay.
 ```
 
 Fix everything it surfaces before running `humanizer` (see SKILL.md Stage 2.5 for why the order matters).
@@ -57,6 +60,12 @@ Three restatements of "this order was planned, not improvised" read as protestin
 > Migration follows a test → dev → prod order, matching the existing CMR upgrade pattern. Only the test stage has tickets so far; dev and prod get scoped once test proves out.
 
 One statement, in the section about migration sequencing. If a reader wants to know *why* that order matters, that's a link to the ClickOps-discovery section — not a restatement.
+
+## Don't flag: transparent correction-disclosure
+
+A dry run against a different, mostly-reference project wiki page (an architecture/turnover doc, not a narrative report) surfaced a real false positive from the rule above: the page carried three separate `(corrected 2026-08-14)` / `(corrected 2026-07-15)` tags on status entries that had changed since first written. The audit flagged this as the same "repeated pre-emptive rebuttal" pattern as the original manager-report case.
+
+It isn't. `(corrected DATE)` openly tells the reader a claim changed and when — the opposite of defending a position across multiple sections. Two real catches on that same page (a claim of "confirmed working end-to-end" that was only proven on one of several environments, and a blame-deflecting "not a Vault-side issue" sitting next to evidence the Vault side had just been fixed) were genuine wins from the same audit pass. The lesson isn't "the audit doesn't work" — it's that the rule needs to distinguish *disclosing a change* from *rebutting a criticism*. Keep disclosure. Cut rebuttal.
 
 ## Why length wasn't the actual problem
 

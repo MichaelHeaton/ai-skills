@@ -1,5 +1,5 @@
 ---
-version: 1.5.0
+version: 1.5.1
 principles_version: 1.0.0
 last_updated: 2026-08-18
 updated_by: claude
@@ -126,7 +126,7 @@ Lowercase, hyphenated, descriptive. Examples: `approle-cidr-binding-mismatch.md`
 
 Run this **before** Stage 2.5 (Humanize) on any doc with a narrative thesis — status reports, ADRs, anything arguing a point rather than just listing steps. Skip it for pure reference material (runbooks, how-tos) that states facts without defending a conclusion.
 
-Spawn a fresh sub-agent with only the draft text and this instruction: *"List every claim that asserts or implies a judgment about cause, blame, scope, or timeline. Flag any pair a skeptical reader could read as contradicting each other. Separately, flag any phrase-family that restates the same pre-emptive rebuttal in more than one place (e.g. 'wasn't a failure,' 'was always the plan,' 'confirmed it, didn't invent it')."* Fix what it finds before moving on.
+Spawn a fresh sub-agent with only the draft text and this instruction: *"List every claim that asserts or implies a judgment about cause, blame, scope, or timeline. Flag any pair a skeptical reader could read as contradicting each other. Separately, flag any phrase-family that restates the same pre-emptive rebuttal in more than one place (e.g. 'wasn't a failure,' 'was always the plan,' 'confirmed it, didn't invent it'). Don't flag a repeated correction-disclosure pattern (e.g. '(corrected DATE)') as a rebuttal — that's transparent versioning, not defensiveness."* Fix what it finds before moving on.
 
 Two writing rules this audit enforces, drawn from a real case where an exec summary said "nothing points to a failure" while a later section admitted a scope-trim to "cut scope creep" — a true-but-contradictory-sounding pair a real reader called out directly:
 
