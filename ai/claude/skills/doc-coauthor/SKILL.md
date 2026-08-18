@@ -1,7 +1,7 @@
 ---
-version: 1.4.0
+version: 1.5.0
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-08-18
 updated_by: claude
 name: doc-coauthor
 description: Co-author work team documentation — either directly to the live Confluence wiki or staged through the git repo for team review. Handles the full workflow: template selection, context gathering, section-by-section drafting, frontmatter generation, and delivery — plus a lighter-weight path for editing already-existing content that skips template/frontmatter entirely. Use when writing or updating any team wiki page, runbook, how-to guide, customer guide, or architecture decision record. Triggers on: "write a runbook", "draft a how-to", "create a wiki page", "update the docs for X", "update the wiki", "write an ADR", "document this process", "new Confluence page", "doc for vault", "work team documentation", "update Confluence". A small, targeted correction to an existing page (fixing one fact, one link, one section) should go through the `confluence-section-edit` skill instead of this one; a new page or a significant rewrite goes through this skill.
@@ -48,8 +48,9 @@ Identify the document type:
 | How-to | `templates/how-to.md` | customer | Step-by-step guide for internal customers consuming a service |
 | Customer guide | `templates/customer-guide.md` | customer | Broader reference for customers (onboarding, overview) |
 | Architecture decision | `templates/architecture-decision.md` | team | Record a design decision and its tradeoffs |
+| Status report | `templates/status-report.md` | leadership | Narrative update to a manager/stakeholder explaining timeline, scope, or progress on a project |
 
-If the user says "wiki page" or "Confluence page" without a specific type, ask which fits before proceeding.
+If the user says "wiki page" or "Confluence page" without a specific type, ask which fits before proceeding. **Status reports and other narrative-with-a-thesis documents route here too** — don't let them get hand-drafted outside this skill just because there's no wiki page or template involved yet; they need the same consistency-audit and humanize stages below, in order, more than any other doc type.
 
 For staged mode: read the chosen template from `${repos.work_docs} (local.json)/templates/`.
 For live mode: use the same structure but deliver as Confluence content.
@@ -121,9 +122,24 @@ Lowercase, hyphenated, descriptive. Examples: `approle-cidr-binding-mismatch.md`
 
 ---
 
+## Stage 2.3: Consistency Audit
+
+Run this **before** Stage 2.5 (Humanize) on any doc with a narrative thesis — status reports, ADRs, anything arguing a point rather than just listing steps. Skip it for pure reference material (runbooks, how-tos) that states facts without defending a conclusion.
+
+Spawn a fresh sub-agent with only the draft text and this instruction: *"List every claim that asserts or implies a judgment about cause, blame, scope, or timeline. Flag any pair a skeptical reader could read as contradicting each other. Separately, flag any phrase-family that restates the same pre-emptive rebuttal in more than one place (e.g. 'wasn't a failure,' 'was always the plan,' 'confirmed it, didn't invent it')."* Fix what it finds before moving on.
+
+Two writing rules this audit enforces, drawn from a real case where an exec summary said "nothing points to a failure" while a later section admitted a scope-trim to "cut scope creep" — a true-but-contradictory-sounding pair a real reader called out directly:
+
+- **No verdict before evidence.** A TL;DR or exec summary that states a conclusion before the reader has seen the facts forces every later fact to be read as either confirming or undermining that verdict — including facts that are just neutral context. State the facts; let the reader conclude. If a summary needs a caveat to avoid contradicting a later section, that's a sign the verdict shouldn't be there at all.
+- **State a fact once, where it belongs — never repeat it as a rebuttal elsewhere.** Comparing this project's own reports against three other engineers' recent wiki pages in the same space surfaced the actual pattern: none of theirs defend a thesis or pre-empt criticism anywhere — they state what's true, once, in plain declarative sentences, even in pages substantially longer than the reports getting the "too long" complaint. Length wasn't the team's real objection; a document arguing with an imagined critic across five separate sections was. Cut every sentence whose job is managing the reader's opinion of the writer rather than conveying a fact.
+
+See [references/consistency-audit.md](references/consistency-audit.md) for the full sub-agent prompt and before/after examples.
+
 ## Stage 2.5: Humanize
 
-Once the full draft is assembled, invoke the `humanizer` skill *(global: ai-skills)* on it before reader testing — strips AI-writing tells (puffery, canned phrasing, formatting artifacts) while preserving every step, command, and fact exactly. Run reader testing against the humanized version, not the raw draft.
+Once the consistency audit above is clean, invoke the `humanizer` skill *(global: ai-skills)* on the draft before reader testing — strips AI-writing tells (puffery, canned phrasing, formatting artifacts) while preserving every step, command, and fact exactly.
+
+**Run this after Stage 2.3, never before.** Humanizer only smooths style — it can't see a logical contradiction, and running it on an unresolved one just makes both contradictory claims read more confidently, which is worse, not better. Run reader testing against the humanized version, not the raw draft.
 
 ---
 
