@@ -95,6 +95,8 @@ Draft the user story body using the template in §C2. **Critical**: pass the des
 
 Create via Atlassian MCP `jira_create_issue` with `jira.project_key`, the component from A2 (if applicable), and the multi-line description.
 
+If the description carries a narrative justification rather than just a task statement (e.g. explaining _why_ scope changed, defending a timeline), run it through `doc-coauthor`'s consistency-audit stage _(global: ai-skills)_ first — the same verdict-before-evidence and repeated-rebuttal failure modes that hit long-form docs show up in ticket narratives too.
+
 ### A4. Link to predecessor (if this ticket is a follow-on)
 
 If this ticket was split from or prompted by an existing ticket, establish the relationship in both directions.

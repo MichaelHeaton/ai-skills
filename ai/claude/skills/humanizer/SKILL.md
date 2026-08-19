@@ -1,8 +1,8 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-07-22
-updated_by: human
+last_updated: 2026-08-18
+updated_by: claude
 name: humanizer
 description: Rewrite an article or draft to strip out AI-writing tells — puffery, canned notability phrasing, overused vocabulary (delve, boasts, testament, underscore, vibrant...), formulaic "Challenges and Future" endings, negative parallelism ("not only X but Y"), rule-of-three lists, and AI-typical formatting — while preserving every fact, citation, and the original meaning exactly, and adding nothing new. Based on Wikipedia's WP:Signs of AI writing field guide. Use when the user says "humanize this", "de-AI this", "make this sound less like AI wrote it", "remove AI writing signs", "this reads like ChatGPT", "strip the AI tells", "clean up the AI-generated tone", or pastes a draft/article asking for a pass to sound more human without changing what it says.
 compatibility: none
@@ -22,6 +22,8 @@ Rewrite text so it no longer reads as AI-generated, without changing what it say
 - **Resolving the cut-vs-flag tension:** most puffery carries zero information beyond "this mattered" (*marking a pivotal moment, playing a crucial role*) — cut those silently, no flag needed. Only flag the rarer case where a clause might carry real (if vague) information you can't verify one way or the other, such as an unnamed "other prominent outlets" in a citation-backed sentence. When that happens, keep the underlying claim but strip the inflating adjective (*prominent*, *renowned*), and mention it in your summary rather than guessing.
 
 Meaning and facts are the fixed point. Style is the only thing in motion.
+
+**Run this skill last, after any structural or logical-consistency fix, never before.** This is a style pass — it cannot see a contradiction between two sections, and running it on a draft with one unresolved doesn't fix anything; it makes both contradictory claims read more fluently and confidently, which is worse, since polished motivated reasoning is harder for a reader to catch than clumsy motivated reasoning. If the input is a narrative report or wiki page with a thesis (not just a factual writeup), it should go through `doc-coauthor`'s consistency-audit stage *(global: ai-skills)* first.
 
 ## Process
 
