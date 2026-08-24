@@ -1,30 +1,20 @@
 ---
-version: 1.5.1
+version: 1.6.0
 principles_version: 1.0.0
-last_updated: 2026-08-18
+last_updated: 2026-08-24
 updated_by: claude
 name: doc-coauthor
-description: Co-author work team documentation — either directly to the live Confluence wiki or staged through the git repo for team review. Handles the full workflow: template selection, context gathering, section-by-section drafting, frontmatter generation, and delivery — plus a lighter-weight path for editing already-existing content that skips template/frontmatter entirely. Use when writing or updating any team wiki page, runbook, how-to guide, customer guide, or architecture decision record. Triggers on: "write a runbook", "draft a how-to", "create a wiki page", "update the docs for X", "update the wiki", "write an ADR", "document this process", "new Confluence page", "doc for vault", "work team documentation", "update Confluence". A small, targeted correction to an existing page (fixing one fact, one link, one section) should go through the `confluence-section-edit` skill instead of this one; a new page or a significant rewrite goes through this skill.
-compatibility: Live mode requires Confluence MCP. Staged mode requires ${repos.work_docs} (local.json) to be cloned — run repo-setup if missing.
+description: Co-author work team documentation directly to the live Confluence wiki. Handles the full workflow: doc-type selection, context gathering, section-by-section drafting, and delivery — plus a lighter-weight path for editing already-existing content that skips doc-type selection entirely. Use when writing or updating any team wiki page, runbook, how-to guide, customer guide, or architecture decision record. Triggers on: "write a runbook", "draft a how-to", "create a wiki page", "update the docs for X", "update the wiki", "write an ADR", "document this process", "new Confluence page", "doc for vault", "work team documentation", "update Confluence". A small, targeted correction to an existing page (fixing one fact, one link, one section) should go through the `confluence-section-edit` skill instead of this one; a new page or a significant rewrite goes through this skill.
+compatibility: Requires Confluence MCP.
 ---
 
 # Doc Co-Author
 
-Guide the user through writing a well-structured work team documentation page. Two delivery modes are supported — ask which one applies before starting:
+Guide the user through writing a well-structured work team documentation page, delivered directly to Confluence.
 
----
+*(A staged git-review mode — draft in a repo, sync to a personal wiki space for review, then publish — existed here until 2026-08-24. It depended on the `ces-documentation` repo, which was decommissioned in favor of Confluence as the sole source of truth; the same PR-review-friction objection that killed that repo applies to staging docs in git generally, so this skill no longer offers it. If a future doc needs review before going live, use Confluence's own draft/restricted-page mechanics instead.)*
 
-## Delivery mode
-
-**Live** — Write directly to Confluence via MCP tools. Use for quick updates to existing pages, minor edits, or when the user wants the change live immediately without a review cycle.
-
-**Staged** — Write a Markdown file into `${repos.work_docs} (local.json)`, commit it, and sync to the personal wiki space (`~${CONFLUENCE_USER}`) for team review before it goes to the production wiki space. Use for new pages, significant rewrites, or anything that benefits from team eyes before publishing.
-
-If the repo isn't available for staged mode, suggest running `/repo-setup` first.
-
-For staged mode: read `${repos.work_docs} (local.json)/CLAUDE.md` — it has the repo structure, frontmatter schema, content tier definitions, DRY rules, and service directory list.
-
-The workflow is the same for both modes: **Template → Context → Draft → Test → Deliver**
+The workflow: **Doc type → Context → Draft → Test → Deliver**
 
 ---
 
@@ -42,36 +32,25 @@ Before gathering context or drafting, ask: *"Given what's changed, does this pag
 
 Identify the document type:
 
-| Type | Template | Default tier | When to use |
-| --- | --- | --- | --- |
-| Runbook | `templates/runbook.md` | oncall | On-call response: symptom → diagnosis → fix → escalate |
-| How-to | `templates/how-to.md` | customer | Step-by-step guide for internal customers consuming a service |
-| Customer guide | `templates/customer-guide.md` | customer | Broader reference for customers (onboarding, overview) |
-| Architecture decision | `templates/architecture-decision.md` | team | Record a design decision and its tradeoffs |
-| Status report | `templates/status-report.md` | leadership | Narrative update to a manager/stakeholder explaining timeline, scope, or progress on a project |
+| Type | Default tier | When to use |
+| --- | --- | --- |
+| Runbook | oncall | On-call response: symptom → diagnosis → fix → escalate |
+| How-to | customer | Step-by-step guide for internal customers consuming a service |
+| Customer guide | customer | Broader reference for customers (onboarding, overview) |
+| Architecture decision | team | Record a design decision and its tradeoffs |
+| Status report | leadership | Narrative update to a manager/stakeholder explaining timeline, scope, or progress on a project |
 
 If the user says "wiki page" or "Confluence page" without a specific type, ask which fits before proceeding. **Status reports and other narrative-with-a-thesis documents route here too** — don't let them get hand-drafted outside this skill just because there's no wiki page or template involved yet; they need the same consistency-audit and humanize stages below, in order, more than any other doc type.
 
-For staged mode: read the chosen template from `${repos.work_docs} (local.json)/templates/`.
-For live mode: use the same structure but deliver as Confluence content.
+Check `confluence_list_page_templates` / `confluence_get_page_template` for a matching Confluence-native template before structuring the page from scratch. If none fits, structure the page using the type's "when to use" description above as the shape (symptom→diagnosis→fix→escalate for a runbook, etc.).
 
 ---
 
 ## Stage 1: Context Gathering
 
-Collect everything needed for frontmatter and content.
+Collect everything needed for the content.
 
-**Frontmatter fields** (staged mode — all required):
-
-- `title` — page title
-- `service` — service slug (vault, teleport, cyberark, emissary, hubble, etc.)
-- `tier` — one or more of: `team`, `oncall`, `customer`
-- `audience` — team, oncall, customer, internal, etc.
-- `confluence_page_id` — existing page ID if updating; empty string if new
-- `owner` — from local.json or user input
-- `sherlock` — true for customer/oncall content, false for team-only
-
-**Content questions** (both modes):
+**Content questions:**
 Ask for an unstructured info dump covering:
 
 - What problem or task does this doc address?
@@ -92,13 +71,9 @@ Hold all clarifying questions until the narration is complete, then ask them nor
 
 ## Stage 2: Draft
 
-### Frontmatter (staged mode only)
+### Section by section
 
-Generate the complete frontmatter block first and show it for confirmation — errors in frontmatter break the sync pipeline. Use today's date for `last_reviewed`. Use `wiki_tree: []` for new pages.
-
-### Section by section (both modes)
-
-Work through template sections in order:
+Work through the page's sections in order:
 
 1. Draft based on gathered context
 2. Show it, ask for feedback
@@ -115,10 +90,6 @@ Apply the DRY rule — if something is documented elsewhere in the repo or wiki,
 - **If the target concept page doesn't exist yet**, do one of two things before moving on — never leave a bare link to nothing and never defer with just "we'll come back to it":
   1. Draft the concept page now, in this session, or
   2. Open a tracking ticket via the `issue-create` skill *(global: ai-skills)*, and put the ticket reference directly at the link site in the doc (e.g. `→ Deep dive: not yet documented — tracked in PROJ-123`) so the gap is visible to the next reader, not just sitting in a ticket queue.
-
-### Filename (staged mode only)
-
-Lowercase, hyphenated, descriptive. Examples: `approle-cidr-binding-mismatch.md`, `how-to-use-kv2-secrets.md`
 
 ---
 
@@ -155,26 +126,6 @@ Fix any gaps before delivery.
 ---
 
 ## Stage 4: Deliver
-
-### Staged mode
-
-1. Write to `${repos.work_docs} (local.json)/services/{service}/{filename}.md`
-2. Remind the user to `git commit` and push
-3. To share with the team for review, sync to the personal wiki space:
-
-   ```python
-   mcp__atlassian__confluence_create_page(
-       space_key="~${CONFLUENCE_USER}",
-       title="[DRAFT FOR REVIEW] {title}",
-       content=<markdown content>,
-       content_format="markdown"
-   )
-   ```
-
-4. Share the personal wiki URL with the team for async feedback
-5. Once approved, update `confluence_page_id` in frontmatter and note that the sync pipeline will push to the production wiki space
-
-### Live mode
 
 1. If updating an existing page, fetch the current content first to avoid overwriting concurrent edits
 2. Use the Confluence MCP tool to create or update the page in the appropriate team wiki space

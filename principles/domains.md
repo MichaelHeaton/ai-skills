@@ -80,7 +80,7 @@ Use existing signals — do not guess proprietary values:
 
 1. **Git remote** — match against `accounts.*.remote_match` in `local.json` (`issue-create` / `repo-setup` patterns).
 2. **User statement** — "for work", "Acme contract", "personal KB" (real names are fine in chat; do not copy them into public commits).
-3. **Repo in workspace** — `{domain}-cursor-rules`, employer docs repo path from `repos.work_docs`.
+3. **Repo in workspace** — `{domain}-cursor-rules`.
 4. **Ambiguity** — ask once; prefer the narrowest domain that fits.
 
 ## Related docs

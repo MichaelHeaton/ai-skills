@@ -1,8 +1,8 @@
 ---
-version: 1.0.0
+version: 2.0.0
 principles_version: 1.0.0
-last_updated: 2026-06-10
-updated_by: human
+last_updated: 2026-08-24
+updated_by: claude
 ---
 
 # Background agent template
@@ -11,7 +11,6 @@ Use this prompt template when spawning a background agent for Case B threads (al
 
 ```
 You are processing a vault support Slack thread for the vault support triage system.
-Working directory: repos.work_docs from ~/.config/ai-skills/local.json
 
 ## Thread (verbatim)
 
@@ -21,10 +20,14 @@ Working directory: repos.work_docs from ~/.config/ai-skills/local.json
 
 ## Your tasks — complete all steps in order:
 
-### Step 1 — Search work docs repo
-cd "${WORK_DOCS}"   # repos.work_docs from local.json
-python3 scripts/ask.py "{VERBATIM_QUESTION}" --context-only --top 8
-Read the top 3 matching files in full.
+### Step 1 — Search Confluence
+Use the Atlassian MCP to search live, scoped to the indexed KB subtree (ancestor page 2523173073).
+Search: "{VERBATIM_QUESTION}"
+Read the top 3 matching pages in full via confluence_get_page. If the top result is page
+2039778922, check its siblings under the same onboarding parent — it's a known stale page that
+outranks its current-process replacements.
+
+Also scan repos.work_skills (vault topic files) from ~/.config/ai-skills/local.json for coverage.
 
 ### Step 2 — Analyze
 Classify: Case A (no team reply) or Case B (team replied).
@@ -32,35 +35,18 @@ Determine sherlock_score: poor | partial | good | na
 Determine team_reply_vs_sherlock: confirmed | expanded | corrected | no-reply | na
 Identify miss_reasons, question_type, product_area, resolution_source.
 
-### Step 3 — Create test case
-python3 scripts/add_test_case.py \
-  --title "{SHORT_TITLE}" \
-  --question "{VERBATIM_QUESTION}" \
-  --source "vault support Slack" \
-  --tags "{TAGS}" \
-  {--slack-permalink "{PERMALINK}" if available}
+### Step 3 — Build the gap list
+Confluence changes needed (which page, what to add/fix, or whether it needs to move under the
+indexed KB subtree to be visible to the support bot at all).
+work customer skills repo changes needed (which topic file, what to add).
+Questions to ask the team, in the Sr SRE format from gap-analysis.md — included directly in your
+report, not written to a file.
 
-Then open the created file and fill in all sections:
-- frontmatter fields (sherlock_score, miss_reasons, question_type, product_area, resolution_source, team_reply_vs_sherlock)
-- ## the support bot Response (verbatim from thread)
-- ## Correct Answer
-- ## Why the support bot Missed It (check the right box)
-- ## Related Docs in This Repo
-- ## Gap Actions (both work docs repo and work customer skills repo actions)
-Set status: analyzed.
+### Step 4 — Capture to Memex (if notable)
+Recurring gap pattern (3+ threads), a team answer resolving a longstanding ambiguity, a new
+product area with no coverage, or a doc scope decision — send a brief note (≤5 sentences) to
+memex via SendMessage.
 
-### Step 4 — Regenerate report
-python3 scripts/generate_report.py
-
-### Step 5 — Push Confluence
-export $(cat .env | xargs)
-python3 scripts/pull_page.py --page-id <FINDINGS_PAGE_ID> --output-dir /tmp/confluence-pull
-# Add row + edit section to wiki-findings-and-proposed-changes.md (see confluence-push.md)
-python3 scripts/push_page.py /tmp/confluence-pull/wiki-findings-and-proposed-changes.md
-python3 scripts/pull_page.py --page-id <PERF_REPORT_PAGE_ID> --output-dir /tmp/confluence-pull
-# Replace body with SHERLOCK-REPORT.md content
-python3 scripts/push_page.py /tmp/confluence-pull/sherlock-performance-report.md
-
-### Step 6 — Report back
-State: test case filename, wiki findings Confluence version, the support bot report Confluence version.
+### Step 5 — Report back
+State: sherlock_score, team_reply_vs_sherlock, the gap list, and whether anything was sent to memex.
 ```
