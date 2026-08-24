@@ -19,7 +19,6 @@ export SKILLS_WORK_ORGS=""
 export SKILLS_JIRA_BASE_URL=""
 export SKILLS_JIRA_PROJECT_KEY=""
 export SKILLS_JIRA_EPIC_LINK_FIELD=""
-export SKILLS_WORK_DOCS_REPO=""
 
 # --- Client / contract (optional third git identity) ---
 export SKILLS_CLIENT_GIT_NAME=""

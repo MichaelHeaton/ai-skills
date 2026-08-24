@@ -53,7 +53,6 @@ Paths under `weekly_reports.*.vault_format_ref` and `vault_agent_ref` are **rela
 | ------------- | ----------- |
 | `${JIRA_PROJECT_KEY}` | `jira.project_key` |
 | `${JIRA_BASE_URL}` | `jira.base_url` |
-| `${WORK_DOCS_REPO}` | `repos.work_docs` |
 | `${GITHUB_PERSONAL_USER}` | `accounts.personal.github_user` |
 
 Tag definitions: [categories/tags.yaml](../../categories/tags.yaml).
