@@ -52,7 +52,10 @@
       "mcp__github__search_issues",
       "mcp__github__pull_request_read",
       "mcp__github__list_issues",
-      "Bash(bash ~/.claude/skills/git-ops/scripts/verify-closes.sh*)"
+      "Bash(bash ~/.claude/skills/git-ops/scripts/verify-closes.sh*)",
+      "mcp__atlassian__confluence_get_page_children",
+      "mcp__atlassian__confluence_get_page_diff",
+      "mcp__2026a88b-8ad2-4256-9eca-84b6d836599b__slack_read_thread"
     ]
   },
   "hooks": {
