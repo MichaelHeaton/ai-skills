@@ -27,7 +27,8 @@ raw_lines = len(text.splitlines())
 REDACT = [
     (r"AKIA[0-9A-Z]{16}", "[AWS_KEY_REDACTED]"),
     (r"(?i)(password|passwd|pwd|secret|token|api[_-]?key|bearer)\s*[:=]\s*\S{8,}", r"\1=[REDACTED]"),
-    (r"s\.[A-Za-z0-9]{24,}", "[VAULT_TOKEN_REDACTED]"),
+    (r"(?i)(unseal key|recovery key)\s*\d*\s*[:=]\s*\S{8,}", r"\1=[REDACTED]"),
+    (r"\b(?:hvs|hvb|hvr|s)\.[A-Za-z0-9_-]{20,}", "[VAULT_TOKEN_REDACTED]"),
     (r"-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----",
      "[PRIVATE_KEY_REDACTED]"),
     (r"(?i)(aws_secret_access_key)\s*[:=]\s*\S+", r"\1=[REDACTED]"),
@@ -53,8 +54,8 @@ FILTERS = {
         r"UNREACHABLE|msg:|skipping: \[.*\] =>.*error"
     ),
     "vault": re.compile(
-        r"Error|Warning|Key\s+Value|Success!|path\s*=|lease_id|expiration|"
-        r"token\s*=|sealed|unseal|permission denied"
+        r"(?i)error|warning|key\s+value|success!|path\s*=|lease_id|expiration|"
+        r"token\s*[:=]|sealed|unseal|recovery key|root token|permission denied"
     ),
     "k8s": re.compile(
         r"Error|error|Warning|OOMKilled|CrashLoop|Pending|Failed|"

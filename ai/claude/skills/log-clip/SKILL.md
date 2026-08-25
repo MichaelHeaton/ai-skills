@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-25
 updated_by: claude
 name: log-clip
 description: Filtered log capture system for noisy CLI tools (Terraform, Ansible, Vault, Kubernetes). Strips DEBUG/INFO/progress noise, redacts secrets, and saves signal-only output to ~/.claude/logs/ so Claude reads only what matters. Two modes: capture script (user runs the command, pipes through clog) and Claude-side filter (Claude pipes its own tool commands through clog before reading output). Trigger on: "read the last tf log", "show me the filtered log", "run terraform and show me errors only", "pipe through clog", or any time raw Terraform, Ansible, or Vault output is about to be loaded into context — including a second or third raw structured-log paste in the same debugging loop, which is its own recognizable pattern even if the first paste was missed.
@@ -52,6 +52,8 @@ terraform plan 2>&1 | clog tf
 
 If `clog` is not installed, Claude should apply a manual filter: grep for `Error:|Warning:|Plan:|Apply complete` rather than reading the full output.
 
+**Same applies when Claude hands the user a command to run themselves.** If Claude is about to suggest a command likely to print a secret to stdout — `vault operator init`, `vault operator unseal`, `aws sts get-session-token`, anything printing tokens/keys/credentials — default to suggesting it piped through `clog <tool>` (or `clog auto` if no specific tool filter fits) rather than a bare command, and tell the user to read the filtered log back rather than pasting raw output into chat. This closes the actual failure mode `clog`'s redaction exists for: a secret printed to a terminal, then manually copied somewhere it shouldn't go — including into an AI prompt. `secret-scan-prompt` (a global `UserPromptSubmit` hook, unrelated skill) is the backstop for anything pasted raw anyway; this convention is the first line of defense that avoids needing the backstop at all.
+
 Once a filtered log already exists — whether from manual `clog` piping above or a separate automatic-capture pipeline if one is installed — `cli-filter <tool>` is the preferred way to read the latest one, rather than hunting through `~/.claude/logs/` manually:
 
 ```bash
@@ -80,7 +82,8 @@ Before filtering, clog redacts:
 
 - AWS access keys (`AKIA...`)
 - passwords, tokens, api_key, bearer values in key=value format
-- Vault tokens (`s.XXXX`)
+- Vault tokens, legacy and current formats (`s.XXXX`, `hvs.XXXX`, `hvb.XXXX`, `hvr.XXXX`)
+- Vault unseal keys and recovery keys (`Unseal Key N: ...`, `Recovery Key N: ...`)
 - Private key blocks
 - Authorization headers
 
