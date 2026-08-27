@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.1.1
 principles_version: 1.0.0
-last_updated: 2026-08-18
+last_updated: 2026-08-27
 updated_by: claude
 name: humanizer
 description: Rewrite an article or draft to strip out AI-writing tells — puffery, canned notability phrasing, overused vocabulary (delve, boasts, testament, underscore, vibrant...), formulaic "Challenges and Future" endings, negative parallelism ("not only X but Y"), rule-of-three lists, and AI-typical formatting — while preserving every fact, citation, and the original meaning exactly, and adding nothing new. Based on Wikipedia's WP:Signs of AI writing field guide. Use when the user says "humanize this", "de-AI this", "make this sound less like AI wrote it", "remove AI writing signs", "this reads like ChatGPT", "strip the AI tells", "clean up the AI-generated tone", or pastes a draft/article asking for a pass to sound more human without changing what it says.
@@ -58,6 +58,8 @@ Meaning and facts are the fixed point. Style is the only thing in motion.
 **Section summaries.** *"In summary," "In conclusion," "Overall, ..."* paragraphs that restate what was just said. Cut them — they add no information.
 
 **Formatting tells.** Title-case section headings (fix to sentence case), excessive/mechanical **boldface**, inline-header bullet lists (`- **Header:** text`) where prose would read better, emoji used as heading decoration, skipped heading levels, thematic breaks (`----`) before every heading, Markdown syntax leaking into wikitext (`**bold**`, `##`, fenced code blocks), stray chatbot artifacts (`:contentReference[...]`, `oai_citation`, `【85†L1-2】`, `utm_source=chatgpt.com` in URLs). Fix the formatting; don't touch the content it wraps.
+
+**Scope this one to article/prose contexts.** "Inline-header bullet lists" and "mechanical boldface" describe encyclopedic or narrative prose (Wikipedia articles, blog posts, reports meant to read as continuous paragraphs) — there, bullets-with-bold-labels are a giveaway that the writer never turned notes into sentences. They do **not** apply to content that is intentionally scannable: a SKILL.md, a runbook, or a comms template (`**Progress**` / `- bullet`, `**Impact:**` labels) uses that structure on purpose, for human skimmability and AI parseability alike — see [docs/guides/formatting.md](../../../../docs/guides/formatting.md) *(global: ai-skills)*. Don't flatten that structure into prose; only clean up sentence-level tells (puffery, vocabulary, hedging) within it.
 
 **Hedging/knowledge-cutoff disclaimers and fabricated absence claims.** *"As of my last update...", "While specific details are limited in available sources...", "not widely documented."* These are usually just noise — cut them rather than "fixing" them into a stronger claim, since you have no way to verify what's actually undocumented.
 
