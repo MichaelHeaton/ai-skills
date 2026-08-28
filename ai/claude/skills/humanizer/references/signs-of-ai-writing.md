@@ -1,8 +1,8 @@
 ---
-version: 1.0.0
+version: 1.0.1
 principles_version: 1.0.0
-last_updated: 2026-07-22
-updated_by: human
+last_updated: 2026-08-27
+updated_by: claude
 ---
 
 # Signs of AI writing — full pattern reference
@@ -68,6 +68,8 @@ Adjective-adjective-adjective or short-phrase-short-phrase-and-short-phrase cons
 AI text has a strong repetition-penalty tendency: it avoids reusing the same term for the same referent, cycling through synonyms ("the constraints of socialist realism" → "the challenging climate of Soviet artistic constraints" → "state-imposed artistic norms") in ways that read as evasive rather than precise. Fix: it's fine — often better — to reuse the exact same term for the same referent across a passage. Don't introduce variation for its own sake.
 
 ## 3. Formatting and style tells
+
+**Scope: article/prose contexts only** (Wikipedia articles, blog posts, reports meant to read as continuous paragraphs). The two structural tells below — inline-header lists and mechanical boldface — describe notes-dressed-up-as-prose, not intentionally scannable formats. A SKILL.md, runbook, or comms template (`**Progress**` / `- bullet`, `**Impact:**` labels) uses that same shape on purpose for skimmability; don't apply this section to it. See [docs/guides/formatting.md](../../../../../docs/guides/formatting.md) *(global: ai-skills)*.
 
 - **Title case headings** ("Impact of Technology and Digitalization") instead of sentence case. Fix to sentence case per MOS.
 - **Mechanical overuse of boldface** — bolding every instance of a chosen term "key takeaways" style. Fix: bold only what genuinely needs emphasis, sparingly.

@@ -1,8 +1,8 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-27
-updated_by: human
+last_updated: 2026-08-27
+updated_by: claude
 ---
 
 # Output formatting guide
@@ -59,3 +59,16 @@ Give the fix as a concrete command or action, not a suggestion.
 Use headers to break it into scannable sections.
 Keep each section under 10 lines where possible.
 If a section would run long, move the detail to a `references/` file and link to it.
+
+---
+
+## Written docs (SKILL.md, references/, runbooks, comms templates)
+
+The same baseline applies to persisted documents, not just chat output — and it resolves a tension that looks real but isn't: ADHD-friendly readers want short, scannable, bulleted docs; an AI reading the same doc for context wants enough detail to act correctly. Those aren't opposing forces once you separate two different things that "short vs. robust" conflates:
+
+- **Structure** (headers, bold lead terms, bullets, explicit sections) — both audiences want *more* of this, not less. It's what makes a doc skimmable for a human and parseable for a model.
+- **Length** (how much prose sits under that structure) — this is genuinely traded off, and the fix is progressive disclosure, not picking one audience.
+
+**Pattern**: a short top layer (bulleted summary, headers, bold key terms) that a human can skim in seconds, with full detail pushed into linked sections or a `references/` file that an AI (or a human who wants more) can traverse into. This repo already does this at the top level — `CLAUDE.md` is a thin overlay pointing to `AGENTS.md` and `principles/` rather than one monolithic doc — apply the same shape one level down, inside individual skill docs and runbooks.
+
+**Do not treat this structure as an AI-writing tell to strip out.** Bold section labels and bulleted lists (`**Progress**` / `- bullet`) in an intentionally scannable doc — a SKILL.md, a runbook, an internal comms template — are deliberate accessibility structure, not padding. A cleanup pass (e.g. `humanizer`) that flattens them into paragraphs on the theory that "prose would read better" is optimizing for encyclopedic article style, which is the wrong target for this content — see the scoping note in that skill.

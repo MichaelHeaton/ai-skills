@@ -1,7 +1,7 @@
 ---
-version: 1.4.0
+version: 1.4.1
 principles_version: 1.0.0
-last_updated: 2026-07-30
+last_updated: 2026-08-27
 updated_by: claude
 name: comms-write
 description: Write internal communications for work-primary or client-contract domains. Covers status updates, 3P updates, incident reports, customer notifications, leadership updates, PR review Slack posts, Slack thread replies, and general internal messaging. Also handles editing or improving an existing draft when pasted inline. Use for team updates, status reports, incident summaries, stakeholder messages, or Slack posts (including after opening a PR). Triggers on "write a 3P", "status update", "incident report", "PR ready for review", "slack message for PR", "/pr-slack", "draft PR notification", "send to vault admins", "slack message", "post to slack", "message for the team", "write comms for", "draft a message to", "update this message", "edit this draft", "polish this", "clean up this slack message", "improve this message", "reply to slack thread", "slack response", "thread reply", "respond to this thread", "draft a reply to this", "slack thread response".
@@ -72,5 +72,5 @@ If domain context is unclear, ask or infer from `local.json` / current repo.
 - Match tone to audience: leadership = outcome-focused; customer = empathetic and actionable
 - Pull from Jira, Slack, or other tools when available
 - When in doubt, shorter is better
-- **Before delivering, invoke the `humanizer` skill** on the drafted text — strips AI-writing tells (puffery, canned phrasing, formulaic endings) while preserving every fact and detail exactly. **Skip this for short/structured drafts** — thread replies, PR-review posts, or anything under ~50-75 words or mostly bullets/URLs/ticket references — where a full humanizer pass reliably finds nothing to change but still pays the full token cost of reprinting its instructions. Keep it for longer prose forms (status updates, incident reports, leadership/customer comms) where AI-tell density is actually likely.
+- **Before delivering, invoke the `humanizer` skill** on the drafted text — strips AI-writing tells (puffery, canned phrasing, formulaic endings) while preserving every fact and detail exactly. **Skip this for short/structured drafts** — thread replies, PR-review posts, or anything under ~50-75 words or mostly bullets/URLs/ticket references — where a full humanizer pass reliably finds nothing to change but still pays the full token cost of reprinting its instructions. Keep it for longer prose forms (status updates, incident reports, leadership/customer comms) where AI-tell density is actually likely. This skill's own templates use bold-header bullets (`**Progress**`, `**Impact:**`) — humanizer is scoped to leave that structure alone and only clean up sentence-level tells within it; see [docs/guides/formatting.md](../../../../docs/guides/formatting.md) *(global: ai-skills)*.
 - **Deliver the draft in a fenced code block** — use ` ```plain ` so the user can copy into Slack without reformatting
