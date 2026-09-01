@@ -1,10 +1,10 @@
 ---
-version: 1.2.0
+version: 1.3.0
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-09-01
 updated_by: claude
 name: contextual-pr-review
-description: Review a GitHub PR — your own or a teammate's — by first loading the target repo's own conventions (CLAUDE.md/AGENTS.md, sibling directories with the same structural pattern) so the review checks the diff against real repo-specific rules instead of generic best practice. Use for "review this PR", "look over PR #N", "<name> asked for a review on <url>", a bare PR URL, or before eyeballing a diff casually and trusting the author's own testing. Works for any repo, including GitHub Enterprise hosts (auto-detects GH_HOST from the remote) — deliberately non-Vault-scoped, though it grew out of Terraform module and per-cluster config repos. Prefer this over /code-review for a bare "review PR #N" with no flags; pick /code-review when the request names an effort level or a --comment/--fix flag, or targets a diff/branch/path rather than a PR. Complements /code-review (repo-agnostic, no context step) and the reviewer agent (dispatched for larger diffs, prompt front-loaded with context).
+description: Review a GitHub PR — your own or a teammate's — by first loading the target repo's own conventions (CLAUDE.md/AGENTS.md, sibling directories with the same structural pattern) so the review checks the diff against real repo-specific rules instead of generic best practice, then reports in five fixed sections: what the PR does, whether it meets its linked ticket's acceptance criteria, findings ranked by severity, a verdict, and open questions for the author. Use for "review this PR", "look over PR #N", "<name> asked for a review on <url>", a bare PR URL, or before eyeballing a diff casually and trusting the author's own testing. Works for any repo, including GitHub Enterprise hosts (auto-detects GH_HOST from the remote) — deliberately non-Vault-scoped. Prefer this over /code-review for a bare "review PR #N"; pick /code-review when an effort level or --comment/--fix flag is named, or the target is a diff/branch/path rather than a PR.
 ---
 
 # Contextual PR Review
@@ -58,11 +58,28 @@ Many repos in this ecosystem repeat the same directory shape across many near-id
 
 This step only applies when the repeated-directory pattern actually exists — don't force a sibling comparison in a repo that doesn't have one.
 
-## 5. Report findings ranked by severity
+## 5. Check the diff against the linked ticket's acceptance criteria
 
-Lead with the most severe finding. If a finding is inherited from existing code rather than introduced by this PR, say so — it changes the urgency, not whether it's worth mentioning. If nothing of substance survives scrutiny, say that plainly instead of padding the list to look thorough.
+A PR description restating its own intent isn't the same as verifying it against the ticket that spawned it. Find the linked ticket and check the diff against its AC explicitly — don't take the PR description's word for it:
 
-## 6. Offer — don't silently open — a follow-up fix
+- **Jira**: look for a key pattern like `PROJ-12345` in the PR body, title, or branch name (often rendered as a link, e.g. `[Jira: CESSS-16343](...)`). Fetch it with the Atlassian MCP (`jira_get_issue`) if connected, otherwise open the link.
+- **GitHub Issues**: look for `Closes #N` / `Fixes #N` / `Resolves #N` in the PR body, or a bare `#N`. Fetch with `gh issue view <n> --repo <owner/repo>`.
+- Walk each AC item (or the ticket's stated goal, if it has no bulleted AC) against the actual diff, not against the PR description's claim about the diff — a PR can describe itself accurately and still leave an AC item unaddressed.
+- If no ticket is linked anywhere, say so plainly in the AC section rather than silently skipping it. A PR with no traceable ticket is itself worth surfacing, not a reason to omit the section.
+
+## 6. Report in five sections, always in this order
+
+Structure every review the same way so the reader can jump straight to what they need, in this order:
+
+1. **What this PR does** — a plain-language summary grounded in the actual diff, not a restatement of the PR title or description.
+2. **AC check** — the ticket's acceptance criteria (or stated goal) from step 5, and whether the diff satisfies each one. State explicitly if no ticket is linked.
+3. **Findings** — substantive issues, ranked by severity, most severe first. Say plainly if a finding is inherited from existing code rather than introduced by this PR — that changes the urgency, not whether it's worth mentioning. If nothing of substance survives scrutiny, say that plainly instead of padding the list to look thorough.
+4. **Verdict** — one clear call: ship, hold, or discuss. Not a hedge.
+5. **Summary / questions to ask** — a short wrap-up, plus any open questions worth raising to the author that aren't blocking findings (e.g. "is this default intentional, or an oversight?"). This is where a judgment call the author made on purpose — but that can't be verified from the diff alone — belongs, distinct from a defect in section 3.
+
+Keep sections 1 and 2 tight — a paragraph each is usually enough. Sections 3-5 carry the depth.
+
+## 7. Offer — don't silently open — a follow-up fix
 
 If a finding is something fixable in a repo you can push to yourself (not just something to flag to the PR's author), offer to open a real follow-up PR for it rather than only reporting it and waiting. This is often more useful than a comment that sits unread. But **ask before opening it** — a new PR is visible to teammates and affects shared state, so confirm first rather than auto-creating it as part of the review. Use the `git-ops` skill for the branch/commit/PR mechanics once confirmed.
 
