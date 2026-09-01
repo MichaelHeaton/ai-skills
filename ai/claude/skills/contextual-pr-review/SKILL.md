@@ -1,10 +1,10 @@
 ---
-version: 1.3.0
+version: 1.4.0
 principles_version: 1.0.0
 last_updated: 2026-09-01
 updated_by: claude
 name: contextual-pr-review
-description: Review a GitHub PR — your own or a teammate's — by first loading the target repo's own conventions (CLAUDE.md/AGENTS.md, sibling directories with the same structural pattern) so the review checks the diff against real repo-specific rules instead of generic best practice, then reports in five fixed sections: what the PR does, whether it meets its linked ticket's acceptance criteria, findings ranked by severity, a verdict, and open questions for the author. Use for "review this PR", "look over PR #N", "<name> asked for a review on <url>", a bare PR URL, or before eyeballing a diff casually and trusting the author's own testing. Works for any repo, including GitHub Enterprise hosts (auto-detects GH_HOST from the remote) — deliberately non-Vault-scoped. Prefer this over /code-review for a bare "review PR #N"; pick /code-review when an effort level or --comment/--fix flag is named, or the target is a diff/branch/path rather than a PR.
+description: Review a GitHub PR — your own or a teammate's — by first loading the target repo's own conventions (CLAUDE.md/AGENTS.md, sibling directories with the same structural pattern) so the review checks the diff against real repo-specific rules instead of generic best practice. Always separates "what the PR does" from "findings"; checks the linked ticket's acceptance criteria and adds a verdict/open-questions section only when there's something real to report — sized to the diff, not a fixed template. Use for "review this PR", "look over PR #N", "<name> asked for a review on <url>", a bare PR URL, or before eyeballing a diff casually and trusting the author's own testing. Works for any repo, including GitHub Enterprise hosts (auto-detects GH_HOST from the remote) — deliberately non-Vault-scoped. Prefer this over /code-review for a bare "review PR #N"; pick /code-review when an effort level or --comment/--fix flag is named, or the target is a diff/branch/path rather than a PR.
 ---
 
 # Contextual PR Review
@@ -58,26 +58,27 @@ Many repos in this ecosystem repeat the same directory shape across many near-id
 
 This step only applies when the repeated-directory pattern actually exists — don't force a sibling comparison in a repo that doesn't have one.
 
-## 5. Check the diff against the linked ticket's acceptance criteria
+## 5. Check the ticket's acceptance criteria — only as far as there's something to check
 
-A PR description restating its own intent isn't the same as verifying it against the ticket that spawned it. Find the linked ticket and check the diff against its AC explicitly — don't take the PR description's word for it:
+A PR description restating its own intent isn't the same as verifying it against the ticket that spawned it. Find the linked ticket, but scale what you do next to what's actually there — don't force a full walkthrough of a null result:
 
 - **Jira**: look for a key pattern like `PROJ-12345` in the PR body, title, or branch name (often rendered as a link, e.g. `[Jira: CESSS-16343](...)`). Fetch it with the Atlassian MCP (`jira_get_issue`) if connected, otherwise open the link.
 - **GitHub Issues**: look for `Closes #N` / `Fixes #N` / `Resolves #N` in the PR body, or a bare `#N`. Fetch with `gh issue view <n> --repo <owner/repo>`.
-- Walk each AC item (or the ticket's stated goal, if it has no bulleted AC) against the actual diff, not against the PR description's claim about the diff — a PR can describe itself accurately and still leave an AC item unaddressed.
-- If no ticket is linked anywhere, say so plainly in the AC section rather than silently skipping it. A PR with no traceable ticket is itself worth surfacing, not a reason to omit the section.
+- **No ticket linked anywhere** — say so in one sentence in the report. Nothing further to fetch or check.
+- **Ticket linked but has no concrete, checkable AC** (just a description or a paragraph, no specific values/thresholds/flags) — say so in one sentence. Don't manufacture a walkthrough of criteria that don't exist — this is the common case, not the exception (the PR that prompted this step, CESSS-16343, was exactly this: a Jira link with no bulleted AC).
+- **Ticket has concrete AC** — dispatch the `ac-conformance-check` skill to diff those AC items against the actual diff, rather than re-deriving the same extract/map/verify logic here. Fold its result into the report as a couple of sentences: which AC items matched, which didn't.
 
-## 6. Report in five sections, always in this order
+## 6. Report sized to the diff, not to a template
 
-Structure every review the same way so the reader can jump straight to what they need, in this order:
+Two things always belong in the report, regardless of PR size — this is the actual fix for what went wrong in the review that prompted this skill's AC-check step (a write-up that blended "what changed" into "findings" and buried a good open question):
 
 1. **What this PR does** — a plain-language summary grounded in the actual diff, not a restatement of the PR title or description.
-2. **AC check** — the ticket's acceptance criteria (or stated goal) from step 5, and whether the diff satisfies each one. State explicitly if no ticket is linked.
-3. **Findings** — substantive issues, ranked by severity, most severe first. Say plainly if a finding is inherited from existing code rather than introduced by this PR — that changes the urgency, not whether it's worth mentioning. If nothing of substance survives scrutiny, say that plainly instead of padding the list to look thorough.
-4. **Verdict** — one clear call: ship, hold, or discuss. Not a hedge.
-5. **Summary / questions to ask** — a short wrap-up, plus any open questions worth raising to the author that aren't blocking findings (e.g. "is this default intentional, or an oversight?"). This is where a judgment call the author made on purpose — but that can't be verified from the diff alone — belongs, distinct from a defect in section 3.
+2. **Findings** — substantive issues, ranked by severity, most severe first. Say plainly if a finding is inherited from existing code rather than introduced by this PR — that changes the urgency, not whether it's worth mentioning. If nothing of substance survives scrutiny, say that plainly instead of padding the list to look thorough.
 
-Keep sections 1 and 2 tight — a paragraph each is usually enough. Sections 3-5 carry the depth.
+Everything else scales with the diff — don't force a labeled section for a null result:
+
+- **Small, single-purpose diffs**: fold the ticket status (step 5) and a verdict into a couple of sentences. Skip a separate "open questions" section if there's nothing to ask.
+- **Larger or logic-bearing diffs**: give AC-check its own paragraph, state a clear verdict (ship, hold, or discuss — not a hedge), and list any open questions for the author that aren't blocking findings (e.g. "is this default intentional, or an oversight?") — distinct from a defect in the findings, since it's a judgment call the author made on purpose that can't be verified from the diff alone.
 
 ## 7. Offer — don't silently open — a follow-up fix
 

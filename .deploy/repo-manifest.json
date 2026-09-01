@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-01T22:05:44Z",
+  "generated_at": "2026-09-01T22:27:53Z",
   "algorithm": "md5",
   "scope": "principles+ai/claude+ai/cursor/rules",
   "paths": {
@@ -53,7 +53,7 @@
     "ai/claude/skills/comms-write/examples/work-primary-leadership.md": "cf9353a0f056cc2da89828fa28b378d0",
     "ai/claude/skills/comms-write/examples/work-primary-pr-review.md": "ff698d72f1971653e0010f8cbcae264d",
     "ai/claude/skills/confluence-section-edit/SKILL.md": "2d29ca95efa10702993abdca6a35f7de",
-    "ai/claude/skills/contextual-pr-review/SKILL.md": "2d115e411cf7e2b757b8c25c50ac118f",
+    "ai/claude/skills/contextual-pr-review/SKILL.md": "12814536953f378ef04f7cacad91dcc0",
     "ai/claude/skills/contract-renewal-tracking/SKILL.md": "770d7ef261c71f82e3a2407b22558d4c",
     "ai/claude/skills/contract-renewal-tracking/references/crm-person-template.md": "0435d95aca191cc9f657bc9729982820",
     "ai/claude/skills/contract-renewal-tracking/references/wiki-tracking-template.md": "e874f29aa28c2def0fd9f6944f225cb3",
