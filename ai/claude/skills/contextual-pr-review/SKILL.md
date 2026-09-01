@@ -1,5 +1,5 @@
 ---
-version: 1.4.0
+version: 1.5.0
 principles_version: 1.0.0
 last_updated: 2026-09-01
 updated_by: claude
@@ -44,10 +44,12 @@ If the PR is already merged, diff the merge commit's own commits against their p
 
 ## 3. Size-gate the review mechanism
 
-- **Small, single-purpose diffs** (roughly a handful of lines, a config value, one file) — review directly in the current session. You already have the repo context loaded; spinning up a subagent for a 4-line diff just adds latency without adding rigor.
-- **Larger or logic-bearing diffs** (new resources, new code paths, anything with its own tests) — dispatch to the `reviewer` subagent. Critically, **front-load its prompt with the repo-specific context from step 1** — the subagent starts with zero session memory, so a generic "review PR #23" prompt throws away everything you just learned. Include the specific gotchas, naming rules, and security invariants to check the diff against, not just a link to the PR.
+Size and "does this introduce new behavior worth reasoning about" are different axes — don't conflate them. A 26-line YAML routing rule that moves alerts between ServiceNow queues is small by line count but fully logic-bearing; a 200-line diff that's all generated boilerplate isn't.
 
-There's no hard line-count threshold — the judgment call is whether the diff introduces new behavior worth reasoning about, or just changes a value/comment in an already-understood pattern.
+- **Review directly in the current session** whenever you already hold the context needed to judge the diff — a handful of lines, a config value, one file, *or* a small-but-logic-bearing change (a routing rule, a config-DSL diff, a policy tweak) where step 1's repo context or step 4's sibling comparison already gave you what you need. Dispatching a subagent here just discards context you'd have to re-explain, for no rigor gained.
+- **Dispatch to the `reviewer` subagent** when the diff is large enough, or spans enough new surface area, that working through it would consume most of the session's remaining context — or when there's nothing more to load than what's already in the prompt, so a subagent starting cold loses nothing. Critically, **front-load its prompt with the repo-specific context from step 1** — the subagent starts with zero session memory, so a generic "review PR #23" prompt throws away everything you just learned. Include the specific gotchas, naming rules, and security invariants to check the diff against, not just a link to the PR.
+
+There's no hard line-count threshold — the judgment call is whether you already hold the context to reason about the diff, not how many lines changed.
 
 ## 4. Compare against sibling structure, not just history
 
