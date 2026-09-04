@@ -1,7 +1,7 @@
 ---
-version: 1.8.0
+version: 1.9.0
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-09-04
 updated_by: claude
 name: skill-review
 description: Review and improve skills — either a single skill or all skills used in the current session. Single-skill mode: audits a SKILL.md against conventions, incorporates session learnings, and tunes triggering. Session-audit mode: reflects on the conversation for skill friction and workflow gaps worth turning into new skills; scans usage counters for zero/dormant-usage skills across ALL installed skills, not just this session's; and flags skills whose SKILL.md hasn't been touched in 90+ days — run at the end of every session, or proactively right after a SKILL.md is edited directly (not through `skill-create`, which already reviews). Also invoked programmatically by a parent session passing pre-collected context (sub-agent mode: SA1 by parent, SA2–SA4 in sub-agent). Triggers on: "review this skill", "improve skill X", "skill isn't working well", "tune skill description", "session skill review", "audit skills", "stale skills", or when session-close reaches its skill hygiene step.
@@ -42,6 +42,8 @@ This reuses `/doctor` check 1's signal (skill usage counters) but skips its mult
 
 ### SA1. Identify skills used this session
 
+**If the corpus is a multi-file historical scan** (a batch of files being evaluated before deletion, plus recovered prior versions from git history — not a single session's conversation): see [references/corpus-audit.md](references/corpus-audit.md), which adapts SA1–SA4 for that shape, then skip the rest of this section.
+
 **If this invocation includes a pre-summarized context block** (skills list + friction notes passed by a parent session): use that as SA1 output and skip to SA2. See [Sub-agent invocation pattern](#sub-agent-invocation-pattern) below.
 
 **If no context block is provided and no conversation history exists**: halt and return: "No session context available — re-invoke with a context block or run from the parent session."
@@ -75,6 +77,8 @@ Look for any multi-step work that ran without a skill — no skill fired, but th
 - Capturing a meeting: attendees, decisions, open questions, action items → vault note + optional ticket
 - Summarizing a Slack thread into a vault note
 - Any workflow where the user said "I do this regularly" or that visibly happened more than once
+
+In corpus-audit mode, this step carries the extra bar of requiring recurrence across ≥2 distinct files/dates — see [references/corpus-audit.md](references/corpus-audit.md).
 
 ### SA4. Output the skill delta
 

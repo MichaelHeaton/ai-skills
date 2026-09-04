@@ -1,7 +1,7 @@
 ---
-version: 1.19.0
+version: 1.20.0
 principles_version: 1.0.0
-last_updated: 2026-08-16
+last_updated: 2026-09-04
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
@@ -319,11 +319,21 @@ Before writing the file, ensure the output directory exists:
 mkdir -p "$MEMEX_ROOT/Outputs/Session"
 ```
 
-After writing the new file, prune files older than 14 days — they've been consumed by at least one subsequent session and have no remaining handoff value:
+After writing the new file, prune files older than 14 days — they've been consumed by at least one subsequent session and have no remaining handoff value.
+
+**⚠️ Commit the prune immediately — don't leave it as a bare filesystem delete.** A `find -delete` with no follow-up commit has stranded uncommitted deletions in the working tree at least three times before (each one silently discovered and cleaned up by a later, unrelated session — see [ai-skills#580](https://github.com/MichaelHeaton/ai-skills/issues/580)), because this step runs *after* the git-hygiene pass in Steps 1–5, so nothing later in this same run re-checks memex for what it just changed.
 
 ```bash
-find "$MEMEX_ROOT/Outputs/Session" -name "session-close-*.md" -mtime +14 -delete && \
-echo "✓ pruned old session files"
+find "$MEMEX_ROOT/Outputs/Session" -name "session-close-*.md" -mtime +14 -print -delete
 ```
 
-If no files are pruned, suppress the output — no action needed means no report needed.
+If the command printed any paths, immediately stage and commit them in the same repo, in a small dedicated commit (don't bundle into an unrelated commit):
+
+```bash
+cd "$MEMEX_ROOT" && git add -A Outputs/Session/ && \
+git commit -m "chore(session): prune 14+ day-old session-close files ($(date +%Y-%m-%d))"
+```
+
+If no files are pruned, suppress all of the above — no action needed means no report needed.
+
+**If the prune batch is large enough to be worth a cross-session pattern check** (several files at once, or it's been a while since the last prune), use the `memex-session-prune` skill *(global: ai-skills)* instead of the inline commands above — it mines the full text of the batch plus every previously-pruned file's history for recurring friction before deleting, and opens a PR rather than committing straight to main.
