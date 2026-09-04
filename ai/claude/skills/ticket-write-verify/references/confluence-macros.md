@@ -1,7 +1,7 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-09-04
 updated_by: claude
 ---
 
@@ -46,6 +46,23 @@ Renders a live-status smart card instead of a static link, so a table referencin
 ## Title-field HTML-entity gotcha
 
 The Confluence MCP's `update_page` `title` parameter does not reliably decode HTML entities — passing `&mdash;` can produce a literally mangled title (e.g. rendered as `);` in place of an em dash) rather than the intended character. Pass the literal Unicode character (an actual `—`) instead of an HTML entity.
+
+## Image macros — read layer always flattens, never trust `confluence_get_page` for verification
+
+`confluence_get_page` unconditionally flattens `<ac:image>`/`<ri:attachment>` macros into a bare `<img alt="filename.jpg" src="filename.jpg" width="..."/>` tag on read — regardless of what's actually stored server-side, and regardless of `convert_to_markdown`. This was confirmed two ways: the identical flattened form was already present in a page's years-old version history (so it's not something a prior edit broke — the read layer does this on every fetch), and re-fetching immediately after writing a correct `ac:image`/`ri:attachment` macro showed the same flattened `<img>` tag even though the live rendered page displayed the image correctly.
+
+**Practical effect**: a bare `<img src="filename">` in fetched storage content, with no matching entry in `confluence_get_attachments` for that page ID, is a signal the read layer flattened a real macro — possibly a cross-page attachment reference — not proof the image is broken.
+
+Before touching a page with this signal:
+
+1. **Don't "fix" it by leaving the flattened tag as-is** in a full-page write — there's no way to tell from the read whether you'd be re-writing a functioning cross-page reference into a broken raw string.
+2. **If the image does need fixing**, search for the attachment by filename (`confluence_search`) to find its real container page, then write a proper macro — include `ri:page` when the attachment lives on a different page than the one being edited:
+
+   ```xml
+   <ac:image><ri:attachment ri:filename="filename.jpg"><ri:page ri:content-title="Container Page Title" ri:space-key="SPACEKEY" /></ri:attachment></ac:image>
+   ```
+
+3. **Verify success via the live rendered page** (screenshot or browser) — never via `confluence_get_page`. That tool's own read-back is not evidence either way for image content; the standard re-fetch → diff loop (§2 in `SKILL.md`) does not apply here.
 
 ## Relationship to the rest of this skill
 

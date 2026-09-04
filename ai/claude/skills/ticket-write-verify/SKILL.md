@@ -1,7 +1,7 @@
 ---
-version: 1.3.0
+version: 1.4.0
 principles_version: 1.0.0
-last_updated: 2026-08-16
+last_updated: 2026-09-04
 updated_by: claude
 name: ticket-write-verify
 description: Pre-check and auto-fix ticket-system writes (Jira, Confluence, GitHub) against known markdown/wiki-conversion corruption — underscore-escaping, bracket-tag stripping, dropped bold markers, stripped `+` characters, and structural drift on large edits. Wraps fragile identifiers before submit, then re-fetches and diffs after every create/comment/edit, auto-retrying with a correcting edit when corruption is found. Use for ad hoc Jira/Confluence writes outside issue-create/issue-update flows, correcting a batch of corrupted tickets, restructuring a Confluence page, building Confluence macros or internal links, or when asked "fix the mangled ticket text", "why did my underscores get escaped", "the brackets got stripped", "verify this ticket rendered correctly", or "why is this internal link broken". Also fires autonomously before any direct `confluence_update_page`/`jira_update_issue`/`jira_add_comment` call outside issue-create/issue-update's own flows.
@@ -26,8 +26,11 @@ Ticket-system write APIs silently corrupt certain text patterns during markdown-
 | Query-string URL mangling | Jira/Confluence | URLs with `_` in query params | Underscore inside the URL gets escaped, breaking the link |
 | Bold/plus stripping | Jira | `**bold**`, `+` characters | Bold markers dropped or rendered literally; `+` silently removed |
 | Structural drift | Confluence (large edits) | Large-scale storage-format restructuring — internal page-link rewrites, section reordering | Macro (`ac:structured-macro`), link (`ac:link`), table, or date-tag counts change without a matching intentional add/remove — probable accidental loss, not a corruption pattern with a fixed signature |
+| Image-macro flattening (read-side, not write) | Confluence | Any `<ac:image>`/`<ri:attachment>` macro, on **every** fetch via `confluence_get_page` — including `convert_to_markdown: false` | Read call always returns a bare `<img alt="filename.jpg" src="filename.jpg" width="..."/>`, regardless of what's actually stored server-side. This is the read tool lying, not evidence the write is broken — confirmed by the identical flattened form appearing in years-old page history, and by re-fetching immediately after writing a correct macro and seeing the same flattened tag while the live rendered page displayed correctly |
 
 For a large-scale restructuring edit (not a small comment/description tweak), the post-write check in §2 below is structural rather than pattern-based: diff macro count, internal-link count, table count, and date-tag count between the old and new content, and flag any unexplained delta. This reuses the same re-fetch → diff → correct → re-verify loop, just counting structural elements instead of matching text patterns. Two references build on this same check instead of inventing a separate diff-verify pass: [references/confluence-macros.md](references/confluence-macros.md) (confirmed-working native macro/link XML, and a silent internal-link-stripping gotcha) and [references/confluence-large-restructuring.md](references/confluence-large-restructuring.md) (the extract-by-index-and-reassemble procedure for safely moving whole sections).
+
+**Image macros break the standard re-fetch → diff loop** — `confluence_get_page` can never be used as verification evidence for image content, in either direction. See [references/confluence-macros.md](references/confluence-macros.md) § Image macros for the detection heuristic and the required live-page verification workaround.
 
 ---
 
