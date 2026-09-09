@@ -92,6 +92,15 @@ If the top result is page `2039778922`, check its siblings under the same onboar
 **Search work customer skills repo (customer-facing skill):**
 Scan topic files under `repos.work_skills` (vault skill directory) — check whether any existing topic file covers the question.
 
+## Step 3b — Verify against live repo/PR state (when a PR is involved)
+
+Any claim about a PR's diff, a policy `.hcl` file's existence, or an `approvers.yaml` list's membership is a snapshot, not a fact — it can go stale two ways:
+
+- **Stale local clone.** If checking a local git clone of `vault_policies`, `git fetch origin` (or otherwise hit live GitHub/API state) immediately before asserting a file, policy, or approver doesn't exist. A companion PR can merge between when you check and when you report the finding, and a clone's last-fetched state will silently disagree with what's actually on `main`/`master`.
+- **Coverage or state can resolve itself mid-thread.** If a Slack thread spans enough time for another PR to land, don't repeat an earlier finding without re-checking it first — especially if the other party disputes it with a link. Re-verify against fresh state before restating a blocker as still current.
+
+This bit a real triage on 2026-09-08 (PR #40028): an initial check against a stale local clone reported a missing policy file and an uncovered approver, both true at the time — but a companion PR (#40014) had already merged and closed the gap before the finding was even posted. See [[Wiki/Concepts/Vault-Policies-ALLOWED-PATHS-Grant-Dual-Approver-Coverage]] *(memex)* for the full case.
+
 ## Step 4 — Analyze
 
 ### Case A — Early triage
