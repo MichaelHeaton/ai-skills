@@ -286,6 +286,8 @@ Before handing over for testing, run through this quickly:
 
 ## 6. Test the Artifact
 
+**Fast-track (the user arrives with a pre-approved spec) skips interview depth, not this step.** "We already know what we want" collapsing straight to a finished skill, with no test-prompt round at all, is a real failure mode this step exists to prevent — require 2-3 test prompts before marking any skill done, even one built from a pre-approved spec.
+
 **Skills and subagents:** Come up with 2–3 realistic test prompts — the kind of thing a real user would actually type. Share them with the user before running: "Here are the prompts I'd like to test. Do these look right?" For each, follow the skill's own instructions to complete the task, then show the output. Be honest about what worked and what felt off.
 
 Good test prompts are:

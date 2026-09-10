@@ -32,6 +32,10 @@ Confluence is the sole source of truth for team docs (the `ces-documentation` gi
 
 **Known retrieval bug:** page [2039778922](https://wiki.corp.adobe.com/pages/viewpage.action?pageId=2039778922) ("Getting Started - Vault Policies Repository") documents the deprecated `mappings.yaml`/`approvers.yaml` process and keeps outranking its current-process siblings — [3913157061](https://wiki.corp.adobe.com/pages/viewpage.action?pageId=3913157061) ("New Vault Team Onboarding") and [3894301369](https://wiki.corp.adobe.com/pages/viewpage.action?pageId=3894301369) ("Working with the new Git repositories") — even though all three are in the indexed subtree. If the support bot cites page `2039778922`, that's this known bug, not a content gap — the fix is a retrieval/ranking conversation with the bot's owning team, not another wiki edit.
 
+**Known gotcha — child-token policy isolation.** Minting a new access token via "create token scoped to policy X" while already authenticated under a personal/admin identity does **not** isolate testing to policy X — Vault attaches the creator's own identity-derived group policies to the child token regardless of the explicit policy flag. This makes an isolation test inconclusive. Correct method: use a token from a fresh/unauthenticated login (e.g. an AppRole login), not a child token minted from an already-authenticated session.
+
+**Escalate after repeated confirmed occurrences instead of re-noting indefinitely.** Before flagging a confirmed instance of this (or any) known-bug pattern, check the personal knowledge base for prior occurrences of the same pattern. Once a pattern hits its 3rd confirmed occurrence, prompt the user to file an actual ticket against the retrieval system's owning team, rather than just re-documenting the same known issue again.
+
 **Gate before scoring this as a confirmed instance:** confirm which underlying system/process version the customer is actually on before treating a citation of page `2039778922` as the bug. A citation of that page is the *correct* answer for a customer still on the older, still-majority-adopted process — not evidence of the bug. If the thread doesn't make the customer's version clear, ask (or flag that the support bot itself should have asked) rather than defaulting either way. When it stays unclear, score the case as `ambiguous — pending confirmation`, not as a confirmed instance of the known bug.
 
 ## Processing Mode
@@ -49,6 +53,8 @@ Use background mode for Case B threads where the team already resolved it and no
 ## Agent Team
 
 Launch **memex** as a background agent at skill startup (personal KB at comms_write.memex_repo_path — follow that vault AGENTS.md). Don't wait for it before proceeding.
+
+**If `comms_write.memex_repo_path` is unset**, skip the background-agent launch and note it rather than silently substituting a different approach — this key lives in `comms-write`'s config namespace, shared across at least these two skills. **If the key is set but no `memex` agent turns out to be reachable when Step 6 tries to use it** (check via `ListAgents`), fall back to invoking the `memex-dump` skill directly instead of `SendMessage` — don't let the capture note go silently lost because the background agent never actually started.
 
 Call it via `SendMessage` for: recurring gap patterns, user capture requests, or team answers that resolve longstanding ambiguities.
 
@@ -70,6 +76,8 @@ Read what was provided and classify it:
 - **Case D (single question) — Direct research** (user asks a specific vault behavior/config question directly with no pasted source): Skip the bot-comparison steps; run doc-search and gap analysis.
 
 If unclear, ask: "Is this a Slack thread, a Jira ticket, a specific research question, or a broader doc gap audit?"
+
+**Re-classify Case A → B when a thread flips live in the same session.** A thread classified as Case A (no team reply yet) can gain a team-member reply later in the same conversation — when that happens, re-run the Case B comparison against the new reply rather than treating the two moments as separate invocations.
 
 ## Step 2 — Extract the question and classify it
 
@@ -222,6 +230,8 @@ For each item, draft the entry using the Sr SRE format in [references/gap-analys
 ## Step 6 — Capture to Memex (when notable)
 
 Good candidates: recurring gap pattern (3+ threads), team answer that resolves a longstanding ambiguity, new product area with no coverage, a doc scope decision. Send a brief note to **memex** via `SendMessage` (≤5 sentences: what, which thread, implications for future triage).
+
+**Only capture a root-cause/finding as settled fact once Case B resolution (team confirmation) exists.** A Case A hypothesis captured before the team has weighed in is a working theory, not a finding — if captured at all, label it explicitly "unconfirmed hypothesis, pending team reply" rather than stating it flatly as fact. An early-triage theory that turns out wrong once the team responds is expected; recording it as settled isn't.
 
 ## Output format
 

@@ -42,6 +42,8 @@ Show a summary table before creating anything — this step never skips, even wh
 
 **Skip the wait when the request already authorizes creation** — imperative phrasing like "create tickets for X and Y" or "make tickets for A, B, and C" already is the confirmation; asking "should I create these?" afterward is redundant friction. Show the summary table for visibility, then proceed straight to Step 5. When phrasing is ambiguous between the two, default to waiting.
 
+**If the ticket list emerged from an in-progress investigation or discussion rather than an already-finalized plan**, flag that a follow-up restructuring pass is likely before batching — or suggest holding off until the user signals the plan is actually final (an explicit "let's create these" after a settled discussion, not mid-investigation). A plan still being actively negotiated is a different case from an open-ended-but-settled request; treating it the same risks creating tickets that get extensively rewritten across several follow-up turns.
+
 ## 5. Create in parallel, index sequentially
 
 Once approved:

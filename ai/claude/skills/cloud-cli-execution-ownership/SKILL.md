@@ -27,6 +27,8 @@ Don't gate trivial checks — but don't let a single free pass become an unadmit
 
 If the very first cloud CLI call is already mutating, ask before running it — don't spend the one free pass on a mutation.
 
+**Check for an already-recorded durable preference before asking.** Before the ask below, check project/personal memory (or config) for an existing durable answer to this same question for this project/account. If one exists, skip straight to that cached behavior — don't re-ask a question the user already answered in a prior session just because this session's own cache hasn't been primed yet.
+
 ## The question to ask
 
 Ask once, with labeled options, not open-ended:

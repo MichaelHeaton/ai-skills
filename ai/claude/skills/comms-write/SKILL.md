@@ -65,6 +65,8 @@ When the user is drafting a reply to an existing Slack thread (trigger: "reply t
 
 If domain context is unclear, ask or infer from `local.json` / current repo.
 
+**Consecutive replies in the same evolving thread within one session** (a Slack thread gaining 2-3 follow-up replies as new information arrives) don't need a full skill reload each time — once this section's tone/format/length rules have already been applied earlier in the session for that thread, apply the same rules directly to the next reply rather than re-walking the routing table and re-reading the full SKILL.md body.
+
 ---
 
 ## General principles
@@ -74,5 +76,9 @@ If domain context is unclear, ask or infer from `local.json` / current repo.
 - Match tone to audience: leadership = outcome-focused; customer = empathetic and actionable
 - Pull from Jira, Slack, or other tools when available
 - When in doubt, shorter is better
+- **Strip context-for-Claude before it leaks into drafted text.** Explanatory context the user supplies so Claude understands the situation ("I only have technical access here, not decision authority, so I'm asking rather than announcing") is meta-commentary for Claude's understanding, not content meant for the recipient — never fold it directly into the draft.
+- **For an "ask" message, default to facts-then-question, not question-first** — state the relevant facts, then the question, unless the audience/context clearly calls for leading with the ask.
+- **Avoid em dashes in drafted output** — use commas, periods, or colons instead, unless the user's own house style uses them. Default preference, overridable.
+- **Never assert personal verification/testing of a fix or root cause unless it was actually verified** — by the user or the assistant, directly, in-session. Before drafting a message that states a technical fact (fixed, verified, root-caused), confirm there's sufficient evidence for it. If the claim is a hypothesis or pattern-match rather than a confirmed fact, phrase it that way ("looks like," "found a pattern suggesting") instead of confident first-person-verification language.
 - **Before delivering, invoke the `humanizer` skill** on the drafted text — strips AI-writing tells (puffery, canned phrasing, formulaic endings) while preserving every fact and detail exactly. **Skip this for short/structured drafts** — thread replies, PR-review posts, or anything under ~50-75 words or mostly bullets/URLs/ticket references — where a full humanizer pass reliably finds nothing to change but still pays the full token cost of reprinting its instructions. Keep it for longer prose forms (status updates, incident reports, leadership/customer comms) where AI-tell density is actually likely. This skill's own templates use bold-header bullets (`**Progress**`, `**Impact:**`) — humanizer is scoped to leave that structure alone and only clean up sentence-level tells within it; see [docs/guides/formatting.md](../../../../docs/guides/formatting.md) *(global: ai-skills)*.
 - **Deliver the draft in a fenced code block** — use ` ```plain ` so the user can copy into Slack without reformatting

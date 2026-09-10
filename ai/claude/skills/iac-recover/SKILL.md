@@ -45,6 +45,13 @@ Prefer this over import when the resource is genuinely gone upstream and recreat
 
 - **Vault auth backends**: the backend path and the resource's internal ID aren't the same string — importing by path alone can succeed while leaving config drift, because some backend settings live outside what import pulls in. Verify the full config, not just successful import, before trusting state.
 - Check each provider's own import documentation for what it does and doesn't pull in — a successful import command doesn't guarantee full field parity with a fresh `apply`.
+- **Argo CD PostSync/PreSync hook Job stuck `Terminating` with `argocd.argoproj.io/hook-finalizer` and no pods left**: `kubectl delete` reports success but hangs, and sync stays `Running`/`Failed` until the finalizer clears.
+  1. Confirm pods are actually gone: `kubectl -n <ns> get pods -l job-name=<job>`
+  2. Check the finalizer: `kubectl -n <ns> get job <job> -o jsonpath='{.metadata.finalizers}'`
+  3. Clear it: `kubectl -n <ns> patch job <job> -p '{"metadata":{"finalizers":null}}' --type=merge`
+  4. If the operation is still stuck, terminate it explicitly or wait for `phase=Failed`
+  5. Re-sync with **Prune** enabled to remove any orphan ConfigMaps/Secrets the retired hook left behind
+- **Argo CD app shows Sync OK but stays OutOfSync after git retires a resource** (e.g. a Helm-generated secret replaced by an externally-managed one): symptom is Sync OK + OutOfSync + a trash-can icon + "not present in application source." Cause is `syncPolicy.automated.prune: false` on the Application — auto-sync won't delete orphans it no longer manages. Fix: confirm the resource is genuinely superseded in git (not just moved), then either a one-time `argocd app sync <app> --prune` or a manual delete of the named orphan.
 
 ## 5. After recovery
 

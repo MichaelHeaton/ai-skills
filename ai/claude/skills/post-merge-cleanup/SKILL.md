@@ -18,6 +18,10 @@ Auto-trigger on "that PR merged" depends on the agent having actually observed t
 
 No change to the happy path — when the agent itself opens the PR, auto-trigger on merge confirmation works as before.
 
+## When multiple PRs merge close together in the same repo
+
+Complete the full cleanup sequence (pull-main through redeploy) for the first merge before making any new commit in that repo — don't start on the second PR's follow-up work while the first is only partially cleaned up. A commit made between "first PR merged" and "first PR's cleanup finished" risks landing on a branch whose PR just merged, producing an avoidable conflict PR. Process merges in the order they landed, one full cleanup at a time.
+
 ## 1. Pull main (fast-forward)
 
 ```bash
