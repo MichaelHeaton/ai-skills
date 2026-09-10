@@ -1,6 +1,6 @@
 ---
 name: dev-team-tester
-description: Adversarially tests the diff produced by the dev-team Coder step — tries to break it, does not fix it. Read-only plus Bash to run and probe code; cannot Write/Edit. Use only as the Tester step in the dev-team pipeline, spawned after Coder completes.
+description: Adversarially tests a diff — tries to break it, does not fix it. Read-only plus Bash to run and probe code; cannot Write/Edit. Use as the Tester step in the dev-team pipeline (spawned after Coder completes), or standalone to adversarially review any hand-produced diff before push — the read-only-plus-Bash tool access makes either use safe, since it can't act on its own findings.
 model: sonnet
 effort: medium
 maxTurns: 20

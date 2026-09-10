@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.1.1
 principles_version: 1.0.0
-last_updated: 2026-08-15
+last_updated: 2026-09-10
 updated_by: claude
 name: issue-focus
 description: Load a Jira ticket or GitHub Issue into a focused working session. Fetches the ticket, then branches on shape — a spec'd work ticket gets a structured brief (narrative summary, acceptance criteria checklist, current status, recent comments, linked epic) and asks which ACs are already done, then stays active so you can ask "what's next?", "am I done?", or "what did the last comment say?" throughout the session; an evaluation/decision-shaped ticket (title prefixed "Evaluate:"/"Spike:"/"Research:", or body asking "should we"/"worth adopting"/an "X vs Y" comparison) auto-routes to decision-council instead, with the routing decision announced and overridable. Use when starting work on a specific ticket, when you need a quick orientation before diving in, or when you want to stay on track mid-session. Triggers on: "focus on PROJ-12345", "load ticket #94", "start a session for PROJ-12345", "brief me on this ticket", a bare Jira key like PROJ-12345, or a GitHub issue URL.
@@ -57,7 +57,9 @@ Before building the standard AC-checklist brief, check whether this ticket is ac
 
 Invoke `decision-council` *(global: ai-skills)*, framing the question from the ticket's title and body per that skill's own Step 1. Let `decision-council`'s own Step 1.5 decide pass weight (full vs. lighter) based on the ticket's actual stakes — don't hardcode that choice here.
 
-After the council verdict is presented, stop — **do not auto-invoke `dev-team`** on any recommended item. Ask whether the user wants to file tickets from the recommendations (via `issue-create`) and hand off from there. This mirrors the manual gate already established between council and build: the council's job is to say what's worth building, not to build it.
+After the council verdict is presented, **stop before taking any further action on the ticket** — this includes commenting, closing, transitioning status, or invoking `dev-team`, not just the `dev-team` case. Ask whether the user wants to file tickets from the recommendations (via `issue-create`) and hand off from there. This mirrors the manual gate already established between council and build: the council's job is to say what's worth building, not to build it.
+
+**Mechanical checkpoint**: if your next planned tool call is `gh issue comment`, `gh issue close`, `jira_transition_issue`, or an equivalent ticketing mutation on this ticket, stop and ask first. The failure mode this guards against is a raw ticketing call slipping through during a long tool-heavy run, not a conceptual misunderstanding of the gate.
 
 If the user says "brief me normally" (or equivalent) at any point, fall through to Step 3 as if no signal had fired.
 
