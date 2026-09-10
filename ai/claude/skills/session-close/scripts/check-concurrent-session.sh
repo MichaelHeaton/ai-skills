@@ -7,6 +7,7 @@
 # Usage: check-concurrent-session.sh <repo-path>
 # Output: LIVE:<pid>:<cwd>   — another session appears to be actively working here
 #         STALE:<pid>:<cwd>  — a claude process matched, but its cwd is gone; not a live collision
+#         CLEAR:<repo-path>  — no LIVE or STALE match at all
 # Exits 0 always — this is advisory, never a hard gate.
 
 REPO="$1"
@@ -40,6 +41,7 @@ done
 # -a ANDs the selectors: only the cwd file descriptor of processes named claude.
 # Plain `lsof -c claude | grep <repo>` (the old form) also matched any open file
 # under the repo, not just cwd — a much noisier signal.
+FOUND_ANY=0
 while read -r cpid cwd; do
   [[ -z "$cpid" ]] && continue
   [[ -n "${OWN_PIDS[$cpid]:-}" ]] && continue
@@ -48,9 +50,18 @@ while read -r cpid cwd; do
     cand_add_dirs=$(grep -o -- '--add-dir[= ][^ ]*' <<<"$cand_comm" | sort)
     [[ -n "$cand_add_dirs" && "$cand_add_dirs" == "$OWN_ADD_DIRS" ]] && continue
   fi
+  FOUND_ANY=1
   if [[ -d "$cwd" ]]; then
     echo "LIVE:${cpid}:${cwd}"
   else
     echo "STALE:${cpid}:${cwd}"
   fi
 done < <(lsof -a -d cwd -c claude 2>/dev/null | awk -v repo="$REPO_REAL" 'NR>1 && index($NF, repo)==1 {print $2, $NF}')
+
+# No LIVE or STALE match at all — print an explicit signal so a skipped check
+# leaves a detectable gap in the transcript instead of silent, ambiguous output.
+if [[ "$FOUND_ANY" == "0" ]]; then
+  echo "CLEAR:${REPO_REAL}"
+fi
+
+exit 0
