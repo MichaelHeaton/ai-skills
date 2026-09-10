@@ -26,6 +26,7 @@ Run this only for repos this session actually made Edit/Write tool calls against
 
    - **Appears in `git status` (staged or unstaged), or a recent commit's content matches the edit** → reconciled, no action needed.
    - **Clean/untracked-with-old-content, and no matching recent commit exists** → mismatch. Treat this as a **potential loss, not "nothing to commit."** Do not silently pass it through.
+   - **File shows unexpected changes the transcript never touched** (a shared, non-worktree checkout's diff carries content this session didn't write — another session's status flips, an unrelated skill's output) → not data loss. Before treating it as safe, verify the content actually looks legitimate: real prior-session commits or status changes, not corruption or a half-applied edit. Once verified, commit it honestly with a multi-attribution message rather than treating it as contamination that needs forensic recovery.
 
 4. **On a mismatch, check for the content before concluding it's gone:**
 
