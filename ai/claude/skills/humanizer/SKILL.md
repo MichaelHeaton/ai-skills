@@ -37,7 +37,7 @@ Meaning and facts are the fixed point. Style is the only thing in motion.
 
 **Puffery and undue significance.** Cut phrases that inflate a subject's importance without adding information: *stands as a testament to, marked a pivotal moment, played a crucial role, underscores its enduring legacy, set the stage for*. Replace with the plain fact the sentence is actually reporting, or cut the clause if it reports nothing beyond "this mattered."
 
-**Superficial analysis tacked onto facts.** Watch for a factual sentence followed by a present-participle clause that editorializes: "...creating a lively community," "...further enhancing its significance as a hub of culture." If the participial clause doesn't come from the source, cut it — don't replace it with a different unsourced claim.
+**Superficial analysis tacked onto facts.** Watch for a factual sentence followed by a present-participle clause that editorializes: *"...creating a lively community," "...further enhancing its significance as a hub of culture."* If the participial clause doesn't come from the source, cut it — don't replace it with a different unsourced claim.
 
 **Canned notability/media-coverage language.** *Has been featured in, profiled in multiple outlets, maintains an active social media presence, independent coverage from* — state what the source actually says (who covered it, when, on what) instead of asserting that coverage-in-general exists.
 
@@ -49,19 +49,19 @@ Meaning and facts are the fixed point. Style is the only thing in motion.
 
 **Avoidance of "is/are."** AI text swaps plain copulas for *serves as, stands as, functions as, represents, boasts, offers, refers to*. Restore the direct "is/has" construction where it reads naturally — it's a *sign of human writing*, not something to avoid.
 
-**Negative parallelism.** "Not only X but also Y," "It's not X, it's Y," "no X, no Y, just Z." These constructions are fine occasionally but formulaic in bulk. Collapse to a single direct statement unless the contrast is genuinely the point being made.
+**Negative parallelism.** *"Not only X but also Y," "It's not X, it's Y," "no X, no Y, just Z."* These constructions are fine occasionally but formulaic in bulk. Collapse to a single direct statement unless the contrast is genuinely the point being made.
 
-**Rule-of-three overuse.** Three-item lists of adjectives or short parallel phrases used to make a claim look more thorough than it is ("adjective, adjective, and adjective"). If the three items aren't independently informative, cut to what's actually supported.
+**Rule-of-three overuse.** Three-item lists of adjectives or short parallel phrases used to make a claim look more thorough than it is (*"adjective, adjective, and adjective"*). If the three items aren't independently informative, cut to what's actually supported.
 
-**Formulaic "Challenges and Future Directions" endings.** "Despite these challenges, X continues to..." closing paragraphs that restate the subject's importance. Cut the throat-clearing; keep only content-bearing sentences that come from the source.
+**Formulaic "Challenges and Future Directions" endings.** *"Despite these challenges, X continues to..."* closing paragraphs that restate the subject's importance. Cut the throat-clearing; keep only content-bearing sentences that come from the source.
 
-**Section summaries.** "In summary," "In conclusion," "Overall, ..." paragraphs that restate what was just said. Cut them — they add no information.
+**Section summaries.** *"In summary," "In conclusion," "Overall, ..."* paragraphs that restate what was just said. Cut them — they add no information.
 
 **Formatting tells.** Title-case section headings (fix to sentence case), excessive/mechanical **boldface**, inline-header bullet lists (`- **Header:** text`) where prose would read better, emoji used as heading decoration, skipped heading levels, thematic breaks (`----`) before every heading, Markdown syntax leaking into wikitext (`**bold**`, `##`, fenced code blocks), stray chatbot artifacts (`:contentReference[...]`, `oai_citation`, `【85†L1-2】`, `utm_source=chatgpt.com` in URLs). Fix the formatting; don't touch the content it wraps.
 
 **Scope this one to article/prose contexts.** "Inline-header bullet lists" and "mechanical boldface" describe encyclopedic or narrative prose (Wikipedia articles, blog posts, reports meant to read as continuous paragraphs) — there, bullets-with-bold-labels are a giveaway that the writer never turned notes into sentences. They do **not** apply to content that is intentionally scannable: a SKILL.md, a runbook, or a comms template (`**Progress**` / `- bullet`, `**Impact:**` labels) uses that structure on purpose, for human skimmability and AI parseability alike — see [docs/guides/formatting.md](../../../../docs/guides/formatting.md) *(global: ai-skills)*. Don't flatten that structure into prose; only clean up sentence-level tells (puffery, vocabulary, hedging) within it.
 
-**Hedging/knowledge-cutoff disclaimers and fabricated absence claims.** "As of my last update...", "While specific details are limited in available sources...", "not widely documented." These are usually just noise — cut them rather than "fixing" them into a stronger claim, since you have no way to verify what's actually undocumented.
+**Hedging/knowledge-cutoff disclaimers and fabricated absence claims.** *"As of my last update...", "While specific details are limited in available sources...", "not widely documented."* These are usually just noise — cut them rather than "fixing" them into a stronger claim, since you have no way to verify what's actually undocumented.
 
 ## What "sounds human" actually looks like
 
