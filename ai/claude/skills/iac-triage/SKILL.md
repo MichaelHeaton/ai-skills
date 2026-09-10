@@ -4,7 +4,7 @@ principles_version: 1.0.0
 last_updated: 2026-07-30
 updated_by: claude
 name: iac-triage
-description: SRE / IaC investigation mode for Terraform, Ansible, Kubernetes, CI/CD, and incident log work. Encodes evidence ordering (ask for the smallest useful slice first, not full output), hypothesis-driven questioning, and a structured triage response format. Prevents context overload from full plan dumps, verbose Ansible runs, and raw log pastes. Trigger on: any Terraform, Ansible, or kubectl investigation; "debug this plan", "ansible failed", "k8s error", "CI is failing", "deployment failed", "investigate this incident", "triage this", "terraform error", "playbook failing", "pipeline broken", or any time raw operational output is about to be loaded into context — including a second or third raw structured-log paste in the same debugging loop, which is its own recognizable pattern even if the first paste was missed.
+description: SRE / IaC investigation mode for Terraform, Ansible, Kubernetes, CI/CD, and incident log work. Encodes evidence ordering (ask for the smallest useful slice first, not full output), hypothesis-driven questioning, and a structured triage response format. Prevents context overload from full plan dumps, verbose Ansible runs, and raw log pastes. Trigger on: any Terraform, Ansible, or kubectl investigation; "debug this plan", "ansible failed", "k8s error", "CI is failing", "deployment failed", "investigate this incident", "triage this", "terraform error", "playbook failing", "pipeline broken", "CI failed after apply", "why did CI fail after the deploy", "false failure", "is this a real CI failure", "dig check failed", or any time raw operational output is about to be loaded into context — including a second or third raw structured-log paste in the same debugging loop, which is its own recognizable pattern even if the first paste was missed.
 compatibility: Any repo or workspace. Integrates with log-clip / clog if installed.
 ---
 
@@ -94,6 +94,8 @@ Before requesting additional output, state the current hypothesis:
 
 If the hypothesis is testable with what you have → test it.
 If not → request the smallest slice that would confirm or deny it.
+
+**A CI failure right after a successful apply doesn't mean the apply was wrong.** Check whether the failing step is actually exercising the applied infra correctly before assuming the apply itself is broken — a CI probe/dig check written against the wrong target (e.g. a DNS check hardcoded to `localhost` when the record only resolves on a VLAN/internal interface) produces a false failure that has nothing to do with whether the apply succeeded. Verify the probe's own target/assumptions before treating a post-apply CI failure as evidence of an apply problem.
 
 **Cloudflare-proxied CloudFront 403.** Before recommending a CloudFront Origin Rules Host rewrite, check the cheaper hypotheses first: request Host header vs. the CloudFront distribution's alias / S3 Origin Access Control, and whether the Cloudflare DNS record is orange-cloud (proxied) or DNS-only — a Host-header mismatch through a proxied record produces the same 403 a missing OAC grant would. **Origin Rules Host override is Cloudflare Enterprise-only** — don't recommend it as the default fix; Cloud Connector is a routing feature, not a Host rewrite, and won't fix this either. The Free-plan default is an ACM certificate (issued in `us-east-1`, required for CloudFront) on the distribution plus a proxied CNAME, with Cloudflare SSL mode set to Full (strict).
 

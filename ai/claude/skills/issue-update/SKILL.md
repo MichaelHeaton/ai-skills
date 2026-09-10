@@ -132,7 +132,7 @@ To update: read the file, find the matching line by `id`, rewrite it with the up
 
 ### 5. Bulk operations
 
-Closing or relabeling many issues in a row (e.g. a milestone reshape, duplicate cleanup) can trigger an Auto-review block requiring smart-mode approval before rapid mutations are allowed to continue — this isn't an error, it's a safety gate on high-velocity writes. Approve the first smart-mode card when it appears, and group closes/edits of the same shape (same action, same reason) into contiguous batches rather than interleaving them with unrelated calls — that keeps the approval gate from re-triggering mid-batch on what looks like a shape change.
+Closing or relabeling many issues in a row (e.g. a milestone reshape, duplicate cleanup) can trigger an Auto-review block requiring smart-mode approval before rapid mutations are allowed to continue — this isn't an error, it's a safety gate on high-velocity writes. Approve the first smart-mode card when it appears, and group closes/edits of the same shape (same action, same reason) into contiguous batches rather than interleaving them with unrelated calls — that keeps the approval gate from re-triggering mid-batch on what looks like a shape change. **This isn't only a close/relabel thing — a rapid multi-issue _create_ pass (e.g. `issue-create`/`issue-batch` filing several tickets in a row) can trigger the same gate.** Expect and handle it the same way rather than treating it as a surprise specific to closing.
 
 ### 6. Confirm to the user
 

@@ -67,6 +67,12 @@ Match the check to what's actually being claimed — don't just re-read the sour
 
 - Check the migration tracking table or schema-version output against the live database, or the migration tool's `status` command — not just that the migration file exists in the repo
 
+**SQLite/embedded-database restore**
+
+- `kubectl cp` (or any file copy) completing without error is not evidence the restore is valid — the copy succeeding and the database being intact are different claims
+- Run `PRAGMA integrity_check` against the restored file and confirm it returns `ok`
+- Spot-check row counts on the key tables against a known-good reference (a pre-incident count, or the source backup) before asserting the restore succeeded
+
 **Feature flags**
 
 - Check the flag service's dashboard/API for the live flag state — not the default or intended value in code

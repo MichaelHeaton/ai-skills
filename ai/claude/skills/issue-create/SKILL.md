@@ -319,6 +319,8 @@ Report: issue number and URL as a markdown link, project it was added to (or ski
 
 When creating 3+ issues at once, parallel `gh issue create` calls are fine for speed — but the task index must be updated for every issue. Skipping this leaves the next session blind.
 
+**A rapid multi-issue create pass can trigger the same Auto-review smart-mode gate `issue-update`'s bulk-operations note documents for closes/relabels** — this isn't just a close/relabel thing. Approve the first smart-mode card when it appears rather than treating the block as an error.
+
 **Pattern:**
 
 1. Run all `gh issue create` calls in parallel, capturing each returned URL and number.
