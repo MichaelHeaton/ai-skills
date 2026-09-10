@@ -178,6 +178,12 @@ If it prints `main` or `master`, cut a new branch (per "Branching" above) before
 
 ---
 
+## Verify remote before trusting a repo search miss
+
+A grep/search against a "known" local clone coming back empty is not proof the thing isn't tracked anywhere — the clone's remote can be a stale, abandoned mirror on a different host/org entirely, with the real source of truth living somewhere else. Before concluding a search miss against a local clone means "not tracked anywhere," confirm `git -C <repo> remote -v` matches the expected canonical origin. Most relevant in orgs/ecosystems known to have duplicate or mirror repos under different names/orgs.
+
+---
+
 ## Shared checkout branch-identity check
 
 Distinct from `session-close`'s concurrent-session check, which only answers "does another live process exist?" — it doesn't catch a second process **sharing this exact (non-worktree) checkout** silently swapping the active branch out from under this session. An isolated `git worktree` checkout is immune to this (its branch is pinned to that worktree); a shared/main checkout is not — a background task checking out its own branch directly in a shared working directory can silently replace the branch this session believes it's still on, and a commit can land on the wrong branch before anyone notices.
@@ -243,6 +249,8 @@ done
 
 If all attempts fail and the re-check still shows the PR open, stop and surface the error rather than continuing to retry silently — a merge conflict or branch protection failure won't resolve itself with more retries.
 
+**A merge blocked outright by the Claude Code auto-mode permission classifier ("Blocked by classifier") is a different failure class from the transient-API case above** — it's a policy/permission rejection, not infra flakiness, and a retry loop can't resolve it. On a classifier block, stop retrying immediately, leave the PR open, and note it as "awaiting manual merge (blocked by permission classifier)" in the session summary rather than treating it as a retryable failure.
+
 **A merge via the GitHub/GitLab UI or API can also hang or time out while the merge itself actually landed** — don't assume a hang means nothing happened. Before retrying, check whether the PR's head SHA is already reachable from the default branch:
 
 ```bash
@@ -289,6 +297,10 @@ Run checks **only on files you are modifying**. Do not run repo-wide formatters 
 
 Before every `git push` to a feature branch, check whether its PR is already merged — pushing to a merged branch orphans commits, and a three-dot diffstat is not reliable evidence of pending work after a squash-merge. Merged-PR check, squash-merge diffstat caveat, and CI/CD re-run behavior: [references/pushing-to-existing-branch.md](references/pushing-to-existing-branch.md).
 
+**This check applies to every push in this session, not just the first one on a branch.** A branch whose PR merged earlier in this same session is exactly as merged as one merged in a prior session — a follow-up commit made right after a merge, before post-merge-cleanup has run, is the case most likely to get missed. Run the merged-PR check again immediately before pushing, even if you already ran it once for this branch earlier.
+
+**Check PR history before force-deleting a branch name.** Before `git push --delete` or `git branch -D` on a branch that held real commits, list PRs for that head across all states (`gh pr list --head <branch> --state all`). If any PR exists (open/merged/closed) under that name, treat the name as historically reserved — prefer a differently-named branch for whatever comes next rather than deleting and immediately reusing the same name. A later real PR reusing a force-deleted branch name can collide with history the delete didn't actually clean up.
+
 ---
 
 ## Push immediately once a PR looks merge-ready
@@ -307,11 +319,19 @@ make manifest-update
 git add .deploy/repo-manifest.json
 ```
 
+**⚠️ `git checkout <ref> -- <pathspec>` looks like the same safe idiom above but isn't.** `git checkout -- <file>` (no ref, restoring from the _current_ HEAD/index) is the safe, well-documented pattern used in the conflict-resolution case above and in session-close's own cleanup section. `git checkout <ref> -- <pathspec>` is a **different, cross-ref** command — it silently overwrites the working-tree contents of every matched file with `<ref>`'s version, discarding any uncommitted edits with no prompt. When the pathspec is `.` or a directory, this is **whole-tree**, not single-file. Before running any `git checkout <ref> -- ...` form, confirm `git status --short` is clean first, or use `git diff <ref> -- <pathspec>` to inspect what would change without applying it.
+
 ---
 
 ## Multi-commit same-file rebase conflicts
 
 Rebasing a branch whose commits all touch a file that main has also changed conflicts at **every** replayed commit, not just once — each step re-introduces a conflict against the already-resolved state. Detect this before starting a rebase, and if detected, use a fresh branch off the updated default branch instead of fighting the rebase. Full detection commands and recovery steps: [references/rebase-conflicts.md](references/rebase-conflicts.md).
+
+---
+
+## Warn before checkout when uncommitted WIP exists
+
+Before any `git checkout <branch>` (switching branches, not restoring a file), check `git status --short` first. If it's non-empty, stash or commit before switching — a bare checkout across branches with uncommitted changes present can drop them silently rather than erroring, and recovery then depends on the changes happening to exist elsewhere (a related branch, a stash entry) rather than being guaranteed. This matters most in multi-root workspaces with several concurrent feature branches, where a checkout to check something on another branch is easy to reach for without registering it as branch-switching.
 
 ---
 
