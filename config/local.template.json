@@ -72,7 +72,13 @@
   },
 
   "slack": {
-    "vault_support_channel": ""
+    "workspace_url": "https://specterrealmworkspace.slack.com",
+    "homelab_alerts_channel": "#homelab-alerts"
+  },
+
+  "discord": {
+    "invite_url": "https://discord.gg/nqzt9RBGm",
+    "homelab_alerts_channel": ""
   },
 
   "repos": {
