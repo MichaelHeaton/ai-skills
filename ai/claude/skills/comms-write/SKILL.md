@@ -43,7 +43,8 @@ If private examples exist, prefer them over stubs. Do not commit private example
 | Leadership or stakeholder update | work-primary | `work-primary-leadership.md` |
 | PR review request (Slack, after `gh pr create`) | work-primary | `work-primary-pr-review.md` |
 | Slack thread reply | any | *(see Thread Reply section below)* |
-| Team channel update / FYI post (informal, no ask, no 3P structure) | work-primary | `work-primary-3p.md` *(shares the 3P template — keep it to bullets + one ask, not the full Progress/Plans/Problems structure)* |
+| Team channel update / FYI post (informal, no ask, no 3P structure) | work-primary | `work-primary-3p.md` *(shares the 3P template — keep it to bullets, no 3P structure)* |
+| Ask post to team channel (informal, single ask, no 3P structure) | work-primary | `work-primary-3p.md` *(same template as the FYI row — keep it to bullets + one ask)* |
 | Any internal comms | client-contract | `client-contract-general.md` |
 
 For PR review messages: run `gh pr view --json number,title,url,body,headRefName` when no PR URL was given. Prefer this skill over a separate PR-only skill — one comms entry point.
