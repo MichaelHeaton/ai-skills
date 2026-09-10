@@ -143,3 +143,31 @@ Report what changed:
 - "Closed [#94](url) — task index updated."
 - "Added comment to PROJ-12345."
 - "Updated priority on [#95](url) to high."
+
+---
+
+## Optional: automated reminder hook
+
+"Always route through this skill" (frontmatter, above) is easy to follow for the first ticket update of a session and drift away from later — a direct `gh issue comment`/`close`/`edit`/`reopen` or `glab issue note`/`close`/`update`/`reopen` call instead, with the status-sync, comment verification, and task-index steps either skipped or manually replicated. Two companion hooks close this gap without blocking anything, mirroring `git-ops`'s own `git-ops-track.py`/`git-ops-reminder.py` pattern:
+
+- `hooks/issue-update-track.py` (`PostToolUse`, matcher `Skill`) — records that issue-update fired, once per session
+- `hooks/issue-update-reminder.py` (`PreToolUse`, matcher `Bash`) — prints a one-line nudge before a direct `gh issue comment/close/edit/reopen` or `glab issue note/close/update/reopen` command, if issue-update hasn't fired yet this session
+
+CLI-only — direct MCP ticket-write calls (`jira_add_comment`, `jira_update_issue`, `confluence_update_page`) are already covered by `ticket-write-verify`'s own reminder hook pair.
+
+Both are advisory only (always exit 0) and never block a command. **Installed by default in this repo (`ai-skills`)**: both are wired into this repo's tracked `.claude/settings.json`, so any session working inside `ai-skills` gets the reminder automatically. For any other repo where this reminder is wanted, add the same block via the `update-config` skill, routed to that repo's `.claude/settings.json` (or global, if it should apply everywhere) — this repo has no mechanism to write to a user's live global `~/.claude/settings.json` on their behalf, so extending default-on coverage to other repos isn't something a PR here can deliver by itself.
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      { "matcher": "Skill", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/issue-update-track.py" }] }
+    ],
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/issue-update-reminder.py" }] }
+    ]
+  }
+}
+```
+
+**Why `Bash` only, not an MCP matcher too:** `gh issue comment/close/edit/reopen`/`glab issue note/close/update/reopen` arrive as `Bash` commands, so the hook reads `tool_input.command`. Direct MCP ticket-write calls have no shell command to inspect and are a different surface already handled by `ticket-write-verify`'s hook pair — adding overlapping MCP matching here would just double-fire the nudge on the same call.

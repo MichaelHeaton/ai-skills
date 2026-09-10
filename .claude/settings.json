@@ -64,7 +64,33 @@
         "matcher": "Bash",
         "hooks": [
           { "type": "command", "command": "python3 ~/.claude/hooks/branch-guard.py" },
-          { "type": "command", "command": "python3 ~/.claude/hooks/git-ops-reminder.py" }
+          { "type": "command", "command": "python3 ~/.claude/hooks/git-ops-reminder.py" },
+          { "type": "command", "command": "python3 ~/.claude/hooks/issue-create-reminder.py" },
+          { "type": "command", "command": "python3 ~/.claude/hooks/issue-update-reminder.py" }
+        ]
+      },
+      {
+        "matcher": "mcp__.*jira_create_issue",
+        "hooks": [
+          { "type": "command", "command": "python3 ~/.claude/hooks/issue-create-reminder.py" }
+        ]
+      },
+      {
+        "matcher": "mcp__.*save_issue",
+        "hooks": [
+          { "type": "command", "command": "python3 ~/.claude/hooks/issue-create-reminder.py" }
+        ]
+      },
+      {
+        "matcher": "mcp__.*issue_write",
+        "hooks": [
+          { "type": "command", "command": "python3 ~/.claude/hooks/issue-create-reminder.py" }
+        ]
+      },
+      {
+        "matcher": "mcp__.*(jira_add_comment|jira_update_issue|confluence_update_page)",
+        "hooks": [
+          { "type": "command", "command": "python3 ~/.claude/hooks/ticket-write-verify-reminder.py" }
         ]
       }
     ],
@@ -72,7 +98,10 @@
       {
         "matcher": "Skill",
         "hooks": [
-          { "type": "command", "command": "python3 ~/.claude/hooks/git-ops-track.py" }
+          { "type": "command", "command": "python3 ~/.claude/hooks/git-ops-track.py" },
+          { "type": "command", "command": "python3 ~/.claude/hooks/issue-create-track.py" },
+          { "type": "command", "command": "python3 ~/.claude/hooks/issue-update-track.py" },
+          { "type": "command", "command": "python3 ~/.claude/hooks/ticket-write-verify-track.py" }
         ]
       },
       {

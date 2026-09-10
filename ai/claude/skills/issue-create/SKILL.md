@@ -348,7 +348,7 @@ Even when the full per-issue skill flow is skipped for parallelism, the task ind
 - `hooks/issue-create-track.py` (`PostToolUse`, matcher `Skill`) — records that issue-create fired, once per session
 - `hooks/issue-create-reminder.py` (`PreToolUse`) — prints a one-line nudge before a direct `gh issue create` / `glab issue create` Bash command, or a direct `jira_create_issue` / `save_issue` / `issue_write` MCP tool call, if issue-create hasn't fired yet this session
 
-Both are advisory only (always exit 0) and never block a command. They aren't wired into any tracked `settings.json` by default — this repo has no mechanism to write to a user's live `~/.claude/settings.json` on their behalf, so making them default-on isn't something a PR here can actually deliver. If this gap has bitten you before, the fix is cheap: add them via the `update-config` skill now rather than waiting for a repeat.
+Both are advisory only (always exit 0) and never block a command. **Installed by default in this repo (`ai-skills`)**: both are wired into this repo's tracked `.claude/settings.json`, so any session working inside `ai-skills` gets the reminder automatically. For any other repo where this reminder is wanted, add the same block via the `update-config` skill, routed to that repo's `.claude/settings.json` (or global, if it should apply everywhere) — this repo has no mechanism to write to a user's live global `~/.claude/settings.json` on their behalf, so extending default-on coverage to other repos isn't something a PR here can deliver by itself.
 
 ```json
 {
