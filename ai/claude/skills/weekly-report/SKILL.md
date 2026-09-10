@@ -46,6 +46,8 @@ Follow the reference file for the chosen key.
 
 Before humanizing, cross-check the drafted Progress bullets against what actually happened in the period: recent git log across owned repos, ticket status changes, and session/vault context already gathered in Step 2. A significant completed item can be a content gap, not just a formatting one — silently missing from the draft entirely rather than mis-worded. Flag any significant item found in those sources with no corresponding Progress bullet, and add it before moving on.
 
+**A completeness-check addition gets the same brevity treatment as every other Progress bullet** — 1-2 sentences, the ticket carries the detail. Detailed source material (a long git log entry, a verbose ticket thread) is not a reason to let a gap-fill bullet balloon into a paragraph. Also don't name other individuals in an IC-scoped progress bullet unless the section is explicitly a shoutout/people-focused one — a completeness-check pass pulling from raw sources is exactly where an irrelevant name is easiest to carry over unintentionally.
+
 ## Step 2.5 — Humanize
 
 Before writing the output file, invoke the `humanizer` skill on the drafted report text — strips AI-writing tells (puffery, canned phrasing, formulaic "challenges" closers) while preserving every fact, number, and status exactly. This is leadership/client-facing prose; it's the register where AI tells stand out most.
