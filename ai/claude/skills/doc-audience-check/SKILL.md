@@ -1,10 +1,10 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
 last_updated: 2026-09-10
 updated_by: claude
 name: doc-audience-check
-description: Check a drafted wiki page, runbook, or doc for audience-context leakage — the specific failure where a page reads like someone explaining the topic to the person who asked the questions, not to the actual reader. Symptoms include conversational asides that answer a question nobody in the audience asked ("not the thing you might be thinking of"), other tools/people/projects named with zero introduction because they only came up in the authoring chat, sections ordered by the sequence questions got asked instead of what a cold reader needs first, and assumed shared context. Different from `humanizer` (word-level AI vocabulary/formatting tells) and doc-coauthor's reader-testing stage (content completeness) — this one catches missing-context and wrong-audience problems specifically, using a fresh sub-agent with zero chat history to genuinely cold-read the draft, since the author usually can't see what's missing because they already have the context in their head. Use before publishing any doc drafted through an AI chat, when reviewer feedback says a page reads like it's explaining things to the writer instead of the reader, or on request: "does this make sense to someone with no context", "audience check this", "cold-read this doc", "check for context leaks", "this reads like a conversation", "fix this wiki page for a general audience", "read this like a stranger landing on this page".
+description: Check a drafted wiki page, runbook, or doc for audience-context leakage — it reads like an explanation aimed at the person who asked the questions, not the actual reader. Catches conversational asides answering unstated questions, tools/people/projects named with zero introduction, sections ordered by chat history instead of reader need, assumed shared context, and claims stated as fact with no visible evidence. Different from `humanizer` (AI vocabulary/formatting tells) and doc-coauthor's reader-testing (content completeness) — this one uses a fresh sub-agent with zero chat history to cold-read the draft, since the author can't see their own gaps. Use before publishing any AI-assisted doc, when feedback says a page explains to the writer instead of the reader, when AI text sounds more confident than verified, or on: "audience check this", "cold-read this doc", "check for context leaks", "this reads like a conversation", "does this claim have evidence behind it".
 compatibility: Cloud-compatible — no local-machine-only paths or tooling. Uses a fresh sub-agent for the cold-read step where sub-agents are available; falls back to a manual context-suppressed reread otherwise.
 ---
 
@@ -24,7 +24,7 @@ You cannot spot a missing-context gap by rereading your own draft — the contex
 
 2. **Get a genuinely fresh read.** Spawn a sub-agent with *only* the draft text — no session history, no back-story about how it was written — and this instruction:
 
-   > "You are reading this page for the first time, with no other context. List: (a) any sentence that seems to answer a question you were never asked, (b) any named person, tool, or project mentioned with no explanation of what it is, (c) any point where you'd have to guess what came before to make sense of the sentence, (d) whether the opening actually tells you what this page is and why you'd be reading it."
+   > "You are reading this page for the first time, with no other context. List: (a) any sentence that seems to answer a question you were never asked, (b) any named person, tool, or project mentioned with no explanation of what it is, (c) any point where you'd have to guess what came before to make sense of the sentence, (d) whether the opening actually tells you what this page is and why you'd be reading it, (e) any claim stated as settled fact where the draft itself shows no check, source, or evidence behind it."
 
    If sub-agents aren't available in this environment, do this manually as a *separate* pass: reread the draft while deliberately not supplying anything you know from the conversation that produced it — judge only the words on the page, the way a search hit or a shared link would land for someone else.
 
@@ -45,6 +45,8 @@ You cannot spot a missing-context gap by rereading your own draft — the contex
 **Assumed shared context.** Acronyms, internal jargon, "as mentioned," "as discussed" — anything that leans on a conversation the reader wasn't part of. Spell it out or cut the reference.
 
 **Missing orientation.** No sentence near the top establishing what the page is and who it's for. A reader who lands here from a search or a link should not have to infer the topic from context clues three paragraphs in.
+
+**Confident claims without visible evidence.** A conclusion stated as settled fact with no pointer a reader could check — no log, link, timestamp, or source. AI-drafted text tends to sound authoritative regardless of what was actually verified; the verification (or its absence) needs to be written down, not implied by tone. Add the pointer if the claim was checked; say explicitly that it wasn't if it wasn't ("Sherlock reported X; not independently verified" beats a flat, unqualified claim).
 
 See [references/patterns.md](references/patterns.md) for worked before/after examples of each.
 

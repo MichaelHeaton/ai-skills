@@ -1,5 +1,5 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
 last_updated: 2026-09-10
 updated_by: claude
@@ -59,3 +59,15 @@ State the fact on its own terms; don't gesture at a conversation the reader wasn
 **Before:** a page's first line is a caveat, a warning, or a config table — no sentence establishing what the page even documents.
 
 **After:** open with one or two sentences: what this is, and why someone would be reading this page. Everything else — caveats included — comes after the reader knows what they're looking at.
+
+## Confident claims without visible evidence
+
+**Before:**
+> Sherlock's answer is stale — the real fix is clearing the cache on node 4.
+
+Reads as settled fact. A cold reader can't tell whether this was checked against something real or is a plausible-sounding assertion — the verification, if it happened, lives only in the author's head, the same way an unintroduced reference or an "as discussed" does.
+
+**After:**
+> Sherlock's answer cites a config value that hasn't been current since [wiki page, dated X]. Cross-checking the actual node-4 logs, the cache entry was 3 days stale — clearing it resolved the issue.
+
+Same conclusion, but the confidence now comes from a pointer the reader could check themselves (a dated page, a log line), not from tone. When nothing was independently verified, say that instead of stating the conclusion flatly — "Sherlock reported X; not independently verified" gives the reader more than false confidence does.
