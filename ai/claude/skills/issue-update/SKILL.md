@@ -155,7 +155,7 @@ Report what changed:
 
 CLI-only — direct MCP ticket-write calls (`jira_add_comment`, `jira_update_issue`, `confluence_update_page`) are already covered by `ticket-write-verify`'s own reminder hook pair.
 
-Both are advisory only (always exit 0) and never block a command. They aren't wired into any tracked `settings.json` by default — this repo has no mechanism to write to a user's live `~/.claude/settings.json` on their behalf, so making them default-on isn't something a PR here can actually deliver. If this gap has bitten you before, the fix is cheap: add them via the `update-config` skill now rather than waiting for a repeat.
+Both are advisory only (always exit 0) and never block a command. **Installed by default in this repo (`ai-skills`)**: both are wired into this repo's tracked `.claude/settings.json`, so any session working inside `ai-skills` gets the reminder automatically. For any other repo where this reminder is wanted, add the same block via the `update-config` skill, routed to that repo's `.claude/settings.json` (or global, if it should apply everywhere) — this repo has no mechanism to write to a user's live global `~/.claude/settings.json` on their behalf, so extending default-on coverage to other repos isn't something a PR here can deliver by itself.
 
 ```json
 {
