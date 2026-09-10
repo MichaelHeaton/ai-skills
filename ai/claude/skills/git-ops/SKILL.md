@@ -223,6 +223,8 @@ A worktree checkout is exempt (its branch is pinned) — this only fires against
 
 Distinct from the "Shared checkout branch-identity check" above, which only catches a branch swap _after_ it's already happened. Before committing, check whether a second Claude Code session is actively writing to this same repo right now — via `ps aux` for another process with `--add-dir` on this repo, plus a file-mtime check against this session's own start time. Full detection commands and the "don't touch the other session's in-progress edit; move to a fresh branch off updated main once it's done" recovery: [references/live-concurrent-session.md](references/live-concurrent-session.md). The same reference also covers a signal-triggered nudge that fires earlier than any of the above — before the first Edit/Write in a repo already showing recent-activity or branch-churn signals, not just before committing.
 
+**A Cursor multi-tab workspace defeats process-based detection entirely** — a second chat tab in the same Cursor window can switch the shared checkout's branch out from under this session with no separate OS process to detect via `ps aux`, since both tabs share one process. In that environment, the branch-identity check above (not this process-detection check) is the primary guard, not a backstop — run it before every commit rather than treating process detection as sufficient. Prefer isolated worktrees per tab for any multi-tab session doing real work in parallel.
+
 ---
 
 ## Merging a PR
