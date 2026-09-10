@@ -95,6 +95,8 @@ Before requesting additional output, state the current hypothesis:
 If the hypothesis is testable with what you have → test it.
 If not → request the smallest slice that would confirm or deny it.
 
+**Cloudflare-proxied CloudFront 403.** Before recommending a CloudFront Origin Rules Host rewrite, check the cheaper hypotheses first: request Host header vs. the CloudFront distribution's alias / S3 Origin Access Control, and whether the Cloudflare DNS record is orange-cloud (proxied) or DNS-only — a Host-header mismatch through a proxied record produces the same 403 a missing OAC grant would. **Origin Rules Host override is Cloudflare Enterprise-only** — don't recommend it as the default fix; Cloud Connector is a routing feature, not a Host rewrite, and won't fix this either. The Free-plan default is an ACM certificate (issued in `us-east-1`, required for CloudFront) on the distribution plus a proxied CNAME, with Cloudflare SSL mode set to Full (strict).
+
 ---
 
 ## Command hand-off

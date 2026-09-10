@@ -32,6 +32,8 @@ For each open question, form a hypothesis, then run the cheapest test that would
 
 Example of the failure mode this prevents: assuming a transit gateway was the missing piece, when testing against the actual routing in other repos would have shown VPC peering was the real fix. The cost of the wrong assumption is cheap during investigation and expensive after code is written against it.
 
+**A CI job stuck at setup is a different failure class from a target-API failure — don't debug them the same way.** A job that sits on "Set up job" (or equivalent) with no checkout or target-API output for several minutes is a runner/agent wedge, not evidence the Terraform/Ansible target hung. Cancel and redispatch rather than treating it as a plan/apply problem. Once the job actually has target logs (plan/apply/ansible output), switch to `iac-triage`'s existing failure-ordering instead — that's the contrast case, where the job genuinely reached the target and something there failed.
+
 ## Step 3 — The IaC gate (run before every state-changing action)
 
 Before running any command that would alter live infra or system state, stop and classify it:

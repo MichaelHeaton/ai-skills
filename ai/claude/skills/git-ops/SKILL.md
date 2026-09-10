@@ -239,6 +239,16 @@ done
 
 If all attempts fail and the re-check still shows the PR open, stop and surface the error rather than continuing to retry silently — a merge conflict or branch protection failure won't resolve itself with more retries.
 
+**A merge via the GitHub/GitLab UI or API can also hang or time out while the merge itself actually landed** — don't assume a hang means nothing happened. Before retrying, check whether the PR's head SHA is already reachable from the default branch:
+
+```bash
+git -C <repo> fetch origin --quiet
+git -C <repo> merge-base --is-ancestor <head-sha> origin/main && echo "already landed"
+```
+
+- **Already landed** (exit 0 / "already landed" printed) — do not retry the merge. If the PR is still showing open, close it as already-merged rather than attempting a second merge against content that's already on the default branch. Treat the work as landed and move on to post-merge cleanup.
+- **Not yet landed** — retry/recover as above; the hang was a real transient failure, not a landed-but-unreported merge.
+
 ---
 
 ## Pre-flight: colliding open PR on a shared file

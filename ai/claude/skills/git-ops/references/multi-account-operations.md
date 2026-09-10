@@ -37,6 +37,15 @@ GH_TOKEN=$(gh auth token --user <account>) gh pr create ...
 
 **gh's active account can drift mid-session.** Don't assume it stays put after one `gh auth switch` — re-run `gh auth status` immediately before *every* mutating command, not just the first one in a session.
 
+**Under sandbox execution, `gh auth status` succeeding does not guarantee `GH_TOKEN` is actually set in the shell environment.** After any `gh auth switch`, explicitly export and verify the token before relying on it for API calls (including `verify-closes.sh`'s post-merge check above):
+
+```bash
+export GH_TOKEN=$(gh auth token --user <account>)
+[[ -n "$GH_TOKEN" ]] || echo "GH_TOKEN still empty after switch" >&2
+```
+
+A `gh auth status` that looks correct with an unset `GH_TOKEN` in this environment is what produces `GraphQL: Forbidden` on the very next API call, not necessarily an account mismatch.
+
 **Never run `gh auth switch` while a background polling/monitoring task is active against the same CLI.** `gh auth switch` mutates global CLI state shared across all concurrent shell sessions, not just the one it's run in — switching mid-poll can produce a false "terminal/complete" signal in a task that's actually still running against the wrong account's view of the repo. Either wait for the background task to finish first, or use the `GH_TOKEN=$(gh auth token --user <account>) gh ...` scoped form instead, which doesn't touch global state.
 
 **Plain `git push`/`pull`/`fetch` are NOT governed by `gh`'s active account.** Over HTTPS, git's own `credential.helper` (often the OS keychain, e.g. `osxkeychain` on macOS) authenticates these commands — `gh auth switch` changes which account `gh` itself uses, but does nothing for plain git if the credential helper has a different cached credential. If `git push`/`pull`/`fetch` fails with an auth or "repository not found" error even after `gh auth switch` to the correct account, override the credential helper for that command:

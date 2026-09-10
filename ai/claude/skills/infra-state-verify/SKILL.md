@@ -53,6 +53,12 @@ Match the check to what's actually being claimed — don't just re-read the sour
 - The playbook run history/log for the actual host group — did the run reach the relevant task and finish without failure, not just exist in the repo
 - A live check on the target host (service status, process check) rather than trusting the playbook's intended end state
 
+**Containers — capability env vars and device mounts are declared intent, not confirmed-running.** A compose/playbook setting `NVIDIA_VISIBLE_DEVICES` (or a similar capability env var) plus a bind-mounted `/dev` device node claims hardware acceleration is available — it doesn't confirm it. The required check is a live probe of the actual binary/process inside the container (the vendor status tool shows the workload, or the runtime library the workload needs is actually present) — not the presence of the env var or device node alone. Any PR/wiki language claiming hardware acceleration or a device is "enabled" must cite that probe, not the compose declaration.
+
+**Vault SSH CA signing** — if signing fails, document the failure in the draft and ask the operator to paste the journal/dmesg output (or equivalent); don't assert the unverified state as confirmed just because the request was sent.
+
+**Which observability stack** — before querying metrics/logs for a target host, confirm which stack actually ingests it (cloud vs. local) first. An empty result from the wrong stack looks identical to missing data from the right one — treat an empty result as a possible wrong-stack query, not automatically "nothing to report."
+
 **Cloud CLI (AWS/Azure/GCP)**
 
 - A `describe`/`get` call against the actual resource (e.g. `aws eks describe-cluster`, `az aks show`) rather than the IaC source that requested it

@@ -4,26 +4,26 @@ principles_version: 1.0.0
 last_updated: 2026-07-29
 updated_by: claude
 name: cloud-cli-execution-ownership
-description: Confirms once per project/cloud account whether the user wants cloud CLI commands (aws, gcloud, az, or kubectl pointed at a cloud-managed cluster context) run directly via a shell tool, or handed over for the user to run themselves and paste back output. Prevents a mid-session correction after several commands — including mutating ones — have already run the "wrong" way. Trigger on the first cloud CLI command about to be executed directly in a given project/account scope: any `aws`, `gcloud`, `az` invocation, cloud-context `kubectl` calls, "run this aws command", "let's tag these resources", "update the security group", "check on this in gcloud", "let's apply this via az cli", or any infra session where cloud CLI use is imminent. Do not re-ask within the same project/account scope once cached — but re-ask if the project or active cloud account/region/profile changes.
+description: Confirms once per project/cloud account whether the user wants cloud CLI commands (aws, gcloud, az, kubectl pointed at a cloud-managed cluster context, or terraform/tofu and its Make wrappers) run directly via a shell tool, or handed over for the user to run themselves and paste back output. Prevents a mid-session correction after several commands — including mutating ones — have already run the "wrong" way. Trigger on the first cloud CLI command about to be executed directly in a given project/account scope: any `aws`, `gcloud`, `az`, `terraform`/`tofu` invocation, cloud-context `kubectl` calls, "run this aws command", "let's tag these resources", "update the security group", "check on this in gcloud", "let's apply this via az cli", "terraform apply", "let's run the make deploy target", or any infra session where cloud CLI or IaC-apply use is imminent. Do not re-ask within the same project/account scope once cached — but re-ask if the project or active cloud account/region/profile changes.
 compatibility: Any session using a shell tool with aws/gcloud/az/kubectl available.
 ---
 
 # Cloud CLI Execution Ownership
 
-Cloud CLI commands (`aws`, `gcloud`, `az`, and `kubectl` against a cloud-managed cluster context) can mutate real infrastructure. Some users always want to run these themselves — reviewing output before it's acted on — rather than have the assistant execute them directly, even with valid cached credentials. Catch that preference once, before the first command runs, instead of learning it mid-session after several commands already went the "wrong" way.
+Cloud CLI commands (`aws`, `gcloud`, `az`, `kubectl` against a cloud-managed cluster context, and `terraform`/`tofu`) can mutate real infrastructure. Some users always want to run these themselves — reviewing output before it's acted on — rather than have the assistant execute them directly, even with valid cached credentials. Catch that preference once, before the first command runs, instead of learning it mid-session after several commands already went the "wrong" way.
 
 This skill governs on-prem/local `kubectl` differently: it doesn't count as a cloud CLI trigger, since it carries no cloud-account blast radius.
 
 ## When this fires
 
-The first time, within a given project/cloud account scope, that a cloud CLI command is about to be run directly via a shell tool. Not local kubectl, not general shell commands, not anything already covered by the cached answer for the current scope.
+The first time, within a given project/cloud account scope, that a cloud CLI command — including `terraform apply`/`tofu apply` or a Make wrapper around one (`make …-apply`) — is about to be run directly via a shell tool. Not local kubectl, not general shell commands, not anything already covered by the cached answer for the current scope.
 
 ## The rule of thumb (read-only vs. everything else)
 
 Don't gate trivial checks — but don't let a single free pass become an unadmitted batch either.
 
-- **A single, clearly read-only command** (`aws sts get-caller-identity`, `gcloud config list`, `az account show`, `kubectl get` against a cloud context) may run once before asking — it carries no mutation risk and asking first would just be noise.
-- **Ask before the second cloud CLI call in the current project/account scope, or before any mutating call, whichever comes first.** "Mutating" means create/update/delete/apply/tag/attach/detach/start/stop/scale or anything else that changes state. A batch of read-only calls still counts as more than one — ask before the second one, don't let a run of "just checking" calls slide through un-confirmed.
+- **A single, clearly read-only command** (`aws sts get-caller-identity`, `gcloud config list`, `az account show`, `kubectl get` against a cloud context, `terraform plan`/`terraform show`) may run once before asking — it carries no mutation risk and asking first would just be noise.
+- **Ask before the second cloud CLI call in the current project/account scope, or before any mutating call, whichever comes first.** "Mutating" means create/update/delete/apply/tag/attach/detach/start/stop/scale or anything else that changes state — `terraform apply`/`tofu apply` included. A batch of read-only calls still counts as more than one — ask before the second one, don't let a run of "just checking" calls slide through un-confirmed.
 
 If the very first cloud CLI call is already mutating, ask before running it — don't spend the one free pass on a mutation.
 
@@ -31,7 +31,7 @@ If the very first cloud CLI call is already mutating, ask before running it — 
 
 Ask once, with labeled options, not open-ended:
 
-> This project is about to run `aws`/`gcloud`/`az` commands directly. Do you want these run directly, or would you prefer to run them yourself and paste back the output?
+> This project is about to run `aws`/`gcloud`/`az`/`terraform` commands directly. Do you want these run directly, or would you prefer to run them yourself and paste back the output?
 >
 > 1. **Direct execution** — I run these via the shell tool as needed.
 > 2. **Hand over to you** — I give you the exact command to run, you paste back the output.

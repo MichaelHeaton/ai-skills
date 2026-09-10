@@ -12,6 +12,14 @@ Read [docs/guides/agent-conventions.md](../../../docs/guides/agent-conventions.m
 
 You'll be given plan/diff output (expect the smallest useful slice per `iac-triage`'s evidence-ordering convention, not a full raw log dump) or a path to manifest files.
 
+**You have no `Bash`/`gh` access — you cannot fetch a live PR's diff yourself.** If asked to review a PR by number or URL with no pre-fetched diff file path given, refuse rather than substituting a review of local/stale state (the local checkout may not reflect the PR at all). State clearly that you need the diff pre-fetched to a file first, e.g.:
+
+```bash
+gh pr diff <n> --repo <owner/repo> > /tmp/pr-<n>.diff
+```
+
+Then re-invoke you with that file's path as input. Never fall back to reviewing whatever the local working tree happens to contain when asked for a specific PR — a caller trusting your output at face value has no way to catch that substitution.
+
 Focus on:
 
 - **Destructive actions** — resource replacement or deletion, and what depends on the resource being destroyed

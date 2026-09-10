@@ -86,6 +86,33 @@ else:
 " "<permission>"
 ```
 
+**Adding an entry to the `hooks` key** follows the same read/modify/write-atomically shape, keyed to `hooks` instead of `allowedTools`. `hooks` is nested one level deeper — by event name, then a list of matcher blocks, each with its own `hooks` array:
+
+```bash
+python3 -c "
+import json, sys
+path = '.claude/settings.json'  # or the global path, subject to the same write-restriction note above
+data = json.load(open(path))
+event = 'PreToolUse'       # PreToolUse, PostToolUse, Notification, Stop, SubagentStop, UserPromptSubmit
+matcher = 'Bash'           # tool name, or omit/adjust for UserPromptSubmit which has no matcher
+entry = {'type': 'command', 'command': 'python3 ~/.claude/hooks/new-hook.py'}
+
+blocks = data.setdefault('hooks', {}).setdefault(event, [])
+target = next((b for b in blocks if b.get('matcher') == matcher), None)
+if target is None:
+    blocks.append({'matcher': matcher, 'hooks': [entry]})
+elif entry not in target['hooks']:
+    target['hooks'].append(entry)
+else:
+    print('already present'); sys.exit(0)
+
+json.dump(data, open(path, 'w'), indent=2)
+print('added')
+"
+```
+
+This handles both sub-cases from one script: **inserting into an existing matcher block** (the `target is None` branch is skipped, `entry` is appended to that block's own `hooks` array without touching sibling entries) and **creating a new matcher block** when no block for that event/matcher pair exists yet (a fresh `{"matcher": ..., "hooks": [...]}` object is appended to the event's list). Same classifier-write restriction as `allowedTools` applies when the target is the global `~/.claude/settings.json` — hand the command to the user rather than running it yourself.
+
 ### 5. Confirm
 
 Report:

@@ -21,6 +21,8 @@ Confirm with user (often day before a standing team meeting — see `meeting_not
 - **For any ticket central to this week's narrative**, pull recent comments too (`jira_get_issue` with `comment_limit` set), not just status/description — a same-day comment can contradict a status claim built from search results or git-log alone
 - Vault: recent meetings, dailies, prep notes per `memex_agent_ref`
 
+**If Jira/Confluence MCP is unavailable** (connection error mid-draft): retry the connection once. If it's still down, fall back to git log plus prior vault session-close notes for drafting, and flag in the output itself that ticket-status/format-check couldn't be verified against live Jira/Confluence — so the user knows to double-check before pasting.
+
 ## Format check
 
 Before generating, fetch the current week's wiki page via Confluence MCP to verify active section headers and table layout. Do not rely solely on prior output files — format can change between weeks (e.g. numbered section headers may become plain `###` headers). If the page doesn't exist yet, use the most recent available page as reference.
@@ -46,6 +48,12 @@ Use `display_name` as the heading (e.g. your name on the team page).
 
 - **Content**: short, punchy, one-line-per-item talking points — not the 2-5 sentence paragraph-style bullets used in Progress/Plans/Problems. Name the thing, not the detail; save ticket numbers, PR numbers, and "why it mattered" for the Progress bullets underneath.
 - **Structure in the output file**: render it as a normal Markdown bullet list (one `*`/`-` item per line) under its own heading — do **not** embed it inside a `| |` Markdown table row/cell. Pipe-table cells can't hold real line breaks, so multi-point content forced into one either gets squashed onto a single `*`-separated line or `<br>`-joined — both paste into the live Confluence cell worse than a plain bullet list copies in as a bullet list. This was corrected 2026-08-13 after a first pass over-corrected a paste-breaking complaint into single-line prose, which was the wrong fix in the wrong direction — the working answer is short bullets, each on its own line, outside of a table cell in this file.
+
+## Scale detail to the rollup audience
+
+Before humanizing, scale bullet verbosity to how many management layers this report actually rolls up through — more detail is fine for a direct team-lead audience, but a report that climbs several layers above the immediate lead doesn't need engineering-level depth at every stop. Ask once if the audience isn't already known from config or prior context; don't default to maximum detail and wait for a correction.
+
+**Group untracked, informal work into one-liners.** Investigation or support-channel work with no tracked ticket behind it doesn't need its own paragraph bullet — collapse several such items into one bullet with short one-liners each. Reserve full paragraph detail (per the 1-2 sentence Progress rule above) for items that have an actual tracked ticket, where the ticket carries the rest of the detail.
 
 ## Confluence-paste formatting
 
