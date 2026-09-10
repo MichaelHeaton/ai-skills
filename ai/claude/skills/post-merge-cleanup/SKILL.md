@@ -78,6 +78,8 @@ gh run list --branch <default-branch> --limit 1 --json status,conclusion,name,ur
 
 A failing latest run belongs in the cleanup summary itself (workflow name + URL), not as a buried optional aside — a clean-looking sync can mask a broken production deploy. Skip silently when `gh` is unavailable, the remote isn't GitHub, or there's no recent run — same spirit as step 4's redeploy detection.
 
+**Distinguish a failing bot-generated PR from a real main-branch break before flagging it as a blocker.** A failing run on a bot/automation branch (`bot/`, `auto/`, `chore/*-regenerate`, or similar) that finished in a second or two with effectively zero jobs run is more likely an empty-job race in the bot's own PR than a break in what actually landed on main — log it as bot-PR noise rather than a cleanup blocker, as long as the run *on the default branch itself* is green. Still surface any real main-branch workflow failure at face value; this only applies to the bot-PR case, not to a genuine post-merge failure on main.
+
 ## Report
 
 ```
