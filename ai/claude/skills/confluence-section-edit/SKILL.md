@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.1.1
 principles_version: 1.0.0
-last_updated: 2026-09-04
+last_updated: 2026-09-10
 updated_by: claude
 name: confluence-section-edit
 description: Make a small, targeted edit to one section of an existing Confluence page — fix a fact, update a link, correct a paragraph — without doc-coauthor's full template/frontmatter overhead or the risk of a full-page rewrite breaking content outside the section touched. Covers locating the target heading, scoping the edit to that section instead of round-tripping the page through markdown, avoiding nested markdown lists inside numbered/bulleted items (a known list-collapse bug), and verifying via re-fetch/diff immediately after every edit (images need live-page verification instead — the read tool always flattens them). Use for "fix this on the wiki page", "quick Confluence correction", "update this section of <page>", "small correction to an existing page", "that fact is wrong on the runbook", or any one-section edit to an existing page. Complements doc-coauthor (new pages/rewrites) and ticket-write-verify's confluence-large-restructuring reference (full reorgs) — this skill covers the lighter single-section case.
@@ -27,17 +27,28 @@ Don't fetch as markdown, edit the markdown, and push a full-page rewrite — Con
 
 For a one-line factual correction inside a paragraph (no structural change), a direct text substitution within the fetched storage-format HTML is fine — the extract/reassemble steps above are for edits that touch list, heading, or macro structure, not a single word swap.
 
-## 3. Avoid nested markdown lists inside numbered/bulleted items
+## 3. Watch for double-JSON-encoded API responses
+
+`confluence_get_page`/`confluence_update_page` return content that's double-JSON-encoded — a JSON string containing another JSON-encoded string. The tool's displayed output still shows the literal backslash-escapes from that outer JSON layer, so naively text-editing what's displayed is unsafe and risks corrupting the page.
+
+Safe pattern:
+
+1. Write the raw tool response to a file.
+2. Run `json.loads()` twice on it to recover the real storage-format HTML.
+3. Apply the edit per Step 2 above.
+4. Diff-verify per Step 6 below before considering the edit done.
+
+## 4. Avoid nested markdown lists inside numbered/bulleted items
 
 A real nested markdown list inside a numbered or bulleted list item is a known breakage point — it can collapse the whole list into plain text on render. Use flowing paragraphs with dash-separated clauses instead of a nested sub-list when a list item needs more than one point.
 
-## 4. Watch for known write corruption
+## 5. Watch for known write corruption
 
 Same identifier/URL/bracket corruption modes as any Confluence write apply here — see `ticket-write-verify`'s known corruption modes table before submitting if the edit touches underscore-heavy identifiers, bracket-style markers, or URLs with underscores.
 
 **Images are a special case — read-side, not write-side.** `confluence_get_page` unconditionally flattens `<ac:image>`/`<ri:attachment>` macros into a bare `<img src="filename">` tag on every fetch, regardless of what's actually stored. A flattened `<img>` in the section you're editing is not proof the image is broken — see `ticket-write-verify`'s [confluence-macros.md](../ticket-write-verify/references/confluence-macros.md) § Image macros before touching it.
 
-## 5. Verify — diff immediately after every edit
+## 6. Verify — diff immediately after every edit
 
 Never leave a section edit unverified:
 

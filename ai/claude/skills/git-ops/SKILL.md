@@ -1,7 +1,7 @@
 ---
-version: 1.20.0
+version: 1.20.1
 principles_version: 1.0.0
-last_updated: 2026-08-16
+last_updated: 2026-09-10
 updated_by: claude
 name: git-ops
 description: Universal git hygiene guide — fires on the *first* git commit, push, PR, or MR operation in a session and every one after, not only retroactively at session-close. Covers branching rules, commit message format, PR/MR description format, and pre-commit checks scoped to modified files (including terraform fmt). Applies regardless of which other skills are active. Trigger on: any request to commit, push, open a PR or MR, "git commit", "create a PR", "push this", "open a pull request", "submit a MR", "ready to merge", or any variation of committing or sharing code changes.
@@ -76,7 +76,7 @@ Use conventional commits. Format:
 - Scope is optional but useful in multi-component repos (`feat(vault):`, `fix(auth):`)
 - Include the ticket key in the footer when one exists: `Refs: PROJ-XXXXX` or `Closes: #NN`
 - **Before using a closing keyword (`Closes:`/`Fixes:`/`Resolves:`), confirm the referenced issue's work is actually done in this commit** — don't add it speculatively because the ticket is related or was touched earlier in the session. A closing keyword on unfinished work auto-closes a ticket that isn't actually resolved the moment the PR merges.
-- Co-author line when Claude wrote the commit: `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`
+- Co-author line when Claude wrote the commit: `Co-Authored-By: <model name> <noreply@anthropic.com>` — use whichever model actually authored the commit; don't pin a specific version string here, since it will keep drifting as models change
 - One logical change per commit — don't bundle unrelated fixes
 
 **Examples**
@@ -85,7 +85,7 @@ Use conventional commits. Format:
 feat(session-close): add skill hygiene review step
 
 Closes: #28
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+Co-Authored-By: <model name> <noreply@anthropic.com>
 ```
 
 ```

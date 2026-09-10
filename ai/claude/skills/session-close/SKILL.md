@@ -1,7 +1,7 @@
 ---
-version: 1.20.0
+version: 1.20.1
 principles_version: 1.0.0
-last_updated: 2026-09-04
+last_updated: 2026-09-10
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
@@ -107,7 +107,7 @@ bash ~/.claude/skills/git-ops/scripts/check-branch-identity.sh <repo-path> <expe
 
 `<expected-branch>` is whatever branch this session most recently created or checked out for that repo (Step 1's `BRANCH` field, unless a later step switched it). `MATCH` or `WORKTREE:<actual>` → proceed to Step 2. `MISMATCH:<actual>` → stop before committing; the active branch changed unexpectedly in a shared checkout, so confirm which branch is actually correct first. This is the same check git-ops's "Shared checkout branch-identity check" section documents — it's called out here by name because a generic "invoke git-ops" instruction has been recalled without this specific script call actually firing.
 
-**SSH port-22 fallback**: For all GitHub/GitLab SSH remote operations, use `scripts/git-ssh-fallback.sh <repo-path> <subcommand> [args...]` instead of raw `git`. It auto-detects port-22 blocks, switches to HTTPS, and retries transparently.
+**SSH port-22 fallback**: For all GitHub/GitLab SSH remote operations, use `bash ~/.claude/skills/session-close/scripts/git-ssh-fallback.sh <repo-path> <subcommand> [args...]` instead of raw `git`. It auto-detects port-22 blocks, switches to HTTPS, and retries transparently.
 
 **GH auth pre-flight:** Before processing any GitHub.com repo — personal or work/org — verify the active `gh` account matches that repo's owner and switch if needed, restoring the original account in Step 10. Full account-detection and switch commands: [references/gh-auth-preflight.md](references/gh-auth-preflight.md). This is the session-boundary version of the same check — for a mid-session `gh` call outside a session-close run, use the `gh-account-routing` skill *(global: ai-skills)* instead.
 
