@@ -301,6 +301,13 @@ Before every `git push` to a feature branch, check whether its PR is already mer
 
 **Check PR history before force-deleting a branch name.** Before `git push --delete` or `git branch -D` on a branch that held real commits, list PRs for that head across all states (`gh pr list --head <branch> --state all`). If any PR exists (open/merged/closed) under that name, treat the name as historically reserved — prefer a differently-named branch for whatever comes next rather than deleting and immediately reusing the same name. A later real PR reusing a force-deleted branch name can collide with history the delete didn't actually clean up.
 
+**Recovery recipe: merged branch + uncommitted new work on top.** A distinct case from the plain "don't push to an already-merged branch" one above — a second process left uncommitted new work in a shared (non-worktree) checkout, sitting on top of a branch whose PR has already merged. This isn't a simple commit+push, since the branch itself is dead weight now:
+
+1. `git stash -u` (include untracked files — plain `git stash` misses them)
+2. Check out a fresh branch off the current default branch (`git checkout main && git pull && git checkout -b <new-branch>`)
+3. `git stash pop` to reapply the saved work, resolving any conflicts
+4. Commit/push/PR as normal from the fresh branch
+
 ---
 
 ## Push immediately once a PR looks merge-ready

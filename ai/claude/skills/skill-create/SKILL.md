@@ -298,9 +298,13 @@ Good test prompts are:
 
 **When the skill under test wraps another expensive multi-agent skill** (e.g. its core mechanic invokes `decision-council`'s 7-13 agent spawn), running the full pipeline 2-3 times just to validate control flow is expensive and mostly orthogonal to what the test is actually checking. Scale the wrapped skill down instead — most multi-agent skills document a lighter-weight mode for lower-stakes calls (`decision-council`'s Step 1.5 lets it run a 2-advisor pass with peer review skipped, for example). Disclose the substitution to the user explicitly before running ("testing with a scaled-down pass of X to keep this cheap — full-scale behavior isn't being exercised here"), then report results honestly.
 
+**For judgment-heavy skills** (reviews, audits, or anything whose output is sized/scaled by the model's own call rather than deterministic), also recommend a fresh, context-free subagent test pass before merge — not just testing in this authoring session. The authoring session carries confirmation bias toward its own recent design reasoning; a cold subagent with no memory of that reasoning has caught real gaps (a size-gate ambiguity that conflated diff size with "logic-bearing" content) the authoring session's own eyes missed. Dispatch the same test prompts to a fresh Agent-tool subagent and compare its output against what the authoring session expected.
+
 **Hooks:** Test by triggering the event the hook listens on (e.g. run a tool call for `PreToolUse`, end the session for `Stop`). Confirm the hook command ran and produced the expected side effect. Check exit codes — a non-zero exit from a `PreToolUse` hook blocks the tool.
 
 **MCP servers:** After restart, confirm the server appears in the status bar. Run a tool call that exercises the server and verify the response. Check for auth errors or missing env vars early — they fail silently until first use.
+
+**A brand-new skill can't be dispatched via the `Skill` tool in its own creation session** — deployment requires `make install-system` and a session reload before the Skill tool's metadata picks up a new skill. A same-session "let's try it now" exercise has to be done by hand, following the written SKILL.md steps directly, not through the `Skill` tool. This is expected mechanics, not a bug — don't mistake the dispatch failure for something wrong with the new skill.
 
 ---
 

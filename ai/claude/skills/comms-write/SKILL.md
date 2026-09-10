@@ -41,6 +41,7 @@ If private examples exist, prefer them over stubs. Do not commit private example
 | Incident report or post-mortem | work-primary | `work-primary-incident.md` |
 | Customer notification | work-primary | `work-primary-customer-notify.md` |
 | Leadership or stakeholder update | work-primary | `work-primary-leadership.md` |
+| Brief reply/question to a manager or leader (short prose, no status structure) | work-primary | `work-primary-leadership.md` *(lightweight carve-out — short prose answering or asking one thing, not the full status-update structure)* |
 | PR review request (Slack, after `gh pr create`) | work-primary | `work-primary-pr-review.md` |
 | Slack thread reply | any | *(see Thread Reply section below)* |
 | Team channel update / FYI post (informal, no ask, no 3P structure) | work-primary | `work-primary-3p.md` *(shares the 3P template — keep it to bullets, no 3P structure)* |
@@ -59,7 +60,7 @@ When the user is drafting a reply to an existing Slack thread (trigger: "reply t
 
 1. **Acknowledge context** — open with a one-line summary of what you're replying to: *"Re: [original ask/topic]"* (internal only — strip before pasting if not needed)
 2. **Match thread tone** — scan any pasted thread content; mirror formality, length, and emoji/no-emoji style already in the thread
-3. **Keep it short** — thread replies are shorter than top-level posts; default to 3–5 lines max unless the question demands more
+3. **Keep it short** — thread replies are shorter than top-level posts; default to 3–5 lines max unless the question demands more. **Answer only what was asked** — don't pad a factual-confirmation reply with an unrequested offer to act ("I'll fix this," "I'll open the PR"). Only include an offer to act if the thread explicitly requested it or the user separately asked Claude to take that action.
 4. **Deliver in a fenced code block** (` ```plain `) same as other comms types so the user can copy-paste directly
 
 If domain context is unclear, ask or infer from `local.json` / current repo.

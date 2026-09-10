@@ -70,6 +70,12 @@ Auto-set on shell startup for personal machines. See `docs/home/platform-aws.md`
 
 ---
 
+## Python tooling prerequisites
+
+**`_cffi_backend` ModuleNotFoundError** — the `pdf` skill (`anthropic-skills:pdf` plugin, uses `pypdf`/`pdfplumber`) can hit `ModuleNotFoundError: No module named '_cffi_backend'` on a fresh or cloud environment where `cffi` isn't already correctly built for the active Python. Fix: `pip install --force-reinstall cffi`. Recurred at least twice in separate sessions before being tracked here — `pdf` is a third-party plugin skill and can't be edited directly in this repo, so this note is the workaround's durable home.
+
+---
+
 ## Makefile — `make` targets
 
 Run `make` or `make help` from `~/Projects/personal/workstation-devops` to see the full list.
