@@ -33,9 +33,10 @@ gh auth switch --hostname github.com --user "<target-repo-owner-account>"
 
 **Always pass `--hostname github.com`.** With more than one host authenticated (github.com plus an internal GHE/GitLab host), `gh auth switch --user <name>` fails outright without the hostname flag — it isn't optional once more than one host is in play.
 
-**After switching, explicitly export and verify `GH_TOKEN`** — under sandbox execution, `gh auth status` succeeding does not guarantee `GH_TOKEN` is actually set in the shell environment:
+**After switching, unset any stale `GH_TOKEN` before exporting a fresh one, then verify it's non-empty** — under sandbox execution, `gh auth status` succeeding does not guarantee `GH_TOKEN` is actually set in the shell environment, and a stale value from a prior switch or the ambient sandbox environment silently overrides `gh auth token`'s fresh lookup (same guard `issue-update` already uses):
 
 ```bash
+unset GH_TOKEN
 export GH_TOKEN=$(gh auth token --user "<target-repo-owner-account>")
 [[ -n "$GH_TOKEN" ]] || echo "GH_TOKEN still empty after switch" >&2
 ```
