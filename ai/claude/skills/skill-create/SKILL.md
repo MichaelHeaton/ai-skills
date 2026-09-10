@@ -67,9 +67,10 @@ Once the type is confirmed, follow the type-specific guidance below, then contin
 
 - Placement: configured in `.claude/settings.json` under `hooks`
 - Structure: `{ "event": "<EventName>", "hooks": [{ "type": "command", "command": "<shell cmd>" }] }`
-- Supported events: `PreToolUse`, `PostToolUse`, `Notification`, `Stop`, `SubagentStop`
+- Supported events: `PreToolUse`, `PostToolUse`, `Notification`, `Stop`, `SubagentStop`, `UserPromptSubmit`
 - Use `update-config` skill to add hooks to the right settings file (global vs. project)
 - Commands run with the repo root as CWD; non-zero exit code blocks the tool call (PreToolUse only)
+- `UserPromptSubmit` blocks differently from the others on a non-zero exit: it erases the prompt entirely rather than substituting or redacting content — the hook can only allow or block the prompt outright, not modify it
 - Hook commands should be fast (<2s) and idempotent
 
 #### MCP server
@@ -292,6 +293,8 @@ Good test prompts are:
 - Specific and concrete (include file names, context, personal details)
 - Varied in phrasing (formal, casual, abbreviated)
 - Focused on edge cases, not just the obvious happy path
+
+**When the skill under test wraps another expensive multi-agent skill** (e.g. its core mechanic invokes `decision-council`'s 7-13 agent spawn), running the full pipeline 2-3 times just to validate control flow is expensive and mostly orthogonal to what the test is actually checking. Scale the wrapped skill down instead — most multi-agent skills document a lighter-weight mode for lower-stakes calls (`decision-council`'s Step 1.5 lets it run a 2-advisor pass with peer review skipped, for example). Disclose the substitution to the user explicitly before running ("testing with a scaled-down pass of X to keep this cheap — full-scale behavior isn't being exercised here"), then report results honestly.
 
 **Hooks:** Test by triggering the event the hook listens on (e.g. run a tool call for `PreToolUse`, end the session for `Stop`). Confirm the hook command ran and produced the expected side effect. Check exit codes — a non-zero exit from a `PreToolUse` hook blocks the tool.
 
