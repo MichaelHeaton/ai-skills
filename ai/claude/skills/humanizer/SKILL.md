@@ -1,7 +1,7 @@
 ---
-version: 1.1.1
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-08-27
+last_updated: 2026-09-10
 updated_by: claude
 name: humanizer
 description: Rewrite an article or draft to strip out AI-writing tells — puffery, canned notability phrasing, overused vocabulary (delve, boasts, testament, underscore, vibrant...), formulaic "Challenges and Future" endings, negative parallelism ("not only X but Y"), rule-of-three lists, and AI-typical formatting — while preserving every fact, citation, and the original meaning exactly, and adding nothing new. Based on Wikipedia's WP:Signs of AI writing field guide. Use when the user says "humanize this", "de-AI this", "make this sound less like AI wrote it", "remove AI writing signs", "this reads like ChatGPT", "strip the AI tells", "clean up the AI-generated tone", or pastes a draft/article asking for a pass to sound more human without changing what it says.
@@ -23,7 +23,7 @@ Rewrite text so it no longer reads as AI-generated, without changing what it say
 
 Meaning and facts are the fixed point. Style is the only thing in motion.
 
-**Run this skill last, after any structural or logical-consistency fix, never before.** This is a style pass — it cannot see a contradiction between two sections, and running it on a draft with one unresolved doesn't fix anything; it makes both contradictory claims read more fluently and confidently, which is worse, since polished motivated reasoning is harder for a reader to catch than clumsy motivated reasoning. If the input is a narrative report or wiki page with a thesis (not just a factual writeup), it should go through `doc-coauthor`'s consistency-audit stage *(global: ai-skills)* first.
+**Run this skill last, after any structural, logical-consistency, or audience fix, never before.** This is a style pass — it cannot see a contradiction between two sections or a gap where the reader is missing context, and running it on a draft with either unresolved doesn't fix anything; it makes the draft read more fluently and confidently while still being wrong or confusing, which is worse, since polished prose is harder for a reader to catch a problem in than rough prose. If the input is a narrative report or wiki page with a thesis (not just a factual writeup), it should go through `doc-coauthor`'s consistency-audit stage *(global: ai-skills)* first. Any AI-assisted draft — thesis or not — should also go through `doc-audience-check` *(global: ai-skills)* first if it might read like a transcript of the chat that produced it rather than something written for its actual reader.
 
 ## Process
 

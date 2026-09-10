@@ -1,7 +1,7 @@
 ---
-version: 1.6.0
+version: 1.7.0
 principles_version: 1.0.0
-last_updated: 2026-08-24
+last_updated: 2026-09-10
 updated_by: claude
 name: doc-coauthor
 description: Co-author work team documentation directly to the live Confluence wiki. Handles the full workflow: doc-type selection, context gathering, section-by-section drafting, and delivery — plus a lighter-weight path for editing already-existing content that skips doc-type selection entirely. Use when writing or updating any team wiki page, runbook, how-to guide, customer guide, or architecture decision record. Triggers on: "write a runbook", "draft a how-to", "create a wiki page", "update the docs for X", "update the wiki", "write an ADR", "document this process", "new Confluence page", "doc for vault", "work team documentation", "update Confluence". A small, targeted correction to an existing page (fixing one fact, one link, one section) should go through the `confluence-section-edit` skill instead of this one; a new page or a significant rewrite goes through this skill.
@@ -106,11 +106,19 @@ Two writing rules this audit enforces, drawn from a real case where an exec summ
 
 See [references/consistency-audit.md](references/consistency-audit.md) for the full sub-agent prompt and before/after examples.
 
+## Stage 2.4: Audience Check
+
+Run this on every draft, not just narrative-thesis ones — it catches a different failure than Stage 2.3: a page that's internally consistent but still reads like it's explaining the topic to whoever was in the drafting conversation rather than to the page's actual audience (conversational asides answering unstated questions, tools or people named with no introduction, section order following the sequence questions got asked in).
+
+Invoke the `doc-audience-check` skill *(global: ai-skills)* on the draft. It spawns a fresh sub-agent with only the draft text to genuinely cold-read it — the author (and Claude, having just written it) can't reliably spot this class of gap by rereading, since the missing context isn't missing to whoever already has it in their head.
+
+**Run this after Stage 2.3, before Stage 2.5.** Fix logic first, then fix what's missing or misplaced for the reader, then polish wording — in that order, since this stage can add or restructure sentences that the style pass should see, not the reverse.
+
 ## Stage 2.5: Humanize
 
-Once the consistency audit above is clean, invoke the `humanizer` skill *(global: ai-skills)* on the draft before reader testing — strips AI-writing tells (puffery, canned phrasing, formatting artifacts) while preserving every step, command, and fact exactly.
+Once Stage 2.3 and 2.4 are clean, invoke the `humanizer` skill *(global: ai-skills)* on the draft before reader testing — strips AI-writing tells (puffery, canned phrasing, formatting artifacts) while preserving every step, command, and fact exactly.
 
-**Run this after Stage 2.3, never before.** Humanizer only smooths style — it can't see a logical contradiction, and running it on an unresolved one just makes both contradictory claims read more confidently, which is worse, not better. Run reader testing against the humanized version, not the raw draft.
+**Run this after Stage 2.4, never before.** Humanizer only smooths style — it can't see a logical contradiction or a missing-context gap, and running it on an unresolved one just makes the draft read more confidently, which is worse, not better. Run reader testing against the humanized version, not the raw draft.
 
 ---
 
