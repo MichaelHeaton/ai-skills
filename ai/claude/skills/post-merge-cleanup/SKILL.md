@@ -1,7 +1,7 @@
 ---
-version: 1.0.1
+version: 1.0.2
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-09-10
 updated_by: claude
 name: post-merge-cleanup
 description: Clean up after a PR merges — pull main, remove the worktree, delete the local (and remote-if-needed) feature branch, and run the repo's redeploy/build step — without requiring a full session-close run. Use whenever the user says "that PR merged", "merged, can you clean up", "PR's in, sync main", or right after confirming a merge via gh/glab, in any repo. For end-of-session hygiene across multiple repos, use session-close instead — this skill is the single-repo, single-PR version of the same sequence.
@@ -11,6 +11,12 @@ compatibility: Cloud-compatible — no local-machine-only paths or tooling; step
 # Post-Merge Cleanup
 
 The four-step sequence every merged PR needs, as a skill instead of prose duplicated per-repo in CLAUDE.md files. Portable — nothing here assumes `make install-system` or any other ai-skills-specific tooling.
+
+## When push or PR creation is handed off to the user
+
+Auto-trigger on "that PR merged" depends on the agent having actually observed the PR get created — if a push or PR creation gets handed off instead (a blocked local git tool, a Cursor hook, or any other reason the agent couldn't do it directly), explicitly prompt the user before ending that turn: *"I couldn't push/open this PR myself — once you've merged it, let me know so I can run this cleanup."* Without that prompt, the merge happens with no observed PR to trigger on, and cleanup never auto-fires.
+
+No change to the happy path — when the agent itself opens the PR, auto-trigger on merge confirmation works as before.
 
 ## 1. Pull main (fast-forward)
 
