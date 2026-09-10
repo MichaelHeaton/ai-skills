@@ -18,6 +18,8 @@ Create a new task in the right system based on where you're working. See `refere
 
 **Never combine `export GH_TOKEN=...` (or any credential lookup) with `gh issue create` or another mutating `gh` call in the same shell invocation.** Run them as two separate Bash tool calls: block 1 exports the token and verifies it's non-empty; block 2 only creates the issue. A blocked or denied credential-export step can silently prevent the second block from ever running — if that happens mid-skill, the ticket was never created; re-attempt the create once the token is confirmed set, don't assume a mixed block that appeared to run actually created anything.
 
+**Under a sandboxed shell, an intermittent `GraphQL: Forbidden` on `gh issue create` (Path B/C) is often a Shell ACL problem, not a stale token.** Before re-exporting `GH_TOKEN` or otherwise assuming the credential is the issue, retry the same call with the shell's `required_permissions: ["all"]` — a valid token can still get `Forbidden` if the sandbox itself is scoping which network calls that shell invocation is allowed to make. Keep the two-block rule above either way; this is about which fix to reach for first, not a reason to combine the export and create steps.
+
 ## Steps
 
 ### 0. Environment setup
