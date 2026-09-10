@@ -40,6 +40,19 @@ GH_HOST="${host%%[:/]*}" # cut at first : or / — leaves just the hostname
 [[ "$GH_HOST" == "github.com" ]] && unset GH_HOST || export GH_HOST
 ```
 
+**No local clone present** (reviewing a bare PR URL with no `git remote` to check): parse `host`, `owner`, `repo`, and the PR number directly from the URL instead —
+
+```bash
+if [[ "$pr_url" =~ ^https://([^/]+)/([^/]+)/([^/]+)/pull/([0-9]+) ]]; then
+  GH_HOST="${BASH_REMATCH[1]}"; owner="${BASH_REMATCH[2]}"; repo="${BASH_REMATCH[3]}"; pr_number="${BASH_REMATCH[4]}"
+  [[ "$GH_HOST" == "github.com" ]] && unset GH_HOST || export GH_HOST
+fi
+```
+
+Use the clone-based snippet above as the default path whenever a local clone of the target repo exists; fall back to this URL-parsing path only when it doesn't.
+
+**Cross-account/org access mismatch**: a `gh` call failing with `GraphQL: Could not resolve to a Repository` on an otherwise-correctly-formed repo path (distinct from the Enterprise-host case above, which fails the same way for a different reason) usually means the active `gh` account lacks access to that org, not a real resolution problem. Hand off to the `gh-account-routing` skill *(global: ai-skills)* to switch accounts, parallel to the `GH_HOST` handling above — don't debug the repo path first.
+
 If the PR is already merged, diff the merge commit's own commits against their parent rather than assuming `main`'s current state matches what was reviewed.
 
 ## 3. Size-gate the review mechanism
