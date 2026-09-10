@@ -64,7 +64,7 @@ Lite user story + `*Captured via brain-dump — needs triage.*`
 gh issue create \
   --repo ${GITHUB_PERSONAL_USER}/memex \
   --title "<title>" \
-  --label "domain/<domain>,priority/<priority>,brain-dump,needs-grooming" \
+  --label "domain/<domain>,priority/<priority>,type/brain-dump,triage/needs-grooming" \
   --body "<rendered lite user story body>"
 ```
 
