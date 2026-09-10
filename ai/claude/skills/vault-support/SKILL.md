@@ -105,6 +105,8 @@ This bit a real triage on 2026-09-08 (PR #40028): an initial check against a sta
 
 ## Step 4 — Analyze
 
+If the question concerns real, current access/config rather than just documented process — and references a specific pending change (a PR, a policy file, an approver list) — apply Step 3b's live-state verification before treating a doc-search finding as current.
+
 ### Case A — Early triage
 
 Compare the support bot's response to what the local docs say. If the support bot cited page `2039778922`, apply the known-retrieval-bug gate above before treating it as a confirmed instance. Produce:
@@ -188,8 +190,6 @@ Extract the question from the user's message. Skip bot-comparison scoring (`sher
 - <page> — <where it actually lives, and whether it should move under 2523173073>
 ```
 
-1. **Offer to create issues** — after presenting the list, ask: "Want me to create GitHub Issues for any of these gaps?" The list feeds directly into `issue-create`.
-
 ## Step 5 — Build the gap list
 
 For all cases, end with:
@@ -214,6 +214,8 @@ For all cases, end with:
 **Questions to ask the team** (to fill gaps where docs are thin):
 
 For each item, draft the entry using the Sr SRE format in [references/gap-analysis.md](references/gap-analysis.md) and include it directly in your response — share your research and propose an answer the team can validate. There's no persisted question log; the user brings the list to the team as needed.
+
+**Offer to file confirmed gaps, regardless of which case produced this list.** After presenting the gap analysis, ask: "Want me to create GitHub Issues for any of these gaps?" A real, confirmed gap surfaced in Case A/B/C triage is exactly as worth filing as one from a Case D broad audit — don't let it go unticketed just because the conversation moves on to something else before this checkpoint is reached. The list feeds directly into `issue-create`.
 
 ---
 
