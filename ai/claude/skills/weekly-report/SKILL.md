@@ -55,3 +55,5 @@ Before writing the output file, invoke the `humanizer` skill on the drafted repo
 ## Step 3 — Confirm
 
 Link output file(s) under `Outputs/Weekly/`, note paste targets from the matching `weekly_reports.*` block, and call out gaps.
+
+**If the user reports further edits made at paste time** (trimmed or reworded after the draft was handed off, before or while pasting into the live destination), update the vault copy to match before ending the session. The saved file should be the record of what actually went live, not just what was drafted — don't leave it silently out of sync with a live-pasted version the user has already revised.
