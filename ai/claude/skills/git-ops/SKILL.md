@@ -44,6 +44,10 @@ git checkout <other-feature-branch> && git checkout -b <new-branch>
 
 For per-repo-type conventions (work GitHub, GitLab, personal KB, personal), see `docs/guides/branching.md` in ai-skills.
 
+**Creating a worktree under sandbox execution:** `/tmp` is not writable in that environment — a `git worktree add /tmp/<branch>` fails outright, not with a permissions warning that's easy to miss. Use `<repo-root>/.worktrees/<branch>` instead.
+
+**A batch `git branch -d` can trigger Auto-review's smart-mode gate** — a safety checkpoint on high-velocity writes, not a failed cleanup. Request approval or continue once cleared rather than treating the block as an unexplained error (same pattern `issue-update`'s bulk-ops note documents for ticket closes).
+
 ---
 
 ## Commit messages

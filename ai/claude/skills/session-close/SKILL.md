@@ -223,6 +223,8 @@ git -C <repo> branch -vv | grep ': gone]' | awk '{print $1}' | xargs -r git -C <
 
 The `-d` flag only deletes fully-merged branches — unmerged ones are left alone. **A squash-merged branch is the far more common cause of "not fully merged" here**, not just a force-deleted remote: the branch's commits genuinely landed on `main`, but git doesn't recognize them as ancestors because the squash commit has a different hash. Before falling back to `-D`, verify the content actually landed rather than assuming — verification commands: [references/merged-branch-push-safety.md](references/merged-branch-push-safety.md).
 
+**A batch local-branch delete can trigger Auto-review's smart-mode gate** (same pattern as `issue-update`'s bulk-ops note) — this is a safety gate on high-velocity writes, not a failed cleanup. Request approval or continue once cleared rather than treating the block as an error.
+
 When more than 3 branches would be deleted, show the list and ask with labeled options before proceeding:
 > **Delete these `N` merged local branches in `<repo-name>`?**
 >
@@ -245,7 +247,11 @@ find ~/Projects -maxdepth 4 -path "*/.claude/skills/<name>" -type d 2>/dev/null 
 
 Invoke `skill-session-handoff` *(global: ai-skills)* with this annotated list to assemble the SA1 context block. Then delegate that block to the **`skill-reviewer` subagent** (Agent tool, `subagent_type: skill-reviewer`) to run skill-review's SA2–SA4 in isolation. **Do not ask for confirmation before doing either step; both run automatically as part of session-close** — this includes `skill-session-handoff`'s own Step 5 "Want me to do that now?" question, which that skill itself skips when it detects an auto-delegate caller like this one.
 
-The subagent returns only a findings table, a new-skill-ideas table, and a short summary — it does not create tickets or edit anything. **Fall back to invoking `skill-review` directly in-session with the same annotated list as SA1 context** whenever the subagent doesn't come back with findings — not only when it's undeployed. That covers a spawn failure, an empty result, or a usage/quota error the same way as "not deployed": run SA2-SA4 in-session and still file tickets for every finding (SA5). Note in the Step 10 summary that the subagent failed and the in-session fallback ran, so it's visible rather than silently dropped.
+The subagent returns only a findings table, a new-skill-ideas table, and a short summary — it does not create tickets or edit anything. **"Doesn't come back with findings" isn't one case — distinguish three, each with its own recovery path:**
+
+- **Spawn failure or usage/quota error** (not deployed, errors out before running, hits a quota limit) → fall back to invoking `skill-review` directly in-session with the same annotated list as SA1 context: run SA2-SA4 in-session and still file tickets for every finding (SA5). Note in the Step 10 summary that the subagent failed and the in-session fallback ran, so it's visible rather than silently dropped.
+- **Empty result that's actually valid** (the subagent ran cleanly and genuinely found nothing) → accept it as-is, no fallback needed. Log "no skill changes identified — nothing to ticket" in Step 10 the same as a clean in-session run would.
+- **Truncated or malformed output** (a findings table cut off mid-row, unparseable structure) → resume the same subagent invocation once before falling back to the in-session path — a truncation is often a one-off, and re-running in-session throws away work the subagent may have already done correctly. Only fall back to in-session SA2-SA4 if the resume also comes back malformed.
 
 **Reminder**: ai-skills is a public repo. Ticket content must be scrubbed of Employer-internal hostnames, internal ticket keys used as examples, security details, and anything sensitive. This scrub is the parent session's responsibility (SA5) — it does not happen inside the subagent.
 
