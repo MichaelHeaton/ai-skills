@@ -31,7 +31,7 @@ bash ~/.claude/skills/issue-create/scripts/detect-context.sh
 **Jira** — use Atlassian MCP:
 
 - `jira_get_issue` for the ticket body, status, assignee, labels, epic link
-- `jira_add_comment` is available later if the user wants to update the ticket during the session
+- If the user wants to update the ticket during the session, route through `issue-update` _(global: ai-skills)_ rather than calling `jira_add_comment` directly — it chains into `ticket-write-verify`'s corruption check
 
 **GitHub:**
 
@@ -55,7 +55,7 @@ Before building the standard AC-checklist brief, check whether this ticket is ac
 
 > This reads as an evaluation/decision ticket, not a spec'd work item — routing to `decision-council` instead of the usual AC brief. Say "brief me normally" if you wanted the standard checklist instead.
 
-Invoke `decision-council` *(global: ai-skills)*, framing the question from the ticket's title and body per that skill's own Step 1. Let `decision-council`'s own Step 1.5 decide pass weight (full vs. lighter) based on the ticket's actual stakes — don't hardcode that choice here.
+Invoke `decision-council` _(global: ai-skills)_, framing the question from the ticket's title and body per that skill's own Step 1. Let `decision-council`'s own Step 1.5 decide pass weight (full vs. lighter) based on the ticket's actual stakes — don't hardcode that choice here.
 
 After the council verdict is presented, stop — **do not auto-invoke `dev-team`** on any recommended item. Ask whether the user wants to file tickets from the recommendations (via `issue-create`) and hand off from there. This mirrors the manual gate already established between council and build: the council's job is to say what's worth building, not to build it.
 
@@ -142,5 +142,5 @@ For the rest of the conversation, treat the ticket as live context. Re-fetch onl
 | "what did [person] say?" | Pull from the recent activity summary |
 | "refresh" / "reload" | Re-fetch the ticket and rebuild the brief; re-ask which ACs are done |
 | "update status" / "transition" | For Jira: use `jira_transition_issue`. For GitHub: guide them to close or update labels |
-| "add a comment" | Use the appropriate API tool or CLI to post a comment |
+| "add a comment" | Route through `issue-update` _(global: ai-skills)_ rather than calling the raw API tool or CLI directly |
 | "close session" / "done for now" | Summarize: which ACs were completed this session, any open items, and suggest next steps |
