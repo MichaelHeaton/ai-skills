@@ -23,6 +23,8 @@ Confirm with user (often the day before a standing team meeting — see `meeting
 - **Same-day boundary check**: a blind `--since=1.week` window inconsistently includes/excludes commits landing on the same calendar day the prior report was generated. When any commit's date matches the prior report's generation date, don't rely on the date window alone — check the prior report's actual content/timestamp directly to determine what it already covered before including or excluding that commit here
 - Vault: recent meetings, dailies, prep notes per `memex_agent_ref`
 
+**If Jira/Confluence MCP is unavailable** (connection error mid-draft): retry the connection once. If it's still down, fall back to git log plus prior vault session-close notes for drafting, and flag in the output itself that ticket-status/format-check couldn't be verified against live Jira/Confluence — so the user knows to double-check before pasting.
+
 ## Format check
 
 Before generating, fetch the current week's Confluence wiki page (if `confluence_page_id` is set in config) to verify active section headers. Do not rely solely on prior output files — format can change between weeks.
