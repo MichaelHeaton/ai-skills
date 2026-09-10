@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.1.1
 principles_version: 1.0.0
-last_updated: 2026-06-10
+last_updated: 2026-09-10
 updated_by: claude
 name: issue-get
 description: Fetch the full details of a specific task or ticket by ID. Works across GitHub Issues and Jira. Use when the user references #94, PROJ-12345, or similar — or pastes a bare ticket URL (GitHub or Jira).
@@ -26,9 +26,10 @@ Check `~/Projects/personal/memex/Raw/_task-index.jsonl` first — find the recor
 
 **GitHub Issues:**
 
-> **Account:** Export the personal token before any `gh` call (`GITHUB_PERSONAL_USER` must be set in your environment):
+> **Account:** Export the personal token before any `gh` call (`GITHUB_PERSONAL_USER` must be set in your environment). **Unset `GH_TOKEN` first** — a stale value already in the environment takes precedence over the fresh keyring lookup below and can silently re-export a bad token, causing 401s (parity with `issue-update`):
 >
 > ```bash
+> unset GH_TOKEN
 > export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")
 > ```
 >
