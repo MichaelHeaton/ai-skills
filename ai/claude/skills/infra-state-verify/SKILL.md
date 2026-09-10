@@ -48,6 +48,8 @@ Match the check to what's actually being claimed — don't just re-read the sour
 - `kubectl rollout status deployment/<name>` to confirm a rollout finished, not just was requested
 - A live health/status endpoint or load balancer check to confirm it's serving traffic, not just scheduled
 
+**A green HTTP/blackbox probe does not confirm application-level health.** HTTP 200 only proves the endpoint responded — it doesn't rule out a locked database, a failed auth flow, or a crashed worker returning a 200 with an error payload. When a user reports failures despite a green probe, don't stop at HTTP-green as the verification — add an app-level check: inspect the actual response body/payload, run a DB query count, or exercise the real auth flow.
+
 **Ansible**
 
 - The playbook run history/log for the actual host group — did the run reach the relevant task and finish without failure, not just exist in the repo
@@ -77,7 +79,12 @@ Match the check to what's actually being claimed — don't just re-read the sour
 
 - Check the flag service's dashboard/API for the live flag state — not the default or intended value in code
 
-If none of these are available in the moment, say so explicitly in the draft rather than silently asserting the state — see the distinction below.
+**When the required check itself can't run**, the fallback depends on why:
+
+- **Blocked by security controls** (Auto-review denies reading a secret the natural check needs, e.g. an API key for a GraphQL smoke test): substitute a probe that avoids the credential entirely — a DB row count, login-page reachability, or an equivalent non-secret signal — and document which check actually ran in place of the blocked one.
+- **Blocked by network reachability** (a sandboxed session's `kubectl`/SSH can't reach a private LAN host): this is a third outcome, distinct from pass/fail — emit the exact command(s) needed, ask the user to run them and paste the output, then interpret the pasted result. A blocked attempt is not itself the ground-truth check; don't improvise a workaround that skips verification instead of handing it off.
+
+If neither substitute is available in the moment either, say so explicitly in the draft rather than silently asserting the state — see the distinction below.
 
 ## Distinction in written output
 
