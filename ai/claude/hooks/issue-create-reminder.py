@@ -7,10 +7,11 @@ Companion to issue-create-track.py, which records when issue-create fires.
 Covers two shapes of direct call, both bypassing issue-create's routing,
 dedupe-search, and task-index steps:
   - Bash commands: `gh issue create` / `glab issue create`
-  - Direct MCP tool calls: a tool name ending in `jira_create_issue` or
-    `save_issue`, regardless of which MCP server prefix exposes it — the
-    exact prefix varies by environment, so this matches on the method
-    name rather than a hardcoded `mcp__<server>__` prefix.
+  - Direct MCP tool calls: a tool name ending in `jira_create_issue`,
+    `save_issue`, or `issue_write` (the GitHub MCP server's own issue
+    tool), regardless of which MCP server prefix exposes it — the exact
+    prefix varies by environment, so this matches on the method name
+    rather than a hardcoded `mcp__<server>__` prefix.
 """
 import json
 import re
@@ -18,7 +19,7 @@ import sys
 from pathlib import Path
 
 BASH_COMMAND_RE = re.compile(r"\b(gh\s+issue\s+create|glab\s+issue\s+create)\b")
-MCP_TOOL_RE = re.compile(r"(^|_)(jira_create_issue|save_issue)$", re.IGNORECASE)
+MCP_TOOL_RE = re.compile(r"(^|_)(jira_create_issue|save_issue|issue_write)$", re.IGNORECASE)
 
 try:
     data = json.load(sys.stdin)
