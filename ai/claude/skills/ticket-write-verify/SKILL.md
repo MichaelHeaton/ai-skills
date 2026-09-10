@@ -25,6 +25,7 @@ Ticket-system write APIs silently corrupt certain text patterns during markdown-
 | Underscore-escaping | Confluence | Same as Jira | Same symptom; storage-format conversion, not the editor |
 | Query-string URL mangling | Jira/Confluence | URLs with `_` in query params | Underscore inside the URL gets escaped, breaking the link |
 | Bold/plus stripping | Jira | `**bold**`, `+` characters | Bold markers dropped or rendered literally; `+` silently removed |
+| `#`-as-heading | Jira | `#` at the start of a line, intended as a numbered-list marker | Renders as an H1 heading, not a list item — the comment/description body is parsed as plain Markdown, not Jira wiki markup (where `#` is valid list syntax). Use `1.`/`2.`/`3.` or `-` bullets instead |
 | Structural drift | Confluence (large edits) | Large-scale storage-format restructuring — internal page-link rewrites, section reordering | Macro (`ac:structured-macro`), link (`ac:link`), table, or date-tag counts change without a matching intentional add/remove — probable accidental loss, not a corruption pattern with a fixed signature |
 | Image-macro flattening (read-side, not write) | Confluence | Any `<ac:image>`/`<ri:attachment>` macro, on **every** fetch via `confluence_get_page` — including `convert_to_markdown: false` | Read call always returns a bare `<img alt="filename.jpg" src="filename.jpg" width="..."/>`, regardless of what's actually stored server-side. This is the read tool lying, not evidence the write is broken — confirmed by the identical flattened form appearing in years-old page history, and by re-fetching immediately after writing a correct macro and seeing the same flattened tag while the live rendered page displayed correctly |
 
@@ -41,6 +42,7 @@ Before posting any Jira or Confluence content, scan the drafted text for the fra
 - **Underscore-heavy identifiers**: wrap in real inline-code formatting via the tool's actual code-span mechanism — plain backtick characters typed as text are **not** sufficient; use whatever field/param the MCP call exposes for inline code, not literal `` ` `` characters in the body string.
 - **Bracket-style markers** (`[STEP]`, `[NOTE]`): rephrase as a bold label or a leading dash instead of literal brackets, since brackets read as link syntax regardless of formatting.
 - **URLs with underscores**: pass as an actual link/href object where the API supports one, not inline as escaped text.
+- **Numbered lists**: use `1.`/`2.`/`3.` or `-` bullets, never `#` — `#` renders as an H1 heading in Jira comment/description bodies, not a list marker.
 
 If the target field doesn't support real inline-code or link objects (a plain-text field), skip the pre-check for that field — the post-write check below is the backstop.
 

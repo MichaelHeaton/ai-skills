@@ -62,7 +62,9 @@ If the permission exists in the *other* file (e.g., in project when it should be
 
 Add the permission to `allowedTools` (for tool allow-list entries) or the appropriate key. Write the updated JSON back.
 
-For global settings:
+**⚠️ `~/.claude/settings.json` cannot be written by Claude** — it's blocked by the auto mode classifier, the same protection as the Edit-tool deny list. For global settings, don't run the script below yourself: print it as a command for the user to run in their own terminal, not as something you execute.
+
+For global settings (**give this to the user to run** — do not execute it yourself):
 
 ```bash
 # Read, update, write atomically

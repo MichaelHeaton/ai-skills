@@ -307,6 +307,21 @@ When committing, pushing, or creating PRs across more than one repo in the same 
 
 ---
 
+## Recovering a cloud session with a broken Bash tool
+
+A web/mobile (`claude.ai/code`) session that never ran `make install-system` can have every Bash call blocked by a `PreToolUse` hook referencing a missing `~/.claude/hooks/*.py` script — desktop sessions aren't affected, since Bash isn't broken there in the first place.
+
+**Safe order of operations**: restore the hooks first, then use real `git`. Do not reach for a hand-retyped full-file push through the GitHub API (`mcp__github__push_files` or equivalent) as a first resort — it requires typing out the entire file's content as a string, which has silently dropped formatting-only content (italic markdown markers, on six unrelated lines) that the task never touched or intended to change. The regression wasn't caught until a manual diff against `main` after the fact ([PR #606](https://github.com/MichaelHeaton/ai-skills/pull/606)).
+
+1. Read `.claude/settings.json` to find which hook scripts the blocked `PreToolUse` matcher references.
+2. Locate their source under `ai/claude/hooks/` in the repo checkout.
+3. Recreate them at `~/.claude/hooks/` using the **Write tool**, not Bash — Bash is what's blocked.
+4. Once Bash unblocks, use real `git commit`/`git push` for the change, not the GitHub API.
+
+**If hooks genuinely can't be restored** and an API push of _existing_ file content is unavoidable, diff the pushed result against the base branch before trusting it — specifically checking for formatting-only differences (italics, bold, etc.), since those are the easiest to drop unnoticed during manual retyping and the least likely to show up in a casual read-through.
+
+---
+
 ## Worktree path safety when editing
 
 **General principle**: whenever an isolated worktree session is active, verify any Edit/Write's resolved absolute path actually lands inside that worktree before writing — regardless of how the path was reached. A deployed skill symlink (below) is the most common way this drifts, but it's not the only one; a stale `cwd`, a wrong repo clone, or any plain absolute-path mistake typed or pasted without the worktree's prefix can produce the same failure, and none of those go through `~/.claude/skills/` at all. Before any such Edit/Write, `git -C "$(dirname <target-path>)" rev-parse --show-toplevel` and compare against the intended worktree root — full check and the motivating incident: [references/skill-symlink-safety.md](references/skill-symlink-safety.md).

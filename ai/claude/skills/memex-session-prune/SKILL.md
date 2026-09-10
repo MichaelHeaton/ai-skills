@@ -60,6 +60,8 @@ Cutoff = today minus 14 days. Batch = every file whose filename date is strictly
 
 Invoke `skill-review`'s corpus-audit variant _(global: ai-skills)_ over the full corpus from step 3 — see its [references/corpus-audit.md](../skill-review/references/corpus-audit.md) for the adapted SA1–SA4 procedure. Prefer the `skill-reviewer` sub-agent (skill-review's own sub-agent invocation pattern) since this corpus is typically larger than a single session's context.
 
+**Cross-repo fallback:** this corpus lives in the memex repo, but a parent session running from an ai-skills worktree is itself worktree-isolated to ai-skills — the `skill-reviewer` sub-agent inherits that same isolation and refuses to `cd` into memex to run git there. When the sub-agent is unavailable for this reason, build the corpus directly in the parent session instead (step 3's `git log`/`git show` calls, run as direct subprocess calls) rather than treating the delegation as required. A piped `awk | while read` loop over those results can silently fail to find `git` in that subshell context — use a `python3` `subprocess` script instead if a shell loop comes up empty unexpectedly.
+
 Surface the result **before proceeding to step 5**:
 
 - **Recurring pattern found** — same SA4 format (existing skill to improve / new skill idea), each citing ≥2 source files/dates as evidence. Offer to act now via `skill-create` or file a ticket in ai-skills, or defer.
