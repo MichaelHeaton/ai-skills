@@ -37,3 +37,10 @@ gh auth switch --hostname github.com --user "${GITHUB_PERSONAL_USER}"
 **Always pass `--hostname github.com`.** With more than one host authenticated in `gh` (e.g. github.com plus an internal GHE/GitLab host), `gh auth switch --user <name>` fails outright with "unable to determine which account to switch to, please specify --hostname and --user" — the hostname flag isn't optional in that environment.
 
 If the active account already matches `${GITHUB_PERSONAL_USER}`, skip this capture — there's nothing to restore later.
+
+**After any `gh auth switch`, explicitly export and verify `GH_TOKEN`** — under sandbox execution, `gh auth status` succeeding does not guarantee `GH_TOKEN` is actually set in the shell environment, and the gap surfaces later as a confusing `GraphQL: Forbidden` rather than at the switch itself:
+
+```bash
+export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")
+[[ -n "$GH_TOKEN" ]] || echo "GH_TOKEN still empty after switch" >&2
+```
