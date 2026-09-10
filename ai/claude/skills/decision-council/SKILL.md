@@ -24,6 +24,7 @@ Before spawning advisors, do two things:
 - Read memory files at `~/.claude/projects/*/memory/` — anything relevant to the question (audience, goals, constraints, past decisions)
 - Read any files the user referenced or attached in this conversation
 - Spend no more than 30 seconds — grab the 2–3 files that matter most
+- **If the source ticket/document asserts a factual claim from an external or informal source** (a social-media post, a blog, hearsay) as grounds for the decision, verify it against a primary source before folding it into the framing — e.g. `gh api` the actual repo instead of trusting a star-count/virality claim at face value. Advisors and peer reviewers only ever see the framed question, not the original source — an unverified premise here has no catch downstream.
 
 **B. Write the framed question.** Produce a clean, neutral prompt that includes:
 
