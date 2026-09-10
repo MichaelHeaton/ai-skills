@@ -32,6 +32,8 @@ Confluence is the sole source of truth for team docs (the `ces-documentation` gi
 
 **Known retrieval bug:** page [2039778922](https://wiki.corp.adobe.com/pages/viewpage.action?pageId=2039778922) ("Getting Started - Vault Policies Repository") documents the deprecated `mappings.yaml`/`approvers.yaml` process and keeps outranking its current-process siblings — [3913157061](https://wiki.corp.adobe.com/pages/viewpage.action?pageId=3913157061) ("New Vault Team Onboarding") and [3894301369](https://wiki.corp.adobe.com/pages/viewpage.action?pageId=3894301369) ("Working with the new Git repositories") — even though all three are in the indexed subtree. If the support bot cites page `2039778922`, that's this known bug, not a content gap — the fix is a retrieval/ranking conversation with the bot's owning team, not another wiki edit.
 
+**Gate before scoring this as a confirmed instance:** confirm which underlying system/process version the customer is actually on before treating a citation of page `2039778922` as the bug. A citation of that page is the *correct* answer for a customer still on the older, still-majority-adopted process — not evidence of the bug. If the thread doesn't make the customer's version clear, ask (or flag that the support bot itself should have asked) rather than defaulting either way. When it stays unclear, score the case as `ambiguous — pending confirmation`, not as a confirmed instance of the known bug.
+
 ## Processing Mode
 
 **Default (foreground):** Run all steps inline. Best for Case A triage (needs a Slack response drafted), ambiguous threads, or when the user wants to discuss findings before pushing.
@@ -105,7 +107,7 @@ This bit a real triage on 2026-09-08 (PR #40028): an initial check against a sta
 
 ### Case A — Early triage
 
-Compare the support bot's response to what the local docs say. Produce:
+Compare the support bot's response to what the local docs say. If the support bot cited page `2039778922`, apply the known-retrieval-bug gate above before treating it as a confirmed instance. Produce:
 
 **the support bot Assessment**
 
@@ -123,7 +125,7 @@ If the docs don't fully answer the question, list 2–3 questions the user shoul
 
 ### Case B — Post-resolution
 
-Compare the team member's reply to the support bot's response:
+Compare the team member's reply to the support bot's response. If the support bot cited page `2039778922`, apply the known-retrieval-bug gate above before scoring — confirm the customer's system/process version rather than assuming the bug:
 
 | Relationship | `team_reply_vs_sherlock` | Score implication |
 | --- | --- | --- |
