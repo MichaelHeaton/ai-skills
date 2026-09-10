@@ -4,7 +4,7 @@ principles_version: 1.0.0
 last_updated: 2026-09-10
 updated_by: claude
 name: confluence-section-edit
-description: Make a small, targeted edit to one section of an existing Confluence page — fix a fact, update a link, correct a paragraph — without doc-coauthor's full template/frontmatter overhead or the risk of a full-page rewrite breaking content outside the section touched. Covers locating the target heading, scoping the edit to that section instead of round-tripping the page through markdown, avoiding nested markdown lists inside numbered/bulleted items (a known list-collapse bug), and verifying via re-fetch/diff immediately after every edit (images need live-page verification instead — the read tool always flattens them). Use for "fix this on the wiki page", "quick Confluence correction", "update this section of <page>", "small correction to an existing page", "that fact is wrong on the runbook", or any one-section edit to an existing page. Complements doc-coauthor (new pages/rewrites) and ticket-write-verify's confluence-large-restructuring reference (full reorgs) — this skill covers the lighter single-section case.
+description: Make a small, targeted edit to one section of an existing Confluence page — fix a fact, update a link, correct a paragraph — without doc-coauthor's full template/frontmatter overhead or the risk of a full-page rewrite breaking content outside the section touched. Covers locating the target heading, scoping the edit to that section instead of round-tripping the page through markdown, avoiding nested markdown lists inside numbered/bulleted items (a known list-collapse bug), and verifying via re-fetch/diff immediately after every edit (images need live-page verification instead — the read tool always flattens them). Use for "fix this on the wiki page", "quick Confluence correction", "update this section of <page>", "small correction to an existing page", "that fact is wrong on the runbook", "fix one row in a table on an existing page", "update this table row on the wiki", "correct one entry in this table", or any one-section edit to an existing page. Complements doc-coauthor (new pages/rewrites) and ticket-write-verify's confluence-large-restructuring reference (full reorgs) — this skill covers the lighter single-section case.
 compatibility: Requires Confluence MCP (confluence_get_page, confluence_update_page).
 ---
 
@@ -16,6 +16,10 @@ A small, targeted fix to one section of an existing Confluence page doesn't need
 
 Fetch the page in raw storage format — not markdown, see the round-trip warning below: `confluence_get_page(page_id, convert_to_markdown: false)`. Locate the target heading (`h1`/`h2`/`h3`) by its text content.
 
+**Oversized page (~50KB+ storage-format body exceeds the fetch's token limit):** let the fetch auto-save to a file instead of trying to inline the full body, then use `python`/`jq` to extract just the target section from the saved file. Apply the edit locally per Step 2, then submit via `content_file` rather than an inline content string.
+
+**Determining a heading's real anchor ID** (for a deep link, not the edit itself): don't guess the `ac:anchor` fragment from the heading text — Confluence's generated anchor doesn't reliably match a predictable transform. Fetch the page's rendered view (not storage format) and look for the actual `id=` attribute Confluence assigned near that heading in the rendered HTML. Only fall back to linking the page without a fragment if the rendered view isn't available.
+
 ## 2. Scope the edit to that section, not the whole page
 
 Don't fetch as markdown, edit the markdown, and push a full-page rewrite — Confluence-specific elements (`ac:structured-macro`, `ac:link`/`ri:page`, `<time>` date macros) don't round-trip through markdown reliably, and a full-page rewrite risks touching content outside the section you meant to fix.
@@ -26,6 +30,10 @@ Don't fetch as markdown, edit the markdown, and push a full-page rewrite — Con
 4. Re-insert it at the same position in the original tag list and submit the full reassembled body via `confluence_update_page` — the Confluence API has no partial-page PATCH, so "section-scoped" describes the *edit*, not the submit call, which still carries the whole page.
 
 For a one-line factual correction inside a paragraph (no structural change), a direct text substitution within the fetched storage-format HTML is fine — the extract/reassemble steps above are for edits that touch list, heading, or macro structure, not a single word swap.
+
+**Full-page-update escape valve:** when the target page has no macros, nested lists, or tables, a full-page fetch/edit/`confluence_update_page` is an acceptable substitute for the section-scoped extract/reassemble procedure — the risk that procedure guards against (touching content outside the target section) is low on a genuinely simple page. Otherwise, use the extract/reassemble flow above or the one-line text-substitution case.
+
+**`confluence_update_page` requires `title` even when it isn't changing** — a call with only `page_id`, `content_format`, and `content` fails with an `InputValidationError`. Always include the existing title explicitly.
 
 ## 3. Watch for double-JSON-encoded API responses
 

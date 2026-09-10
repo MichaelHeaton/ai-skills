@@ -22,6 +22,8 @@ The workflow: **Doc type → Context → Draft → Test → Deliver**
 
 Before gathering context or drafting, ask: *"Given what's changed, does this page/section still need this update — or has the underlying thing already reached its target state?"* This matters more for doc-coauthor than most skills since it writes to a shared/external system — catching a no-op edit here is cheaper than catching it after Stage 1's context gathering has already run. If the user confirms no update is needed, exit cleanly without proceeding further.
 
+**If the brief asks a child page to compare itself against sibling tools/pages**, check whether the parent/hub page already lists or frames those siblings before drafting the comparison into the child page. If it does, flag the likely duplication to the user and ask whether the comparison belongs on the child page, the parent page, or both — rather than drafting the literal ask and correcting the placement after a live-page publish.
+
 ---
 
 ## Stage 0: Template Selection
@@ -39,8 +41,9 @@ Identify the document type:
 | Customer guide | customer | Broader reference for customers (onboarding, overview) |
 | Architecture decision | team | Record a design decision and its tradeoffs |
 | Status report | leadership | Narrative update to a manager/stakeholder explaining timeline, scope, or progress on a project |
+| Hub/overview | team | An index/landing page linking out to a set of sibling pages (a tool category, a topic area) rather than covering one subject in depth itself |
 
-If the user says "wiki page" or "Confluence page" without a specific type, ask which fits before proceeding. **Status reports and other narrative-with-a-thesis documents route here too** — don't let them get hand-drafted outside this skill just because there's no wiki page or template involved yet; they need the same consistency-audit and humanize stages below, in order, more than any other doc type.
+If the user says "wiki page" or "Confluence page" without a specific type, ask which fits before proceeding. **If none of the listed types fit**, don't force one — ask the user to describe the page's purpose in a sentence and structure it from that description directly, using whichever "when to use" shape above comes closest as a loose template rather than a strict fit. **Status reports and other narrative-with-a-thesis documents route here too** — don't let them get hand-drafted outside this skill just because there's no wiki page or template involved yet; they need the same consistency-audit and humanize stages below, in order, more than any other doc type.
 
 Check `confluence_list_page_templates` / `confluence_get_page_template` for a matching Confluence-native template before structuring the page from scratch. If none fits, structure the page using the type's "when to use" description above as the shape (symptom→diagnosis→fix→escalate for a runbook, etc.).
 
