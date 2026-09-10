@@ -74,3 +74,20 @@ jq -cn \
   >> "${INDEX_FILE}"
 
 echo "✓ Appended #${ID} to task index"
+
+# Guard against bundling a concurrent session's in-progress edits into this
+# commit in a shared, non-worktree checkout: stage only the index file, then
+# check for any other already-staged content before committing.
+git -C "${MEMEX_DIR}" add "${INDEX_FILE}"
+
+INDEX_REL="${INDEX_FILE#${MEMEX_DIR}/}"
+OTHER_STAGED=$(git -C "${MEMEX_DIR}" diff --cached --name-only | grep -v -F -x "${INDEX_REL}" || true)
+if [[ -n "${OTHER_STAGED}" ]]; then
+  echo "⚠️  Other staged content found in ${MEMEX_DIR} — aborting commit to avoid bundling it in:" >&2
+  echo "${OTHER_STAGED}" | sed 's/^/   /' >&2
+  echo "   #${ID} is appended to the index file but not committed — commit it manually once the other staged content is resolved." >&2
+  exit 0
+fi
+
+git -C "${MEMEX_DIR}" commit -q -m "chore(task-index): add #${ID} (${SYSTEM})"
+echo "✓ Committed task-index entry for #${ID}"
