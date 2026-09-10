@@ -80,6 +80,12 @@
         "hooks": [
           { "type": "command", "command": "python3 ~/.claude/hooks/branch-guard-track.py" }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "python3 ~/.claude/hooks/skill-review-reminder.py" }
+        ]
       }
     ]
   }
