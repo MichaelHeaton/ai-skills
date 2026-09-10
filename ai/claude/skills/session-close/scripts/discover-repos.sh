@@ -9,10 +9,16 @@
 # RECENT_HOURS: env var controlling the "recently active" threshold in hours (default: 8)
 # SHOW_ALL_REPOS=1: disable the single-repo-session RECENT:n exclusion below
 # SESSION_SINGLE_REPO=1: force single-repo-session filtering even without a one-folder workspace
+# SESSION_SCOPED_REPOS="repoA,repoB": generalized N-repo version of SESSION_SINGLE_REPO —
+#   names or absolute paths, comma-separated. Each resolves to its git root and is added
+#   to the primary/in-scope set, and RECENT:n filtering activates the same as the
+#   single-repo case. Use when conversation context scopes the session to more than one
+#   repo but there's no single-folder workspace to infer that from automatically.
 
 RECENT_HOURS="${RECENT_HOURS:-8}"
 SHOW_ALL_REPOS="${SHOW_ALL_REPOS:-0}"
 SESSION_SINGLE_REPO="${SESSION_SINGLE_REPO:-0}"
+SESSION_SCOPED_REPOS="${SESSION_SCOPED_REPOS:-}"
 
 check_repo() {
   local repo="$1"
@@ -142,13 +148,34 @@ if [[ -n "$CWD_GIT_ROOT" ]]; then
   echo "$CWD_GIT_ROOT" >> "$PRIMARY_PATHS"
 fi
 
-# A single-folder workspace (or an explicit SESSION_SINGLE_REPO override, set by the
-# caller when conversation context unambiguously points to one repo) means this
-# session is scoped to one repo. In that case, exclude RECENT:n repos found only by
-# the broad ~/Projects sweep from the default output — they're leftover/archive
-# noise, not part of this session — unless SHOW_ALL_REPOS=1 is set.
+# SESSION_SCOPED_REPOS: each entry is a name (resolved under ${PROJECTS_BASE:-$HOME/Projects})
+# or an absolute path; resolve to its git root and add to both the scan set and the
+# primary/in-scope set, same treatment as a workspace-listed folder.
+if [[ -n "$SESSION_SCOPED_REPOS" ]]; then
+  IFS=',' read -ra _scoped_entries <<< "$SESSION_SCOPED_REPOS"
+  for _entry in "${_scoped_entries[@]}"; do
+    _entry="${_entry## }"; _entry="${_entry%% }"
+    [[ -z "$_entry" ]] && continue
+    if [[ "$_entry" = /* ]]; then
+      _scoped_root=$(git -C "$_entry" rev-parse --show-toplevel 2>/dev/null || true)
+    else
+      _scoped_root=$(git -C "${PROJECTS_BASE:-$HOME/Projects}/$_entry" rev-parse --show-toplevel 2>/dev/null || true)
+    fi
+    if [[ -n "$_scoped_root" ]]; then
+      echo "$_scoped_root" >> "$REPO_PATHS"
+      echo "$_scoped_root" >> "$PRIMARY_PATHS"
+    fi
+  done
+fi
+
+# A single-folder workspace, an explicit SESSION_SINGLE_REPO override, or an explicit
+# SESSION_SCOPED_REPOS list (set by the caller when conversation context unambiguously
+# points to one or more specific repos) means this session is scoped. In that case,
+# exclude RECENT:n repos found only by the broad ~/Projects sweep from the default
+# output — they're leftover/archive noise, not part of this session — unless
+# SHOW_ALL_REPOS=1 is set.
 FILTER_RECENT_N=0
-if [[ "$SHOW_ALL_REPOS" != "1" ]] && { [[ "$WORKSPACE_FOLDER_COUNT" -eq 1 ]] || [[ "$SESSION_SINGLE_REPO" == "1" ]]; }; then
+if [[ "$SHOW_ALL_REPOS" != "1" ]] && { [[ "$WORKSPACE_FOLDER_COUNT" -eq 1 ]] || [[ "$SESSION_SINGLE_REPO" == "1" ]] || [[ -n "$SESSION_SCOPED_REPOS" ]]; }; then
   FILTER_RECENT_N=1
 fi
 
