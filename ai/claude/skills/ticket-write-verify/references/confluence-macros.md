@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-09-04
+last_updated: 2026-09-10
 updated_by: claude
 ---
 
@@ -35,13 +35,39 @@ Renders a live-status smart card instead of a static link, so a table referencin
 </ac:structured-macro>
 ```
 
-`server`/`serverId` are instance-specific — confirm the actual values for the target Confluence instance rather than reusing the example verbatim.
+`server`/`serverId` are instance-specific — confirm the actual values for the target Confluence instance rather than reusing the example verbatim. The `Adobe JIRA Data Center` / `5affdfe8-ed2e-3a17-8442-0790430373f0` pair above is confirmed live on `wiki.corp.adobe.com` — reused as-is across five different tickets (CESSS-16330, 16331, 16333, 16334, 12152) on the CES Vault "Sherlock" page, 2026-09-10, each verified via storage re-fetch.
 
 ## Native date macro
 
 ```xml
 <time datetime="YYYY-MM-DD" />
 ```
+
+## Native code macro — markdown fences get mangled, this doesn't
+
+A markdown triple-backtick fence (` ```lang `) submitted via `content_format: markdown` gets corrupted in Confluence's storage-format conversion: the language identifier glues onto the first content line with no newline (a ` ```yaml ` fence starting with `spaces:` comes back as `yamlspaces:`), and underscores inside the block get escaped to `\_` — on the same page where inline single-backtick code (e.g. `` `root_pages_id` ``) survives with underscores intact. Confirmed on a full-page markdown write to the CES Vault "Sherlock" page (2026-09-10): a one-line CQL example, a YAML config snippet, and a multi-line bash script all came back corrupted this way on the very next re-fetch.
+
+**Fix**: rewrite the affected section via `confluence_update_page_section` (or a full page update) with `content_format: storage`, using the native code macro instead:
+
+```xml
+<ac:structured-macro ac:name="code" ac:schema-version="1">
+  <ac:parameter ac:name="language">yaml</ac:parameter>
+  <ac:plain-text-body><![CDATA[
+spaces:
+  - CES
+root_pages_id:
+  - 2523173073  # comment
+]]></ac:plain-text-body>
+</ac:structured-macro>
+```
+
+`language` (`yaml`, `bash`, `text`, `json`, etc.) controls syntax highlighting only — use `text` for plain non-code examples like a one-line query string. Verified fixed via raw storage re-fetch (`convert_to_markdown: false`): underscores, indentation, and comments all survived intact after switching from a markdown fence to this macro.
+
+## Macros are block-level — can't nest inside `<p>`, but can sit as siblings mid-flow
+
+`ac:structured-macro` (code, jira, etc.) is a block element in storage format: it cannot be nested inside a `<p>` the way an inline `<code>` or `<a>` tag can. Wrapping one inside `<p>...</p>` produces malformed storage XML.
+
+To place a macro mid-thought — e.g. "the query looks like this: `<code macro>`", or three Jira tickets chained with "→" between them — split the surrounding prose into separate `<p>` elements and put the macro as a sibling in between. This works the same way inside a `<blockquote>`: a blockquote can directly contain both `<p>` and `<ac:structured-macro>` children. Confirmed on the Sherlock page's label-filtering blockquote: three Jira macros with short connecting `<p>(KB audit) →</p>`-style paragraphs in between, verified clean via storage re-fetch.
 
 ## Title-field HTML-entity gotcha
 
