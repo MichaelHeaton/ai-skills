@@ -64,6 +64,16 @@ This step is intentionally not hardcoded to any one command. Detect what the rep
 
 If unsure which command applies, ask once rather than guessing at a destructive or long-running build step.
 
+## 5. Check the latest Actions run on the default branch
+
+After syncing main, when the remote is GitHub and `gh` works: check whether the latest run on the default branch actually succeeded, rather than treating "main synced" as automatically clean.
+
+```bash
+gh run list --branch <default-branch> --limit 1 --json status,conclusion,name,url
+```
+
+A failing latest run belongs in the cleanup summary itself (workflow name + URL), not as a buried optional aside — a clean-looking sync can mask a broken production deploy. Skip silently when `gh` is unavailable, the remote isn't GitHub, or there's no recent run — same spirit as step 4's redeploy detection.
+
 ## Report
 
 ```
@@ -71,4 +81,5 @@ If unsure which command applies, ask once rather than guessing at a destructive 
 ✓ worktree removed
 ✓ local branch deleted (remote already auto-deleted)
 ✓ redeployed via `make install-system`
+✓ latest Actions run on main: passed (or: ✗ FAILED — <workflow> <url>)
 ```
