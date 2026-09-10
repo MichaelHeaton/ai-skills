@@ -134,6 +134,8 @@ To update: read the file, find the matching line by `id`, rewrite it with the up
 
 Closing or relabeling many issues in a row (e.g. a milestone reshape, duplicate cleanup) can trigger an Auto-review block requiring smart-mode approval before rapid mutations are allowed to continue — this isn't an error, it's a safety gate on high-velocity writes. Approve the first smart-mode card when it appears, and group closes/edits of the same shape (same action, same reason) into contiguous batches rather than interleaving them with unrelated calls — that keeps the approval gate from re-triggering mid-batch on what looks like a shape change.
 
+**Closing a parent epic and its children in the same batch: children first, parent last.** Close each child, verify each is actually `CLOSED`, then close the parent with a completion summary referencing them. Closing the parent first (or interleaved) leaves no clean signal that every child was actually finished before the epic was marked done. Cross-reference `ticket-close-sequence` _(global: ai-skills)_ for the underlying validate → comment → verify → transition sequence each individual close should already be following.
+
 ### 6. Confirm to the user
 
 Report what changed:
