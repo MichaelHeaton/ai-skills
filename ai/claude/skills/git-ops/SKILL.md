@@ -289,6 +289,13 @@ Run checks **only on files you are modifying**. Do not run repo-wide formatters 
 
 Before every `git push` to a feature branch, check whether its PR is already merged — pushing to a merged branch orphans commits, and a three-dot diffstat is not reliable evidence of pending work after a squash-merge. Merged-PR check, squash-merge diffstat caveat, and CI/CD re-run behavior: [references/pushing-to-existing-branch.md](references/pushing-to-existing-branch.md).
 
+**Recovery recipe: merged branch + uncommitted new work on top.** A distinct case from the plain "don't push to an already-merged branch" one above — a second process left uncommitted new work in a shared (non-worktree) checkout, sitting on top of a branch whose PR has already merged. This isn't a simple commit+push, since the branch itself is dead weight now:
+
+1. `git stash -u` (include untracked files — plain `git stash` misses them)
+2. Check out a fresh branch off the current default branch (`git checkout main && git pull && git checkout -b <new-branch>`)
+3. `git stash pop` to reapply the saved work, resolving any conflicts
+4. Commit/push/PR as normal from the fresh branch
+
 ---
 
 ## Push immediately once a PR looks merge-ready
