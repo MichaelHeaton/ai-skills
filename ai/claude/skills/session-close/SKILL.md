@@ -120,6 +120,8 @@ bash ~/.claude/skills/git-ops/scripts/check-branch-identity.sh <repo-path> <expe
 
 ## Step 2 — Handle uncommitted changes (per repo)
 
+**Committing on a branch Step 1 already flagged as having a merged PR may land on a freshly created branch instead of the stale checkout** — a pre-commit hook can auto-create a new branch as recovery when it detects this. That's expected recovery behavior (git-ops's merged-branch recovery), not a failure — if the commit lands somewhere other than the branch you expected, check whether this is why before treating it as an anomaly.
+
 For each repo with `CHANGES > 0` **whose Step 1 branch-hygiene check has already completed for that repo**:
 
 1. **Filter noise files first.** Before showing the diff, strip known noise patterns from the changed-file list:
@@ -336,8 +338,22 @@ After writing the new file, prune files older than 14 days — they've been cons
 
 **⚠️ Commit the prune immediately — don't leave it as a bare filesystem delete.** A `find -delete` with no follow-up commit has stranded uncommitted deletions in the working tree at least three times before (each one silently discovered and cleaned up by a later, unrelated session — see [ai-skills#580](https://github.com/MichaelHeaton/ai-skills/issues/580)), because this step runs *after* the git-hygiene pass in Steps 1–5, so nothing later in this same run re-checks memex for what it just changed.
 
+**Key off the date encoded in the filename, not filesystem mtime.** On a freshly-cloned or ephemeral checkout (a Claude Code Remote/cloud session in particular), every file's mtime is the clone/checkout time, not the date it was actually written — `find -mtime` silently prunes nothing even when files are genuinely weeks old by their own filename, and the fallback of "suppress output when nothing pruned" makes that failure look identical to "nothing needed pruning."
+
 ```bash
-find "$MEMEX_ROOT/Outputs/Session" -name "session-close-*.md" -mtime +14 -print -delete
+NOW_EPOCH=$(date +%s)
+for f in "$MEMEX_ROOT"/Outputs/Session/session-close-*.md; do
+  [[ -f "$f" ]] || continue
+  fdate=$(basename "$f" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1)
+  [[ -z "$fdate" ]] && continue
+  fepoch=$(date -d "$fdate" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$fdate" +%s 2>/dev/null)
+  [[ -z "$fepoch" ]] && continue
+  days_old=$(( (NOW_EPOCH - fepoch) / 86400 ))
+  if (( days_old > 14 )); then
+    echo "$f"
+    rm "$f"
+  fi
+done
 ```
 
 If the command printed any paths, immediately stage and commit them in the same repo, in a small dedicated commit (don't bundle into an unrelated commit):

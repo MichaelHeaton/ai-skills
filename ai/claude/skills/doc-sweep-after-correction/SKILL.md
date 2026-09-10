@@ -39,7 +39,11 @@ Check each hit: does it restate the same now-wrong claim, or is it an unrelated 
 
 Apply the same correction to each confirmed hit, keeping the wording natural to that doc's context rather than copy-pasting the exact sentence from the original fix.
 
-## 4. Report
+## 4. Check AGENT.md/AGENTS.md
+
+After the grep sweep, if the repo has component-level `AGENT.md`/`AGENTS.md` files, run `agent-md-sync` in check mode. Infra-heavy repos often keep fundamental claims (e.g. which backend/model is in use) in these files rather than in prose docs a term-grep would catch — a factual correction that only sweeps regular documentation can miss them entirely.
+
+## 5. Report
 
 ```
 Swept for "FIFO" claim after correcting docs/queue-architecture.md.

@@ -43,7 +43,7 @@ If any required field is missing and can't be inferred from context, ask once be
 
 ## Step 1.5 — Humanize the drafted prose
 
-Before filling in the template, invoke the `humanizer` skill on the Decision/Context/Rationale/Alternatives/Consequences text — this is a permanent wiki record, and it's exactly the register (synthesis prose summarizing a discussion) where AI tells accumulate. Every fact and the decision itself must survive unchanged.
+**Humanize the drafted text while it's still in conversation context, before Step 3 writes the file** — invoke the `humanizer` skill on the Decision/Context/Rationale/Alternatives/Consequences text at this point, not after the file already exists. This is a permanent wiki record, and it's exactly the register (synthesis prose summarizing a discussion) where AI tells accumulate. Every fact and the decision itself must survive unchanged. If the file has already been written by the time you reach this step, route the humanize pass through a Read+Write subagent instead of a plain `Skill` call — the Edit tool's must-Read-before-Edit rule means the main session can't edit it directly at that point.
 
 ---
 
