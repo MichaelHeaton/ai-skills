@@ -13,7 +13,7 @@ A concurrent session sharing the same non-worktree checkout can pick up this ses
 
 Run this only for repos this session actually made Edit/Write tool calls against — skip repos only touched via Bash/git commands, or not touched this session at all.
 
-1. **Build the touched-file list from the transcript, not from git.** This is this session's own record of which file paths it ran Edit/Write against for this repo — not a git command, since the whole point is comparing the transcript's claim against git's current state.
+1. **Build the touched-file list from the transcript, not from git.** This is this session's own record of which file paths it ran Edit/Write against for this repo — not a git command, since the whole point is comparing the transcript's claim against git's current state. Include files a background Agent/subagent reported editing or writing this session, not just the parent session's own direct tool calls — a subagent's report of a successful write is exactly as vulnerable to a concurrent session's silent stash as anything the parent wrote itself.
 
 2. **Compare each file against the repo's actual state:**
 
