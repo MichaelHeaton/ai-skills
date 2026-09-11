@@ -58,7 +58,7 @@ git -C <repo> log main --oneline | grep -F "<distinctive commit message text>"
 
 **Remote branch**: skip deletion if GitHub/GitLab already auto-deleted it (check `gh pr view <n> --json headRepositoryOwner,headRefName` or the merge response) — don't assume it needs manual cleanup.
 
-**Misnamed-branch recovery via squash**: if session context shows the merged PR's tip was a recovery of commits that originally lived on a different, misnamed branch — later squashed into whatever branch actually merged — don't trust an empty `origin/main..<branch>` diff as proof nothing was stranded. A squash rewrites history, so that three-dot diff can read empty even when the recovered content never actually landed the way it was supposed to. Verify with the same content-verify method used elsewhere for this class of check:
+**Misnamed-branch recovery via squash**: if session context shows the merged PR's tip was a recovery of commits that originally lived on a different, misnamed branch — later squashed into whatever branch actually merged — don't trust an empty `origin/main..<branch>` diff as proof nothing was stranded. A squash rewrites history, so that three-dot diff can read empty even when the recovered content never actually landed the way it was supposed to. This needs a more rigorous check than the commit-message grep above — a squash changes both the commit hash and message, so grepping for the original message won't reliably confirm the content landed:
 
 ```bash
 git cherry main <branch>
@@ -66,6 +66,8 @@ git diff main -- <specific-file-that-mattered>
 ```
 
 `git cherry` compares by patch-id, so it survives the squash rewrite and shows which commits from `<branch>` are genuinely not in `main` yet. Follow it with a scoped `git diff` of the specific files the recovery was supposed to bring over — not a full-tree diff — to confirm the content itself matches.
+
+**If `git cherry` prints `+ <hash>` lines** (commits genuinely not in `main`), the recovery didn't fully land — don't delete the branch. Cherry-pick the missing commit(s) into a new branch off current `main` (`git cherry-pick <hash>`), open a follow-up PR for them, and flag the gap in your session summary so it isn't silently lost. Only proceed to branch deletion once `git cherry` shows nothing outstanding (every line prefixed `-`, meaning already in `main`).
 
 ## 4. Redeploy / rebuild (repo-appropriate)
 
