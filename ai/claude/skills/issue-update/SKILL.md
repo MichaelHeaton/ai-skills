@@ -1,7 +1,7 @@
 ---
-version: 1.6.0
+version: 1.6.1
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-09-10
 updated_by: claude
 name: issue-update
 description: Update a task or ticket — change status, add a comment, edit labels, close it, or sync the task index. Works across GitHub Issues, GitLab Issues, and Jira. Also the right tool for closing tickets found stale/duplicate/superseded during a backlog-triage pass, not just active single-ticket work. Use when the user says "close issue #X", "mark PROJ-12345 done", "update the description of PROJ-123", "update PROJ-123" (including a bare "update <ticket-id>" meaning add a comment, not just a status change), "scope this ticket to", "scope this down to only X", "narrow the scope of this ticket", "transition this to closed", "this ticket is done — close it", "transition to blocked", "close as duplicate", "close as stale", "close as superseded", "closing during triage", "add a comment to <ticket>", "post a comment on <ticket>", "correct the description of <ticket>", "fix the wording on <ticket>", "add a follow-up to <ticket>", "post a fix to <ticket>", or similar — including comment-posting and correction requests that don't contain the word "update" at all. Also fires autonomously — always use this skill when Claude itself decides to comment on, close, relabel, or transition any ticket, or whenever about to call `gh issue comment`/`gh issue close`/`gh issue edit`/`glab issue note`/`glab issue close`/`jira_add_comment`/`jira_transition_issue`/`jira_update_issue` directly instead of through this skill.
@@ -51,7 +51,10 @@ If not in the index, infer system from ID format:
 > ```bash
 > unset GH_TOKEN
 > export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")
+> [[ -n "$GH_TOKEN" ]] || echo "gh auth token returned empty — this may be a broken keyring backend, not a wrong account; try 'gh auth refresh' or check Keychain Access directly" >&2
 > ```
+>
+> That empty-token check is a keyring-health check, distinct from the stale-`GH_TOKEN` case above it — an empty result here means the keyring backend itself failed the lookup, not that a stale env var shadowed a good token (that's already handled by the `unset` on the line before).
 >
 > Always pass `--repo <owner/repo>` explicitly — the SSH alias on Memex's remote confuses `gh`.
 
