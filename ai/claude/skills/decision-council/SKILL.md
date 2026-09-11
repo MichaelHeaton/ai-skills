@@ -217,7 +217,10 @@ Do not silently patch the verdict in prose and leave the original structured out
 
 4. **Skip peer review** for this re-entry pass. Peer review exists to catch blind spots across a full independent round; a targeted premise fix on 1–3 advisors doesn't warrant re-anonymizing and re-running the 5-reviewer step. Go straight to a fresh chairman synthesis.
 
-5. **Rerun the chairman synthesis** (Step 4's template) using: the corrected framed question, the full set of 7 advisor responses (rerun ones plus carried-forward ones), and the original 5 peer reviews — flagged inline to the chairman as based on the pre-correction responses for any advisor(s) that changed, so the chairman can judge whether those reviews still apply.
+5. **Rerun the chairman synthesis** (Step 4's template) using the corrected framed question and the full set of 7 advisor responses (rerun ones plus carried-forward ones), plus whatever peer-review material actually exists for the original verdict:
+
+   - **Original verdict came from Step 4 (full pipeline, peer review ran)** — include the original 5 peer reviews, flagged inline to the chairman as based on the pre-correction responses for any advisor(s) that changed, so the chairman can judge whether those reviews still apply.
+   - **Original verdict came from the landslide-consensus shortcut (no peer review ever ran)** — there is no peer-review material to include. Synthesize directly from the advisor responses, the same way the landslide shortcut itself does — don't reference peer reviews that don't exist.
 
 6. **Present the reconciled verdict explicitly alongside the original**, not as a silent overwrite:
 
@@ -227,6 +230,7 @@ Do not silently patch the verdict in prose and leave the original structured out
    **What changed:** [the corrected fact, in one line]
    **Advisors rerun:** [names] — their original reasoning depended on this premise
    **Advisors unchanged:** [names] — unaffected by the correction
+   **Peer review:** skipped for this reconciled verdict, same as for any targeted premise-fix pass — [if the original went through Step 4: "the original 5 peer reviews were carried forward for unaffected advisors" / if the original was a landslide shortcut: "the original verdict never had peer review either"]
 
    ## Original Verdict (superseded)
    [one-line summary of the prior Recommendation, or the full original verdict if short]
