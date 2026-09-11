@@ -58,6 +58,15 @@ git -C <repo> log main --oneline | grep -F "<distinctive commit message text>"
 
 **Remote branch**: skip deletion if GitHub/GitLab already auto-deleted it (check `gh pr view <n> --json headRepositoryOwner,headRefName` or the merge response) — don't assume it needs manual cleanup.
 
+**Misnamed-branch recovery via squash**: if session context shows the merged PR's tip was a recovery of commits that originally lived on a different, misnamed branch — later squashed into whatever branch actually merged — don't trust an empty `origin/main..<branch>` diff as proof nothing was stranded. A squash rewrites history, so that three-dot diff can read empty even when the recovered content never actually landed the way it was supposed to. Verify with the same content-verify method used elsewhere for this class of check:
+
+```bash
+git cherry main <branch>
+git diff main -- <specific-file-that-mattered>
+```
+
+`git cherry` compares by patch-id, so it survives the squash rewrite and shows which commits from `<branch>` are genuinely not in `main` yet. Follow it with a scoped `git diff` of the specific files the recovery was supposed to bring over — not a full-tree diff — to confirm the content itself matches.
+
 ## 4. Redeploy / rebuild (repo-appropriate)
 
 This step is intentionally not hardcoded to any one command. Detect what the repo actually uses:
