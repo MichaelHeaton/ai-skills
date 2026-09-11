@@ -107,6 +107,8 @@ Invoke the `git-ops` skill *(global: ai-skills)* before Steps 2–4 — it cover
 
 **"Invoke" means an actual `Skill` tool call, not recalling git-ops's rules from this section's own inlined summary.** Git hygiene run correctly from memory — because this section already restates git-ops's key rules inline — satisfies the *outcome* but not this pre-flight: git-ops's own freshness gate (AGENT.md check, humanizer pass on the PR description) only actually runs when the skill itself fires, and recalling its rules by memory silently skips that gate even when every git command that session ran was correct. If you're not certain the `Skill` tool was actually called for git-ops this session, call it now before proceeding.
 
+**Enforcement mechanism — named the same way the branch-identity check below is.** This isn't only a prose reminder: `ai/claude/hooks/git-ops-reminder.py` (a `PreToolUse` hook on `Bash`) nudges before any bare `git commit`/`git push`/`gh pr create`/`glab mr create` if git-ops hasn't fired yet this session, and `ai/claude/hooks/git-ops-track.py` (a `PostToolUse` hook on `Skill`) records the session-scoped flag file (`~/.claude/.git-ops-sessions/<session_id>`) that tells the reminder hook whether it already fired. If a commit/push/PR command runs without a visible `[git-ops]` advisory first, that's this hook pair's signal firing (or failing to) — treat a missing advisory as a reason to double-check the `Skill` tool was actually called, not as confirmation it was.
+
 **Branch-identity check — name the script, don't rely on recalling git-ops's full body.** For every non-worktree repo in scope, before Step 2's commit flow begins for that repo, run it directly:
 
 ```bash
