@@ -23,5 +23,4 @@ print(
     "[skill-staleness-check] Opening a PR — consider running the "
     "skill-staleness-check skill to compare local skill versions against "
     "what's uploaded to the claude.ai Skills store before this merges.",
-    file=sys.stderr,
 )
