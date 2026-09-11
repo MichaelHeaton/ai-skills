@@ -66,7 +66,7 @@ satisfy criterion 1 above. Distinguish:
 If the user pastes external content *and then* confirms or endorses its
 claim in their own words ("...and yeah, that's right, we should update
 this"), the endorsement is the evidence, not the paste itself. Quote the
-endorsement — not the pasted text — when citing evidence in Step 4.
+endorsement — not the pasted text — when citing evidence in Step 5.
 
 **Honest limitation**: this rule is a prompt-level discipline, not a
 code-level filter. Nothing in this skill's mechanics can force the
@@ -132,37 +132,47 @@ cat ~/.claude/projects/<project-hash>/memory/.memory-refine-pending.json 2>/dev/
 
 This file, if present, is left behind by a *previous* run of this skill
 whose proposed diff was never explicitly approved or rejected — the run
-ended (session closed, user moved on) before Step 6's approve/reject gate
-was answered. Its schema:
+ended (session closed, user moved on) before Steps 6/7's approve/reject
+gate was answered. Its schema:
 
 ```json
 {
   "file": "<absolute path to the memory file the diff targets>",
   "diff_summary": "<short description of the proposed change>",
+  "diff_key": "<the exact old_string/new_string pair being proposed, or a stable hash of it>",
   "carry_count": 1,
   "first_proposed": "YYYY-MM-DD",
   "last_proposed": "YYYY-MM-DD"
 }
 ```
 
-Compare the candidate selected in Step 3 against the pending state, if any:
+Compare the candidate selected in Step 3 against the pending state, if any.
+**"Same diff" means the same `file` and the same `diff_key`** — the literal
+proposed edit (the exact old/new text pair), not a paraphrased restatement
+of it. Comparing the rendered `diff_summary` prose is not enough: two
+runs can describe the identical edit in slightly different words, or two
+genuinely different edits can read similarly in a one-line summary. Compare
+`diff_key` (or the actual edit content if `diff_key` wasn't written by an
+older state file) directly, not the summary text:
 
 - **No pending state file** — this is a fresh proposal. Proceed to Step 5
   (normal inline presentation) and write a new pending state file with
   `carry_count: 1`.
-- **Pending state file exists, but targets a different file or a
-  substantively different change** — the earlier pending diff was
-  effectively abandoned (evidence moved on). Overwrite it with the new
+- **Pending state file exists, but targets a different file or a different
+  `diff_key`** — the earlier pending diff was effectively abandoned
+  (evidence moved on, or this is unrelated). Overwrite it with the new
   candidate's state (`carry_count: 1`) and proceed to Step 5 normally. Do
   not add the old, unrelated carry count to the new diff.
 - **Pending state file exists and matches this session's candidate**
-  (same file, same substantive change) — this diff has been silently
-  re-proposed before. Increment `carry_count` by 1 and update
-  `last_proposed` to today. If the incremented `carry_count` is **less
-  than 2**, proceed to Step 5 (normal inline presentation), still writing
-  the updated count back to the state file. If the incremented
-  `carry_count` has **reached 2**, do not do a normal inline presentation —
-  go to Step 4a instead.
+  (same `file`, same `diff_key`) — this diff has been silently
+  re-proposed before. Increment `carry_count` by 1, update `last_proposed`
+  to today, and **write the updated state file immediately, before
+  branching** — the count on disk must reflect the increment whether the
+  next step is Step 5 or Step 4a, not only on the below-threshold path. If
+  the incremented `carry_count` is **less than 2**, proceed to Step 5
+  (normal inline presentation). If the incremented `carry_count` has
+  **reached 2**, do not do a normal inline presentation — go to Step 4a
+  instead.
 
 If Step 2's reflection finds no candidate at all this run (see Step 3's "no
 memory changes identified" case) but a pending state file exists from a
@@ -276,6 +286,6 @@ the skill was triggered.
 
 **Never runs unattended.** This skill only ever executes inside a live
 conversational turn with the user present to approve or reject — it is not
-wired into any scheduled or background invocation path, and Step 6 above
+wired into any scheduled or background invocation path, and Step 7 above
 depends on that: the approval gate only works because a human is already
 there to answer it.
