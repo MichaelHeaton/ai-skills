@@ -1,5 +1,5 @@
 ---
-version: 1.1.1
+version: 1.1.2
 principles_version: 1.0.0
 last_updated: 2026-09-10
 updated_by: claude
@@ -31,7 +31,10 @@ Check `~/Projects/personal/memex/Raw/_task-index.jsonl` first — find the recor
 > ```bash
 > unset GH_TOKEN
 > export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")
+> [[ -n "$GH_TOKEN" ]] || echo "gh auth token returned empty — this may be a broken keyring backend, not a wrong account; try 'gh auth refresh' or check Keychain Access directly" >&2
 > ```
+>
+> That empty-token check is a keyring-health check, distinct from the stale-`GH_TOKEN` case above it — an empty result here means the keyring backend itself failed the lookup, not that a stale env var shadowed a good token (that's already handled by the `unset` on the line before).
 >
 > Always pass `--repo <owner/repo>` explicitly.
 

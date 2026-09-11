@@ -240,6 +240,13 @@ bash ~/.claude/skills/git-ops/scripts/check-branch-identity.sh <repo-path> <expe
 
 A worktree checkout is exempt (its branch is pinned) — this only fires against a shared, non-worktree checkout, the same scope as the manual script above. A detached-`HEAD` checkout has no branch name to compare against, so the hook fails open there too (no baseline recorded, no block) — it's scoped to branch collisions specifically, not a general "is this checkout in the state I expect" check.
 
+**One-time nudge when the guard is missing entirely — mechanically enforced, not just a prose reminder.** The enforcement above only protects repos that actually have it wired, and a prose-only reminder is exactly the kind of thing that gets skipped in a long session (the same problem `git-ops-reminder.py` exists to solve for git-ops itself). `hooks/branch-guard-missing-nudge.py` (`PreToolUse`, matcher `Bash`) checks, on every `git commit` in a repo this session hasn't already nudged about:
+
+1. Does this repo's `.claude/settings.json` (or, if it has none, the global `~/.claude/settings.json`) already contain a `branch-guard.py` entry under `PreToolUse`?
+2. Does `~/.claude/hooks/branch-guard.py` exist on disk?
+
+If either check comes back negative, it prints a one-time advisory pointing at the `update-config` skill to install the block from the JSON snippet above into that repo's `.claude/settings.json` (or global) — advisory only, never blocks the commit. Dedupe is per (session, repo), tracked via a session-flag file under `~/.claude/.branch-guard-missing-sessions/`, the same pattern `git-ops-reminder.py`/`git-ops-track.py` use — so it fires once per repo per session, not on every subsequent commit. **Installed by default in this repo (`ai-skills`)**, same scope note as the enforcement hooks above: this default-on wiring exists only in `ai-skills`'s own tracked settings — every other repo needs the opt-in install step (`update-config`, routed to that repo's `.claude/settings.json` or global) before it gets the same nudge.
+
 ---
 
 ## Live concurrent-session detection
@@ -417,6 +424,28 @@ That default-on scope is limited to this repo's own checkouts — a PR here can'
     ],
     "PreToolUse": [
       { "matcher": "Bash", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/git-ops-reminder.py" }] }
+    ]
+  }
+}
+```
+
+---
+
+## PR-open staleness nudge (installed by default in this repo)
+
+A separate, stateless hook fires the same "PR-open" moment for a different purpose: prompting a skill-staleness check instead of a git-ops re-invocation (ai-skills#470).
+
+- `hooks/pr-open-staleness-nudge.py` (`PreToolUse`, matcher `Bash`) — prints a one-line nudge toward the `skill-staleness-check` skill before a `gh pr create` / `glab mr create` command, so local skill versions get compared against the claude.ai Skills store before the PR merges
+
+It's advisory only (always exits 0) and never blocks PR creation. Unlike the git-ops reminder pair above, it has no companion tracker hook — it fires on every matching PR-open command regardless of whether `skill-staleness-check` already ran that session, since staleness can change between one PR and the next.
+
+**Installed by default in this repo (`ai-skills`)**: wired into this repo's tracked `.claude/settings.json` alongside the other `PreToolUse`/`Bash` hooks. For any other repo where this nudge is wanted, add it via the `update-config` skill:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/pr-open-staleness-nudge.py" }] }
     ]
   }
 }

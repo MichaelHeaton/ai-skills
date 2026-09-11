@@ -1,5 +1,5 @@
 ---
-version: 1.2.0
+version: 1.3.0
 principles_version: 1.0.0
 last_updated: 2026-09-10
 updated_by: claude
@@ -29,11 +29,33 @@ Meaning and facts are the fixed point. Style is the only thing in motion.
 
 ## Process
 
+This is the default, full-document process — use it for a fresh draft, or any time you're not sure the lightweight recheck mode below applies.
+
 1. **Read the whole input first.** Don't rewrite sentence-by-sentence on a first pass — AI tells often span multiple sentences (a superficial-analysis clause set up two sentences earlier, a rule-of-three that started the paragraph).
 2. **Mark tells before rewriting.** Scan against the checklist below and the reference file. Note which categories show up — this tells you whether the piece needs a light touch or a structural rewrite.
 3. **Rewrite section by section**, replacing AI patterns with plain, specific, human phrasing. Prefer the simplest construction that says the same thing.
 4. **Re-read for the constraints above.** Diff your rewrite against the original in your head: did any fact move, disappear, or get invented? Did a hedge turn into a certainty, or vice versa?
 5. **Return the rewritten text.** Add a short note only if something was ambiguous enough to flag (see constraints) — don't append a changelog by default; a summary of "what I changed" is itself a common AI tell (see § Section summaries below) and adds nothing the diff doesn't already show.
+
+## Lightweight recheck mode (same-session delta)
+
+A repeat pass on a draft this skill already humanized earlier in the same session doesn't need the full process re-run from scratch — that means re-reading the whole document and rebuilding the tell-inventory just to check one added or edited paragraph.
+
+**Recognize this mode when:**
+
+- The draft as a whole already went through a humanizer pass earlier in the session, and
+- The caller is asking about a specific, small change since that pass — a paragraph added, a section reworded, one claim rewritten — not a fresh full draft. Phrasing like "recheck this paragraph against the draft I already humanized" or "does this new bit fit the rest" signals it. If the caller instead pastes the whole document again, or you can't tell how much changed, fall back to the full process above — don't guess.
+
+**What changes procedurally:**
+
+1. **Skip re-reading and re-inventorying the whole document.** Don't redo step 1/2 of the full process against text that hasn't changed since the last pass.
+2. **Scope the read to the delta plus fit context.** Read the new/changed text itself, plus enough of the surrounding paragraphs (and, for a short piece, the opening) to judge tone and voice — not the entire document.
+3. **Check the delta against the same checklist below.** Every pattern in § Checklist still applies; you're narrowing *what* you read, not *what* you check it against.
+4. **Use the already-humanized text as the fit reference**, not the checklist in the abstract. The bar is: does the new text read like it was written by the same hand as the surrounding piece — same register, same sentence rhythm, no tell that the rest of the draft had already been scrubbed of?
+5. **Apply the same non-negotiable constraints** (no added facts, no removed citations, flag ambiguity rather than rewriting it away) to the delta exactly as you would to a full draft.
+6. **Return only the rewritten delta**, unless fixing it requires touching a neighboring sentence for flow — in that case say so briefly, don't silently expand scope back to the whole document.
+
+If the delta itself is large enough that judging fit really requires re-reading the whole piece — a rewritten section, not a paragraph — treat it as a fresh full-process pass instead of forcing it into this mode.
 
 ## Checklist: what to remove or rewrite
 

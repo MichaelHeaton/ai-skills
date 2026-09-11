@@ -1,10 +1,10 @@
 ---
-version: 1.3.0
+version: 1.4.0
 principles_version: 1.0.0
-last_updated: 2026-08-24
+last_updated: 2026-09-10
 updated_by: claude
 name: vault-support
-description: "Analyze vault support content — Slack threads, Jira tickets, direct research questions, or documentation gap sessions — to fact-check the team bot, identify documentation gaps, and generate knowledge-extraction questions. Use when the user pastes a Slack thread (including a bare Slack message URL with no other framing), references a vault ticket, asks a vault behavior/config question directly, or wants to identify what's missing in the wiki. Triggers on: vault questions, bot responses, AppRole, policy PRs, KV2, 403, permission denied, access denied, seal, onboarding pasted from Slack, vault ticket, vault runbook, vault restore procedure, vault behavior, researching vault, how does vault handle, look at this vault ticket, wiki gaps, documentation backlog, doc backlog, what's missing in the wiki, identify documentation gaps, audit our docs, build a doc backlog, find wiki gaps, what are we missing in the docs."
+description: "Analyze vault support content — Slack threads, Jira tickets, direct research questions, documentation gap sessions, or a batch/channel-wide sweep across many threads at once — to fact-check the team bot, identify documentation gaps, and generate knowledge-extraction questions. Use when the user pastes a Slack thread (including a bare Slack message URL with no other framing), references a vault ticket, asks a vault behavior/config question directly, wants to identify what's missing in the wiki, or wants a batch audit across many threads at once. Triggers on: vault questions, bot responses, AppRole, policy PRs, KV2, 403, permission denied, access denied, seal, onboarding pasted from Slack, vault ticket, vault runbook, vault restore procedure, vault behavior, researching vault, how does vault handle, look at this vault ticket, wiki gaps, documentation backlog, doc backlog, what's missing in the wiki, identify documentation gaps, audit our docs, build a doc backlog, find wiki gaps, what are we missing in the docs, audit the channel this week, how many times did the bot get this wrong, check the last N threads, sample recent threads, what pages is the bot drawing from."
 ---
 
 # Vault Support Analyzer
@@ -74,8 +74,9 @@ Read what was provided and classify it:
 - **Case B — Post-resolution** (Slack thread: full thread with team member replies): Extract knowledge and capture what the team knew that the support bot didn't.
 - **Case C — Jira ticket** (user provides a Jira ticket ID/URL or asks to look at a vault ticket): Fetch ticket via MCP, extract the question or work context, then run the analysis flow (Steps 3+) treating the ticket description as the source.
 - **Case D (single question) — Direct research** (user asks a specific vault behavior/config question directly with no pasted source): Skip the bot-comparison steps; run doc-search and gap analysis.
+- **Case E — Batch / channel-wide audit** (multiple threads at once, not one pasted thread): trigger phrases include "audit the channel this week", "how many times did the bot get this wrong", "check the last N threads to figure out what the bot draws from", "sample the last 2 weeks of threads", or the user pasting several thread links together and asking for one combined assessment. Loops Case B's per-thread comparison across every thread in scope, then produces **one consolidated, deduplicated** Step 5 gap list — not N separate per-thread lists. See the Case E section for the three ways to scope the batch and its two output variants.
 
-If unclear, ask: "Is this a Slack thread, a Jira ticket, a specific research question, or a broader doc gap audit?"
+If unclear, ask: "Is this a Slack thread, a Jira ticket, a specific research question, a broader doc gap audit, or a batch/channel-wide audit across several threads?"
 
 **Re-classify Case A → B when a thread flips live in the same session.** A thread classified as Case A (no team reply yet) can gain a team-member reply later in the same conversation — when that happens, re-run the Case B comparison against the new reply rather than treating the two moments as separate invocations.
 
@@ -198,9 +199,33 @@ Extract the question from the user's message. Skip bot-comparison scoring (`sher
 - <page> — <where it actually lives, and whether it should move under 2523173073>
 ```
 
+### Case E — Batch / channel-wide audit
+
+**Three ways into this case — same downstream logic, pick based on what the user gave you:**
+
+1. **Channel + time window** ("audit #vault-support this week") — pull every thread in that channel/window.
+2. **Explicit list of thread links** — the user pastes several thread URLs and wants one combined assessment.
+3. **Sample N recent threads** ("check the last 2 weeks of threads to figure out which wiki pages a bot is drawing from") — pull the N most recent threads from `slack.vault_support_channel`.
+
+Resolve whichever of the three the user gave you into a concrete list of threads, then run the loop below. Don't build separate handling per intake style past this point — they're three doors into the same case.
+
+**Loop Case B's logic, don't duplicate it.** For each thread in the resolved list: classify it as you would in Step 1 (most will be Case A or Case B shape — a bot reply with or without a team reply), then run **Case B's existing compare-and-score logic** (the table and scoring rules above) against it unchanged. Keep a running per-thread record of `team_reply_vs_sherlock`, score, and "did local docs cover this" — this is the raw material for the consolidated list in Step 5, not a per-thread report to hand back individually.
+
+**Two output variants, chosen by what the user actually asked for:**
+
+- **Compliance/quality sweep** (default — "how many times did the bot get this wrong", "audit the channel this week", a plain batch of thread links): after scoring every thread, proceed to Step 5's consolidated gap list below, then to Step 5's file-issues offer and Step 6's memex capture as normal — same closing steps any other case uses.
+
+- **Scope-mapping** (#497's case — "check the last N threads to figure out what the bot draws from", or any variant asking what knowledge source the bot is actually pulling from rather than whether it was right): instead of stopping at correctness scoring, also record which Confluence pages each thread's bot reply actually cited, then aggregate into a frequency table (page → how many threads cited it) — this is the scope map. Treat the scope map as input to a decision record, not a gap list.
+
+  **Route scope-mapping output to `memex-decide` instead of this skill's usual closing steps** (Step 5's file-issues offer and Step 6's memex capture — what the originating tickets for this case called "Steps 6-7: `add_test_case.py` / Confluence push"). A scope map isn't a support-bot test case and it doesn't name a specific Confluence edit, so pushing it through the test-case-generation or Confluence-push path would produce a malformed artifact — there's nothing there to turn into a test case or a page edit. Its natural output is a scope map + decision record, which is exactly what `memex-decide` is for.
+
+  **This is a deliberate skip, not a silent one** — say so in your output (e.g. "Scope-mapping variant: routing to memex-decide; the usual issue-filing/memex-capture closing steps don't apply here because there's no single gap or edit to file"). Don't let this case fall through Steps 5-6 with no explanation just because nothing there fit.
+
 ## Step 5 — Build the gap list
 
 For all cases, end with:
+
+**Case E (compliance/quality sweep variant) only:** build **one** gap list across every thread in the batch, deduplicated by underlying gap — not one list per thread. If three threads all surface the same missing KV2 example, that's one bullet with a note on how many threads hit it, not three near-identical bullets. Merge before presenting, don't ask the user to do the stitching. (The scope-mapping variant skips this section entirely — see Case E above.)
 
 ---
 

@@ -1,10 +1,10 @@
 ---
-version: 1.0.1
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-07-29
+last_updated: 2026-09-10
 updated_by: claude
 name: infra-state-verify
-description: Gate any published claim about live infrastructure state behind an explicit ground-truth check, so "declared in code" never gets asserted as "confirmed running." Use before publishing a PR description, wiki/Confluence page, Slack/chat message, or status report that says a cluster is running, a feature is enabled in production, a service is deployed, a migration completed, or similar. Trigger on phrases like "is running", "is live", "is enabled in production", "confirm this is deployed", "cluster is up", "shipped to prod", or any time a draft is about to describe live infra state for a teammate or stakeholder to read. Does not apply to answering the user's question conversationally in this session — only to drafting or sending a message meant to reach a teammate or stakeholder outside this session (a Slack DM, PR comment, wiki edit, status report, or similar), or to internal reasoning, scratch notes, and draft thinking that stays in-session.
+description: Gate any claim about live infrastructure state behind an explicit ground-truth check, so "declared in code" never gets asserted as "confirmed running." Use before publishing a PR description, wiki/Confluence page, Slack/chat message, or status report that says a cluster is running, a feature is enabled in production, a service is deployed, a migration completed, or similar — and also before telling the user in chat that a public-facing production domain or service is live/up/deployed, since that conversational claim can be repeated onward to an external stakeholder. Trigger on phrases like "is running", "is live", "is enabled in production", "confirm this is deployed", "cluster is up", "shipped to prod", or any time a draft or in-session reply is about to describe live infra state that a teammate, stakeholder, or the public could act on. Internal asides stay out of scope: answering the user's question about an internal dashboard, a dev/staging environment, or other non-public infra conversationally still does not require a live check. Only conversational claims about public-facing production infrastructure are gated alongside published artifacts — see "Scope" below for the operational test.
 compatibility: Any repo with Terraform, Kubernetes, Ansible, or a cloud CLI available for live checks.
 ---
 
@@ -13,6 +13,17 @@ compatibility: Any repo with Terraform, Kubernetes, Ansible, or a cloud CLI avai
 Terraform modules, tfvars, Kubernetes manifests, and Ansible playbooks describe *intent* — what should exist once applied. They are not evidence that it exists. The moment a claim about live infrastructure state leaves the session and lands in a PR description, a wiki page, a chat message, or a status report, a reader will trust it as fact. This skill is a pre-publish gate that stops declared-in-code from being asserted as confirmed-running.
 
 **Scope**: this applies to external/published artifacts a teammate or stakeholder will read and act on. It does not require a live check before every internal mention of infrastructure in conversation, and it does not block reasoning about what a plan or manifest *should* do — only the act of publishing a state claim as settled fact.
+
+**Narrowed carve-out — public-facing production infra is gated even in chat.** The conversational carve-out above covers internal asides, not claims about infrastructure the public or an external stakeholder can reach. If a live-state claim is about a public-facing production domain or service, it must go through the same ground-truth check as a published artifact — even when it's said only to the user in this session and never drafted into a PR, wiki, or message.
+
+Apply this operational test before asserting live state conversationally:
+
+- **Is the domain/service publicly reachable?** — a customer, board member, or member of the public can hit it directly (a public website, a production API, a customer-facing app), not just someone with VPN/internal-network access.
+- **Would an external stakeholder plausibly act on this claim if repeated to them?** — e.g. a board member telling a parent "the new site is live," a customer being pointed at a URL, a stakeholder reporting status upward.
+
+**Both must be true** for the claim to be in scope: the domain/service is publicly reachable *and* an external stakeholder would plausibly act on the claim if repeated. When both hold, run the same live check as the relevant infra type below before stating it as confirmed — not just an HTTP status code or the fact that a deploy was triggered.
+
+If either is false — a dev/staging environment (not publicly reachable, even if someone might repeat what you say), an internal dashboard, or informal chatter about infra nobody outside the team can reach — the conversational carve-out still applies as before: describe it without running the full check, since either nobody outside the team can reach it or nobody would act on the claim. A status update like "the staging migration completed" stays out of scope under this test even though it could technically be "reported upward," because staging itself isn't publicly reachable.
 
 ## The core distinction
 
@@ -29,8 +40,9 @@ Before writing or sending any of the following, check whether it asserts a live-
 - Wiki / Confluence page
 - Slack or chat message
 - Status report / update
+- A conversational reply to the user in-session, **if** it's a live-state claim about public-facing production infrastructure (see the operational test above) — e.g. telling the user a public website or customer-facing service "is live" based on nothing more than an HTTP status check
 
-Live-state claims include: a cluster or service **is running**, a feature **is enabled in production**, a resource **is deployed**, a migration **completed**, something **is live** or **shipped to prod**. If the draft contains language like this, stop before publishing and do the check below.
+Live-state claims include: a cluster or service **is running**, a feature **is enabled in production**, a resource **is deployed**, a migration **completed**, something **is live** or **shipped to prod**. If the draft — or, for public-facing prod infra, the in-session reply — contains language like this, stop before publishing or replying and do the check below.
 
 ## Required check before asserting live state
 

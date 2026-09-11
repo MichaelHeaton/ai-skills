@@ -82,7 +82,37 @@ For each line, extract:
 
 ### Branch hygiene check
 
-For each repo where `BRANCH != main` and `BRANCH != master`, check whether the current branch already has a merged or open PR — the session may have ended without switching back to main:
+**gh keyring health check (once, before the loop below).** A broken macOS keychain/keyring backend can make `gh` fail even though it's installed and was previously configured — distinct from `gh` being entirely absent (a separate, unrelated failure mode). Verify `gh` is actually authenticating before relying on it for this whole check:
+
+```bash
+gh auth token >/dev/null 2>&1 && gh api user >/dev/null 2>&1
+GH_AUTH_BROKEN=$?
+```
+
+Use `gh api user`, not `gh pr list`, for this probe — `gh pr list` fails with a repo/remote-detection error when run outside a `gh`-recognized GitHub repo, which is unrelated to keyring health and would false-positive this whole check if the session's current directory isn't one of the repos being scanned. `gh api user` only tests auth, independent of `$PWD`.
+
+If `GH_AUTH_BROKEN != 0`, don't silently skip branch hygiene — print the failure explicitly with a recovery hint, then fall back to a pure-git check per repo instead of the `gh pr list` flow below:
+
+> ⚠️ `gh auth token` / `gh pr list` failed — the `gh` keyring may be broken. Try `gh auth refresh`, or see the `gh-account-routing` skill for account/keyring recovery.
+
+Pure-git fallback, run for each repo in scope (no `gh` calls):
+
+```bash
+DEFAULT_BRANCH=$(git -C <repo> symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@')
+[[ -z "$DEFAULT_BRANCH" ]] && DEFAULT_BRANCH="main"
+CURRENT_BRANCH=$(git -C <repo> branch --show-current)
+git -C <repo> status --short
+git -C <repo> fetch --prune origin 2>/dev/null
+git -C <repo> branch -vv | grep ': gone]'
+```
+
+- **`CURRENT_BRANCH != DEFAULT_BRANCH`** → flag drift the same way the PR-based check would: *"Checked out on `<CURRENT_BRANCH>` in `<repo-name>`, not `<DEFAULT_BRANCH>` — cannot confirm PR/merge state without `gh`, but this needs a look before the next session."*
+- **`git status --short` non-empty** → surface as uncommitted changes per Step 2, same as any other repo.
+- **Any `: gone]` line from `git branch -vv`** → candidate for the Step 5 local-branch cleanup (remote deleted after merge), same handling as the normal flow.
+
+This fallback cannot distinguish "merged PR, stale checkout" from "no PR yet, still in progress" — it only catches drift and gone-remote branches via git alone. Note that limitation plus the auth failure itself in the Step 10 "Pending" summary, so the next session knows branch hygiene ran degraded and `gh` needs attention. Retry the `gh` health check at the top of a later step if it's needed again (e.g. Step 1b's account pre-flight) rather than assuming it's still broken.
+
+**If `gh` is healthy**, run the normal PR-based check below. For each repo where `BRANCH != main` and `BRANCH != master`, check whether the current branch already has a merged or open PR — the session may have ended without switching back to main:
 
 ```bash
 gh pr list --head <branch> --state all --json number,state,title \
@@ -124,6 +154,8 @@ Invoke the `git-ops` skill *(global: ai-skills)* before Steps 2–4 — it cover
 **Do not ask for confirmation before invoking git-ops.** It is a required pre-flight for every session-close run.
 
 **"Invoke" means an actual `Skill` tool call, not recalling git-ops's rules from this section's own inlined summary.** Git hygiene run correctly from memory — because this section already restates git-ops's key rules inline — satisfies the *outcome* but not this pre-flight: git-ops's own freshness gate (AGENT.md check, humanizer pass on the PR description) only actually runs when the skill itself fires, and recalling its rules by memory silently skips that gate even when every git command that session ran was correct. If you're not certain the `Skill` tool was actually called for git-ops this session, call it now before proceeding.
+
+**Enforcement mechanism — named the same way the branch-identity check below is.** This isn't only a prose reminder: `ai/claude/hooks/git-ops-reminder.py` (a `PreToolUse` hook on `Bash`) nudges before any bare `git commit`/`git push`/`gh pr create`/`glab mr create` if git-ops hasn't fired yet this session, and `ai/claude/hooks/git-ops-track.py` (a `PostToolUse` hook on `Skill`) records the session-scoped flag file (`~/.claude/.git-ops-sessions/<session_id>`) that tells the reminder hook whether it already fired. If a commit/push/PR command runs without a visible `[git-ops]` advisory first, that's this hook pair's signal firing (or failing to) — treat a missing advisory as a reason to double-check the `Skill` tool was actually called, not as confirmation it was.
 
 **Branch-identity check — name the script, don't rely on recalling git-ops's full body.** For every non-worktree repo in scope, before Step 2's commit flow begins for that repo, run it directly:
 
@@ -300,6 +332,15 @@ The proposed diff itself always requires the user's explicit approve/reject
 before it's applied — this step never auto-applies a memory edit, even
 though the review that produces it runs without asking permission first.
 
+**Carry-forward exception**: `memory-refine` tracks how many times the same
+proposed diff has gone unanswered across runs (its own
+`.memory-refine-pending.json` state, not owned by this skill). If it signals
+a forced review (carry count reached 2 — see `memory-refine`'s Step 4a),
+surface that blocking approve/reject prompt at the **top of this
+session-close run's output**, ahead of the Step 1 summary and everything
+else, instead of leaving it in sequence at Step 6b — and do not let this
+session-close run proceed past it unanswered.
+
 If `memory-refine` reports "no memory changes identified this session",
 note that and continue to Step 7. If a diff was approved, note which file
 changed in the Step 10 summary; if rejected, no action needed — the file is
@@ -342,6 +383,8 @@ fi
 ```
 
 **The close-out report is always filed as a labeled ticket via `issue-create` — never written to `Outputs/Session/*.md`.** This applies in every session, not only vault-less ones: a remote/web session scoped to a single repo has no memex access to write a file into, and even on a full workstation `Outputs/` is documented as ephemeral (`Outputs/README.md`) while a per-session file accumulating there indefinitely contradicts that. Filing a ticket gives every session — local or cloud — a durable, always-reachable home for the close-out record.
+
+**If `GH_AUTH_BROKEN` was set during Step 1's branch hygiene check**, record it under "⚠️ Pending" in this summary — e.g. *"`gh` keyring broken this session (`gh auth token`/`gh pr list` failed) — branch hygiene ran on the pure-git fallback only; run `gh auth refresh` before the next session and re-verify branch/PR state normally."* This is a session-boundary fact the next session needs, not just a mid-run print — don't let it be printed once during Step 1 and then dropped.
 
 By the time this step runs, Step 6's findings, Step 8's context note, and Step 9's git/PR-derived ticket list are all known, so this is the one point in the run with everything the record needs.
 
