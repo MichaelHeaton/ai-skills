@@ -1,10 +1,10 @@
 ---
-version: 1.3.0
+version: 1.4.0
 principles_version: 1.0.0
-last_updated: 2026-08-16
+last_updated: 2026-09-10
 updated_by: claude
 name: decision-council
-description: Run any decision, plan, or tradeoff through 7 AI advisors with distinct thinking styles, a blind peer review round, and a final chairman synthesis. Based on Karpathy's LLM Council methodology. TRIGGERS: "council this", "decision council", "run the council", "war room this", "pressure-test this", "stress-test this", "debate my options", "gut check this", "get a second opinion on this", "talk me out of this". STRONG TRIGGERS when combined with a real decision: "should I X or Y", "which option", "I can't decide", "I'm torn between", "validate this decision". Do NOT trigger on: factual lookups, creation tasks (write me X), or casual questions without a meaningful tradeoff.
+description: Run any decision, plan, or tradeoff through 7 AI advisors with distinct thinking styles, a blind peer review round, and a final chairman synthesis. Based on Karpathy's LLM Council methodology. TRIGGERS: "council this", "decision council", "run the council", "war room this", "pressure-test this", "stress-test this", "debate my options", "gut check this", "get a second opinion on this", "talk me out of this". STRONG TRIGGERS when combined with a real decision: "should I X or Y", "which option", "I can't decide", "I'm torn between", "validate this decision". Do NOT trigger on: factual lookups, creation tasks (write me X), or casual questions without a meaningful tradeoff. ALSO TRIGGERS after a council has already produced a verdict, when the user corrects a factual premise the verdict rested on: "actually, X isn't the case", "I was wrong about Y", "that assumption is wrong", "the premise was off", "that's not actually who/what/why" — see Step 6 (premise correction).
 ---
 
 # Decision Council
@@ -196,6 +196,52 @@ mkdir -p ~/Projects/personal/memex/Outputs/Council/
 ```
 
 Write to: `~/Projects/personal/memex/Outputs/Council/council-[YYYY-MM-DD]-[topic].md`
+
+---
+
+## Step 6 — Premise correction (re-entry point after a verdict)
+
+This step only applies **after** a council pass has already produced a verdict (Step 4, or the landslide-consensus shortcut) in this conversation. It does not apply to a fresh council run on a new question — that's the normal flow above, unaffected by anything here.
+
+**Trigger:** the user corrects a factual premise the verdict rested on — not a new preference, not a request to re-litigate the recommendation, but a correction to something the framing or an advisor treated as fact (a person's role, what a team actually objected to, a number, a constraint). If it's unclear whether this is a premise correction or just pushback on the conclusion, ask: "Is that a correction to a fact the council assumed, or do you want to argue the recommendation itself?" — only the former re-enters this step.
+
+Do not silently patch the verdict in prose and leave the original structured output standing unreconciled next to it. Follow this sequence instead:
+
+1. **Identify affected advisors.** Re-read the framed question and all 7 advisor responses. List which advisor(s) explicitly relied on the now-corrected premise in their reasoning — not all 7 by default. An advisor whose argument doesn't reference or depend on the corrected fact is unaffected and is *not* rerun.
+
+   - If every advisor's reasoning turns out to depend on the corrected premise (it was load-bearing for the whole framing), that's a legitimate outcome of this identification step — rerun all 7 — but it must be reached by checking each one, not assumed up front.
+
+2. **Rewrite the framed question** to fold in the correction, same as Step 1.B, and hold the corrected framing alongside the original for reference — don't discard the original, since the "before/after" contrast is part of what gets presented at the end.
+
+3. **Rerun only the affected advisor(s)** against the corrected framed question, using the same per-advisor prompt template from Step 2. Unaffected advisors' original responses carry forward unchanged — do not regenerate them.
+
+4. **Skip peer review** for this re-entry pass. Peer review exists to catch blind spots across a full independent round; a targeted premise fix on 1–3 advisors doesn't warrant re-anonymizing and re-running the 5-reviewer step. Go straight to a fresh chairman synthesis.
+
+5. **Rerun the chairman synthesis** (Step 4's template) using the corrected framed question and the full set of 7 advisor responses (rerun ones plus carried-forward ones), plus whatever peer-review material actually exists for the original verdict:
+
+   - **Original verdict came from Step 4 (full pipeline, peer review ran)** — include the original 5 peer reviews, flagged inline to the chairman as based on the pre-correction responses for any advisor(s) that changed, so the chairman can judge whether those reviews still apply.
+   - **Original verdict came from the landslide-consensus shortcut (no peer review ever ran)** — there is no peer-review material to include. Synthesize directly from the advisor responses, the same way the landslide shortcut itself does — don't reference peer reviews that don't exist.
+
+6. **Present the reconciled verdict explicitly alongside the original**, not as a silent overwrite:
+
+   ```
+   ## Premise Correction
+
+   **What changed:** [the corrected fact, in one line]
+   **Advisors rerun:** [names] — their original reasoning depended on this premise
+   **Advisors unchanged:** [names] — unaffected by the correction
+   **Peer review:** skipped for this reconciled verdict, same as for any targeted premise-fix pass — [if the original went through Step 4: "the original 5 peer reviews were carried forward for unaffected advisors" / if the original was a landslide shortcut: "the original verdict never had peer review either"]
+
+   ## Original Verdict (superseded)
+   [one-line summary of the prior Recommendation, or the full original verdict if short]
+
+   ## Reconciled Verdict
+   [full chairman synthesis output, Step 4 structure]
+   ```
+
+   Make it unambiguous that the original verdict stood corrected, not quietly patched — a reader should be able to see what changed and why without re-deriving it themselves.
+
+If the user corrects a second premise later in the same conversation, repeat this step against the already-reconciled verdict — each pass supersedes the previous one, and the "Advisors rerun" identification in step 1 is re-evaluated fresh each time rather than accumulating from prior passes.
 
 ---
 
