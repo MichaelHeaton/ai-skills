@@ -217,6 +217,13 @@ bash ~/.claude/skills/git-ops/scripts/check-branch-identity.sh <repo-path> <expe
 
 A worktree checkout is exempt (its branch is pinned) — this only fires against a shared, non-worktree checkout, the same scope as the manual script above. A detached-`HEAD` checkout has no branch name to compare against, so the hook fails open there too (no baseline recorded, no block) — it's scoped to branch collisions specifically, not a general "is this checkout in the state I expect" check.
 
+**One-time nudge when the guard is missing entirely**: the enforcement above only protects repos that actually have it wired. Before the _first_ `git commit` in a session for a given repo, check whether this repo can even benefit from it:
+
+1. Does this repo's `.claude/settings.json` (or, if it has none, the global `~/.claude/settings.json`) already contain a `branch-guard.py` entry under `PreToolUse`?
+2. Does `~/.claude/hooks/branch-guard.py` exist on disk?
+
+If either check comes back negative, this repo is committing with no mechanical protection against the shared-checkout branch swap described above. Surface a one-time nudge to the user pointing at the `update-config` skill to install the block from the JSON snippet above into that repo's `.claude/settings.json` (or global) — don't block the commit on it, and don't repeat the nudge again later in the same session once it's been raised. Remember: this default-on wiring exists **only** in `ai-skills`'s own tracked settings — every other repo needs this opt-in install step before it gets the same protection.
+
 ---
 
 ## Live concurrent-session detection
