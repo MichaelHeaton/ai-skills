@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-09-11
 updated_by: claude
 name: issue-batch
 description: Create several tickets at once from a natural-language list, each with a properly structured body and task-index entry, in a single pass instead of repeated one-off issue-create invocations. Use when the user describes 5-15 work items at once — "make tickets for X, Y, Z, and W", "break this list into issues", "file these as separate tickets" — and they all belong in the same system/repo. For a single ticket, or items that need to land in different systems, use issue-create directly.
@@ -46,7 +46,14 @@ Show a summary table before creating anything — this step never skips, even wh
 
 ## 5. Create in parallel, index sequentially
 
-Once approved:
+**For a GitHub-routed batch (Path B/C), run `issue-create`'s Step 0.5 sandbox/auth probe once before starting the parallel loop below — never skip straight to parallel creates.** A sandboxed `GraphQL: Forbidden` hits every parallel `gh issue create` call identically, and an unchecked batch will silently produce N empty-looking `CREATED=` lines instead of one clear failure. One upfront probe catches this before it can masquerade as N separate mysteries.
+
+- **Probe fails** (per issue-create Step 0.5: token/account mismatch, or the `required_permissions: ["all"]` retry and REST fallback both dead-end): **abort the whole batch now.** Report one clear error — which probe step failed and why — and do not run any of the parallel creates in step 1 below. Do not let individual creates fail silently one-by-one; a single upfront failure is far easier to diagnose and fix than a batch that half-completed with no indication which items actually landed.
+- **Probe succeeds**: proceed with the parallel loop exactly as before — this check adds one auth call up front, nothing else changes on the happy path.
+
+Jira-routed batches (Path A) have no equivalent sandbox failure mode — skip the probe and proceed directly to the parallel loop.
+
+Once approved (and, for GitHub, once the probe above has succeeded):
 
 1. Run all creation calls (`gh issue create` or `jira_create_issue`) in parallel for speed.
 2. After all creations return, append each one to the task index **sequentially** — per `issue-create`'s own batch-creation guidance, this step is never optional even when the per-issue flow was skipped for parallelism; a missing index entry means the ticket won't surface in `session-close` or `issue-list`.
