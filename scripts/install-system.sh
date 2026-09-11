@@ -172,9 +172,11 @@ done
 
 log ""
 log "2. Retired skills (remove symlink, if ours)"
-for retired in "${RETIRED_SKILLS[@]}"; do
-  remove_retired "$SKILLS_DST/$retired" "$retired"
-done
+if [[ ${#RETIRED_SKILLS[@]} -gt 0 ]]; then
+  for retired in "${RETIRED_SKILLS[@]}"; do
+    remove_retired "$SKILLS_DST/$retired" "$retired"
+  done
+fi
 
 log ""
 log "3. Hooks (*.py, symlinks)"
@@ -224,9 +226,11 @@ fi
 
 log ""
 log "5b. Retired Cursor rules"
-for retired in "${RETIRED_CURSOR_RULES[@]}"; do
-  remove_retired "$CURSOR_RULES_DST/$retired" "$retired"
-done
+if [[ ${#RETIRED_CURSOR_RULES[@]} -gt 0 ]]; then
+  for retired in "${RETIRED_CURSOR_RULES[@]}"; do
+    remove_retired "$CURSOR_RULES_DST/$retired" "$retired"
+  done
+fi
 
 log ""
 log "6. Memory (copy to project path — not symlinked, see principles/deployment.md)"

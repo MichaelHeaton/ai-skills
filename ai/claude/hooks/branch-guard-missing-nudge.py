@@ -5,7 +5,10 @@ neither in its own .claude/settings.json nor in the global
 ~/.claude/settings.json, or the hook script itself is missing from disk.
 Advisory only — always exits 0, never blocks the commit. Mechanizes
 git-ops's "One-time nudge when the guard is missing entirely" section
-instead of leaving it as a prose-only instruction to remember."""
+instead of leaving it as a prose-only instruction to remember.
+
+Stdout must be empty or valid JSON: Cursor PreToolUse rejects plain-text
+nudge lines as invalid JSON and blocks the tool call."""
 import hashlib
 import json
 import re
@@ -91,7 +94,7 @@ if wired and hook_script_present:
 flag_path.parent.mkdir(parents=True, exist_ok=True)
 flag_path.touch()
 
-print(
+msg = (
     "[branch-guard] This repo doesn't have branch-guard.py wired (checked "
     f"{repo_settings} and {global_settings}), or the hook script itself is "
     "missing from ~/.claude/hooks/ — a second process silently swapping "
@@ -100,3 +103,11 @@ print(
     "checkout branch-identity check' section for the JSON block) if this "
     "repo uses a shared, non-worktree checkout."
 )
+print(json.dumps({
+    "hookSpecificOutput": {
+        "hookEventName": "PreToolUse",
+        "permissionDecision": "allow",
+        "additionalContext": msg,
+    },
+    "systemMessage": msg,
+}))
