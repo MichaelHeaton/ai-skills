@@ -1,10 +1,10 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-08-16
+last_updated: 2026-09-10
 updated_by: claude
 name: memory-refine
-description: Review the current session for evidence that a project memory file (~/.claude/projects/<project-hash>/memory/*.md) contains something wrong or stale, then propose at most one small, evidence-cited diff to at most one file — shown inline for explicit approve/reject in the same turn, never auto-applied. Primarily invoked automatically as Step 6b of session-close, but also triggers on manual requests: "review my memory", "propose a memory diff", "check my memory files", "does my memory need updating", "memory hygiene". Scoped to memory content only — SKILL.md changes belong to skill-review, not this skill.
+description: Review the current session for evidence that a project memory file (~/.claude/projects/<project-hash>/memory/*.md) contains something wrong or stale, then propose at most one small, evidence-cited diff to at most one file — shown inline for explicit approve/reject in the same turn, never auto-applied. Tracks a carry-forward count when the same proposed diff goes unanswered across runs; after 2 unanswered carries, forces a blocking approve/reject prompt instead of silently re-proposing. Primarily invoked automatically as Step 6b of session-close, but also triggers on manual requests: "review my memory", "propose a memory diff", "check my memory files", "does my memory need updating", "memory hygiene". Scoped to memory content only — SKILL.md changes belong to skill-review, not this skill.
 compatibility: Requires git. Uses ai/claude/hooks/memory-snapshot.py (already shipped) as a subprocess for pre/post-edit snapshots — works whether or not that hook is wired into settings.json.
 ---
 
@@ -121,7 +121,81 @@ and evidence-backed, stop here:
 
 Do not manufacture a marginal finding to avoid saying this.
 
-## 4. Present the proposed diff for approval
+## 4. Check carry-forward state
+
+Before presenting anything, check for a pending-diff state file in the same
+memory directory:
+
+```bash
+cat ~/.claude/projects/<project-hash>/memory/.memory-refine-pending.json 2>/dev/null
+```
+
+This file, if present, is left behind by a *previous* run of this skill
+whose proposed diff was never explicitly approved or rejected — the run
+ended (session closed, user moved on) before Step 6's approve/reject gate
+was answered. Its schema:
+
+```json
+{
+  "file": "<absolute path to the memory file the diff targets>",
+  "diff_summary": "<short description of the proposed change>",
+  "carry_count": 1,
+  "first_proposed": "YYYY-MM-DD",
+  "last_proposed": "YYYY-MM-DD"
+}
+```
+
+Compare the candidate selected in Step 3 against the pending state, if any:
+
+- **No pending state file** — this is a fresh proposal. Proceed to Step 5
+  (normal inline presentation) and write a new pending state file with
+  `carry_count: 1`.
+- **Pending state file exists, but targets a different file or a
+  substantively different change** — the earlier pending diff was
+  effectively abandoned (evidence moved on). Overwrite it with the new
+  candidate's state (`carry_count: 1`) and proceed to Step 5 normally. Do
+  not add the old, unrelated carry count to the new diff.
+- **Pending state file exists and matches this session's candidate**
+  (same file, same substantive change) — this diff has been silently
+  re-proposed before. Increment `carry_count` by 1 and update
+  `last_proposed` to today. If the incremented `carry_count` is **less
+  than 2**, proceed to Step 5 (normal inline presentation), still writing
+  the updated count back to the state file. If the incremented
+  `carry_count` has **reached 2**, do not do a normal inline presentation —
+  go to Step 4a instead.
+
+If Step 2's reflection finds no candidate at all this run (see Step 3's "no
+memory changes identified" case) but a pending state file exists from a
+prior run, leave the pending state file untouched — it still represents an
+unresolved diff from earlier evidence that may resurface later, and this
+run found nothing new to say about it either way.
+
+## 4a. Forced approve/reject — carry_count reached 2
+
+The same diff has now been proposed and silently carried forward twice
+without an answer; a third silent re-proposal is exactly the pattern this
+mechanism exists to stop. Instead of the normal inline "propose and move
+on" pattern, this becomes a blocking prompt:
+
+- Render it as the **first thing** in this skill's output for this run —
+  before any other reflection commentary — and label it distinctly so it
+  reads as different from the routine inline proposal, e.g. a leading
+  `**⚠️ Unresolved memory diff — 3rd proposal, needs an answer**` header.
+- When this skill is invoked from `session-close` (Step 6b), that step
+  surfaces this forced prompt at the **top of the close-out output**,
+  ahead of the rest of the session-close summary — see `session-close`'s
+  Step 6b for the hook that does this.
+- State plainly that this diff has been carried forward twice with no
+  response, then present the same File / Diff / Evidence fields and
+  Approve/Reject options as Step 5 below.
+- Do not continue past this prompt to any other step of `memory-refine`,
+  and (when running inside `session-close`) do not let that session
+  proceed past it either, until the user answers Approve or Reject.
+
+Whichever way it was presented — Step 5's normal form or this forced
+form — the answer is handled identically by Steps 6 and 7 below.
+
+## 5. Present the proposed diff for approval
 
 Show the user, inline, in this same turn:
 
@@ -139,13 +213,19 @@ reply. Use labeled options:
 > - **Approve** — apply the edit now
 > - **Reject** — leave the file unchanged
 
-## 5. On reject — no-op
+## 6. On reject — no-op, clear carry-forward state
 
-Do nothing. Do not touch the target file. Do not invoke the snapshot hook —
-a rejected diff produces zero side effects, not even a pre-edit snapshot,
-since nothing is being changed.
+Do nothing to the target file. Do not invoke the snapshot hook — a rejected
+diff produces zero side effects, not even a pre-edit snapshot, since
+nothing is being changed.
 
-## 6. On approve — snapshot, apply, snapshot
+An explicit reject is still an answer, so delete the pending state file
+(`.memory-refine-pending.json`) if one exists — the carry-forward counter
+exists only to catch *unanswered* diffs, and this one now has a definitive
+answer. If the same underlying issue resurfaces later with new evidence, it
+starts back at `carry_count: 1`, not wherever the rejected diff left off.
+
+## 7. On approve — snapshot, apply, snapshot
 
 **Snapshot before editing, unconditionally**, regardless of whether the
 `memory-snapshot` hook is wired into the user's `settings.json` — it's
@@ -174,7 +254,11 @@ failures to `.memory-snapshot.log` in the memory dir rather than raising) —
 if a snapshot silently fails, the edit still applied; mention the log path
 to the user so they know where to check.
 
-## 7. Confirm the result
+An explicit approve is also a definitive answer: delete the pending state
+file (`.memory-refine-pending.json`) if one exists, same as on reject —
+the diff is resolved, so nothing should carry forward from it.
+
+## 8. Confirm the result
 
 Tell the user which file changed, and that both pre- and post-edit states
 are snapshotted (or the rollback caveat, if either snapshot call could not

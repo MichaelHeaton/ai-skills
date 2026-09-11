@@ -282,6 +282,15 @@ The proposed diff itself always requires the user's explicit approve/reject
 before it's applied — this step never auto-applies a memory edit, even
 though the review that produces it runs without asking permission first.
 
+**Carry-forward exception**: `memory-refine` tracks how many times the same
+proposed diff has gone unanswered across runs (its own
+`.memory-refine-pending.json` state, not owned by this skill). If it signals
+a forced review (carry count reached 2 — see `memory-refine`'s Step 4a),
+surface that blocking approve/reject prompt at the **top of this
+session-close run's output**, ahead of the Step 1 summary and everything
+else, instead of leaving it in sequence at Step 6b — and do not let this
+session-close run proceed past it unanswered.
+
 If `memory-refine` reports "no memory changes identified this session",
 note that and continue to Step 7. If a diff was approved, note which file
 changed in the Step 10 summary; if rejected, no action needed — the file is
