@@ -24,9 +24,11 @@ for skill_dir in "$SKILLS_SRC"/*/; do
   link_item "${skill_dir%/}" "$SKILLS_DST/$skill" "$skill" dir
 done
 
-for retired in "${RETIRED_SKILLS[@]}"; do
-  remove_retired "$SKILLS_DST/$retired" "$retired"
-done
+if [[ ${#RETIRED_SKILLS[@]} -gt 0 ]]; then
+  for retired in "${RETIRED_SKILLS[@]}"; do
+    remove_retired "$SKILLS_DST/$retired" "$retired"
+  done
+fi
 
 for hook in "$HOOKS_SRC"/*.py; do
   [[ -e "$hook" ]] || continue
@@ -52,9 +54,11 @@ if [[ -d "$CURSOR_RULES_SRC" ]]; then
   shopt -u nullglob
 fi
 
-for retired in "${RETIRED_CURSOR_RULES[@]}"; do
-  remove_retired "$CURSOR_RULES_DST/$retired" "$retired"
-done
+if [[ ${#RETIRED_CURSOR_RULES[@]} -gt 0 ]]; then
+  for retired in "${RETIRED_CURSOR_RULES[@]}"; do
+    remove_retired "$CURSOR_RULES_DST/$retired" "$retired"
+  done
+fi
 
 if [[ -f "$CLOG_SRC" ]]; then
   chmod +x "$CLOG_SRC" 2>/dev/null || true
