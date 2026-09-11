@@ -55,6 +55,38 @@ gh auth switch --hostname github.com --user "${ORIGINAL_GH_ACCOUNT}"
 
 When checking PR/issue status across several repos that belong to different accounts (a personal check, then a work-org check, then back to personal), repeat steps 1–3 **per repo**, not once for the whole batch — don't assume the first switch covers every subsequent call. Group same-account calls together where the order is flexible, to minimize the number of switches.
 
+## 5. Session-scoped lock mode
+
+Steps 1-4 above are the default: switch before each mismatched call, restore right after. That's the safer choice when the account you need varies from one `gh` call to the next. But when a session repeatedly targets the *same* non-default account, the switch-restore-switch cycle becomes needless overhead.
+
+**Canonical example: Memex as a constant companion repo.** A session that uses `memex` as a working-log/second-brain alongside almost any other task ends up interleaving `memex` calls with calls against whatever repo is the actual focus — hitting the same-account switch 5+ times in a row. The mechanism below isn't Memex-specific; it applies to any repeated-same-account pattern, Memex is just the case that motivated it.
+
+### When lock mode applies
+
+Every `gh` operation for the rest of the session/task targets the same non-default account. Lock mode replaces the per-call switch/restore cycle with a single switch, for as long as that account stays the active target.
+
+### Entering lock mode
+
+Two triggers, both requiring confirmation before locking — this is never a silent behavior change:
+
+- **Explicit**: the user says something like "lock to `<account>`" or otherwise signals they'll be jumping to that account repeatedly this session. Switch once per Step 2 and treat it as locked — no need to ask for confirmation, the user already gave it.
+
+- **Automatic offer**: after the **2nd consecutive same-account switch** in a session (switch → restore → switch to the *same* account again), offer to lock rather than silently repeating the per-call cycle a 3rd time. For example: "This is the second time this session switching to `<account>` — want me to lock to it for the rest of the session instead of switching back and forth?" Wait for a yes before changing behavior; if the user declines, keep using per-call switching.
+
+### What lock mode does
+
+Once confirmed:
+
+1. Switch to the target account (Step 2), same as normal.
+2. Skip the restore-after-task step (Step 3) for every subsequent call to that account — stay switched.
+3. Restore to the original account only once: at session end, or when the user explicitly says they're done with that account.
+
+### Default stays per-call switching
+
+Lock mode is opt-in per session, entered only via one of the two triggers above. A session that never hits the repeated-same-account pattern — or that declines the automatic offer — behaves exactly as it does today, with Steps 1-4 as the only path.
+
 ## Relationship to session-close
 
 `session-close`'s own `references/gh-auth-preflight.md` runs this same check once, at the start of a close-out run, and restores at Step 10. This skill is that logic made available for any mid-session moment a `gh` call needs it — not a replacement for session-close's pre-flight.
+
+If lock mode was entered mid-session, session-close's Step 10 restore is what actually reverts it — there's no separate lock-mode-specific restore step; the restore-at-session-end described above **is** that Step 10 restore.
