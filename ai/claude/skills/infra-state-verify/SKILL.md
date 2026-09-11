@@ -1,10 +1,10 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-09-10
+last_updated: 2026-09-11
 updated_by: claude
 name: infra-state-verify
-description: Gate any claim about live infrastructure state behind an explicit ground-truth check, so "declared in code" never gets asserted as "confirmed running." Use before publishing a PR description, wiki/Confluence page, Slack/chat message, or status report that says a cluster is running, a feature is enabled in production, a service is deployed, a migration completed, or similar — and also before telling the user in chat that a public-facing production domain or service is live/up/deployed, since that conversational claim can be repeated onward to an external stakeholder. Trigger on phrases like "is running", "is live", "is enabled in production", "confirm this is deployed", "cluster is up", "shipped to prod", or any time a draft or in-session reply is about to describe live infra state that a teammate, stakeholder, or the public could act on. Internal asides stay out of scope: answering the user's question about an internal dashboard, a dev/staging environment, or other non-public infra conversationally still does not require a live check. Only conversational claims about public-facing production infrastructure are gated alongside published artifacts — see "Scope" below for the operational test.
+description: Gate any claim about live infrastructure state behind an explicit ground-truth check, so "declared in code" never gets asserted as "confirmed running." Use before publishing a PR description, wiki/Confluence page, Slack/chat message, or status report that says a cluster is running, a feature is enabled in production, a service is deployed, a migration completed, or similar — and also before telling the user in chat that a public-facing production domain or service is live/up/deployed, since that conversational claim can be repeated onward to an external stakeholder. Trigger on phrases like "is running", "is live", "is enabled in production", "confirm this is deployed", "cluster is up", "shipped to prod", "Argo sync lag", "Application still shows the old revision", "post-merge GitOps verify", or any time a draft or in-session reply is about to describe live infra state that a teammate, stakeholder, or the public could act on. Internal asides stay out of scope: answering the user's question about an internal dashboard, a dev/staging environment, or other non-public infra conversationally still does not require a live check. Only conversational claims about public-facing production infrastructure are gated alongside published artifacts — see "Scope" below for the operational test. This skill is distinct from `argo-pause-cascade` (pausing cascade during emergency kubectl work) — that is a separate, unrelated skill and out of scope here.
 compatibility: Any repo with Terraform, Kubernetes, Ansible, or a cloud CLI available for live checks.
 ---
 
@@ -42,7 +42,9 @@ Before writing or sending any of the following, check whether it asserts a live-
 - Status report / update
 - A conversational reply to the user in-session, **if** it's a live-state claim about public-facing production infrastructure (see the operational test above) — e.g. telling the user a public website or customer-facing service "is live" based on nothing more than an HTTP status check
 
-Live-state claims include: a cluster or service **is running**, a feature **is enabled in production**, a resource **is deployed**, a migration **completed**, something **is live** or **shipped to prod**. If the draft — or, for public-facing prod infra, the in-session reply — contains language like this, stop before publishing or replying and do the check below.
+Live-state claims include: a cluster or service **is running**, a feature **is enabled in production**, a resource **is deployed**, a migration **completed**, something **is live** or **shipped to prod**, or a GitOps-managed app **is synced to the merged commit**. If the draft — or, for public-facing prod infra, the in-session reply — contains language like this, stop before publishing or replying and do the check below.
+
+**Post-merge GitOps verify — Argo CD sync lag.** After a PR merges, don't trust an Argo CD Application's `status.sync.revision`/"Synced" badge at face value: Argo polls on an interval, so an Application can sit "Synced" against the *pre-merge* SHA for a noticeable window after merge, and pods can still be running the old config during that window. A "Synced" status alone is declared-in-code-adjacent, not confirmed-running — it's evidence of the last poll, not of the current commit. Before claiming a merge is deployed, confirm the Application's revision actually matches the new merge SHA.
 
 ## Required check before asserting live state
 
@@ -59,6 +61,14 @@ Match the check to what's actually being claimed — don't just re-read the sour
 - `kubectl get pods -n <namespace>` / `kubectl get nodes` for actual Ready status
 - `kubectl rollout status deployment/<name>` to confirm a rollout finished, not just was requested
 - A live health/status endpoint or load balancer check to confirm it's serving traffic, not just scheduled
+
+**Argo CD (post-merge GitOps verify)**
+
+- Real incident: after a PR merged, the Argo `Application` stayed "Synced" on the pre-merge SHA until a hard-refresh; pods still ran the old config until then. Trusting the "Synced" badge alone before that refresh would have wrongly confirmed the fix as deployed.
+- Compare `status.sync.revision` (or `argocd app get <name>`) against the expected post-merge commit SHA — not just the sync/health phase text.
+- If the revision is stale, force a refresh rather than waiting on the next poll: `kubectl annotate application <name> argocd.argoproj.io/refresh=hard -n <namespace>` or `argocd app get <name> --hard-refresh`.
+- After the refresh, poll until `status.sync.revision` shows the expected SHA — and until the workload's actual pods/config reflect the change (see Kubernetes check above) — before asserting the merge is deployed or synced.
+- This is a GitOps sync-lag check, not `argo-pause-cascade` — that is an unrelated skill about pausing cascade during emergency kubectl work.
 
 **A green HTTP/blackbox probe does not confirm application-level health.** HTTP 200 only proves the endpoint responded — it doesn't rule out a locked database, a failed auth flow, or a crashed worker returning a 200 with an error payload. When a user reports failures despite a green probe, don't stop at HTTP-green as the verification — add an app-level check: inspect the actual response body/payload, run a DB query count, or exercise the real auth flow.
 
