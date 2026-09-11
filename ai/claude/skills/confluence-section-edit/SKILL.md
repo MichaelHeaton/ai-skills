@@ -1,5 +1,5 @@
 ---
-version: 1.1.1
+version: 1.2.0
 principles_version: 1.0.0
 last_updated: 2026-09-10
 updated_by: claude
@@ -16,6 +16,12 @@ A small, targeted fix to one section of an existing Confluence page doesn't need
 
 Fetch the page in raw storage format — not markdown, see the round-trip warning below: `confluence_get_page(page_id, convert_to_markdown: false)`. Locate the target heading (`h1`/`h2`/`h3`) by its text content.
 
+**No real heading tag above the target content:** some pages use a visually-styled paragraph as a section label instead of an actual heading tag — e.g. `<p><u><strong>KV1</strong></u></p>` sitting above the content it labels, with no `h1`/`h2`/`h3` anywhere nearby. Don't treat this as a reason to fall back to a full-page fetch/edit — anchor on the nearest distinguishing element instead:
+
+1. Search the storage-format HTML for the styled paragraph (or other non-heading element — a table cell, a bolded/underlined run) whose text matches the visual section label, the same way Step 1's heading search matches text content.
+2. Treat that element as the anchor in place of a heading tag for Step 2's extract/reassemble boundary — its following siblings up to the next anchor (next styled-label paragraph, or a real heading if the page mixes both) define the section, exactly as a heading's following siblings would.
+3. Everything else — scoping the edit to the extracted slice, reassembling, verifying — proceeds per Steps 2 and 6 unchanged. A missing heading tag is not license to widen the edit to the whole page.
+
 **Oversized page (~50KB+ storage-format body exceeds the fetch's token limit):** let the fetch auto-save to a file instead of trying to inline the full body, then use `python`/`jq` to extract just the target section from the saved file. Apply the edit locally per Step 2, then submit via `content_file` rather than an inline content string.
 
 **Determining a heading's real anchor ID** (for a deep link, not the edit itself): don't guess the `ac:anchor` fragment from the heading text — Confluence's generated anchor doesn't reliably match a predictable transform. Fetch the page's rendered view (not storage format) and look for the actual `id=` attribute Confluence assigned near that heading in the rendered HTML. Only fall back to linking the page without a fragment if the rendered view isn't available.
@@ -30,6 +36,12 @@ Don't fetch as markdown, edit the markdown, and push a full-page rewrite — Con
 4. Re-insert it at the same position in the original tag list and submit the full reassembled body via `confluence_update_page` — the Confluence API has no partial-page PATCH, so "section-scoped" describes the *edit*, not the submit call, which still carries the whole page.
 
 For a one-line factual correction inside a paragraph (no structural change), a direct text substitution within the fetched storage-format HTML is fine — the extract/reassemble steps above are for edits that touch list, heading, or macro structure, not a single word swap.
+
+**Structural insert (new sibling paragraph, not a text swap):** adding a new paragraph between two existing elements — e.g. inserting a sibling `<p>` between two existing `<p>` tags under a section — is a distinct category from the one-line correction above, and it still belongs to the extract/reassemble path, not a full-page rewrite:
+
+1. Extract the section slice per Step 2's steps 1–2 above (heading-anchored or styled-paragraph-anchored per Step 1).
+2. Within that slice, insert the new element at the correct sibling position — after the specific existing sibling it follows, before the one it precedes — rather than appending it at the end of the section or rebuilding the slice from scratch.
+3. Re-insert the modified slice and reassemble per Step 2's step 4. The insert is still section-scoped: only the slice's sibling list changes, nothing outside the section boundary.
 
 **Full-page-update escape valve:** when the target page has no macros, nested lists, or tables, a full-page fetch/edit/`confluence_update_page` is an acceptable substitute for the section-scoped extract/reassemble procedure — the risk that procedure guards against (touching content outside the target section) is low on a genuinely simple page. Otherwise, use the extract/reassemble flow above or the one-line text-substitution case.
 
