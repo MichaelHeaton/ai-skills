@@ -71,15 +71,16 @@ Two triggers, both requiring confirmation before locking — this is never a sil
 
 - **Explicit**: the user says something like "lock to `<account>`" or otherwise signals they'll be jumping to that account repeatedly this session. Switch once per Step 2 and treat it as locked — no need to ask for confirmation, the user already gave it.
 
-- **Automatic offer**: after the **2nd consecutive same-account switch** in a session (switch → restore → switch to the *same* account again), offer to lock rather than silently repeating the per-call cycle a 3rd time. For example: "This is the second time this session switching to `<account>` — want me to lock to it for the rest of the session instead of switching back and forth?" Wait for a yes before changing behavior; if the user declines, keep using per-call switching.
+- **Automatic offer**: track a per-account switch counter for the session, not a strict "back-to-back" adjacency requirement — an intervening switch to a *different* account does not reset another account's count. The **2nd time this session** the target account is switched to (regardless of what happened in between), offer to lock rather than silently repeating the per-call cycle a 3rd time. For example: "This is the second time this session switching to `<account>` — want me to lock to it for the rest of the session instead of switching back and forth?" Wait for a yes before changing behavior; if the user declines, keep using per-call switching.
 
 ### What lock mode does
 
 Once confirmed:
 
-1. Switch to the target account (Step 2), same as normal.
-2. Skip the restore-after-task step (Step 3) for every subsequent call to that account — stay switched.
-3. Restore to the original account only once: at session end, or when the user explicitly says they're done with that account.
+1. **Capture the true pre-lock account** before switching — `gh auth status` right now, not whatever `session-close`'s own pre-flight might see later. This is the account lock mode is ultimately responsible for restoring; don't rely on any other skill's pre-flight to have captured it correctly, since a skill invoked *after* the lock is already active only ever sees the locked account as "current," not the original.
+2. Switch to the target account (Step 2), same as normal.
+3. Skip the restore-after-task step (Step 3) for every subsequent call to that account — stay switched.
+4. **Restore explicitly, as its own step, before the task or session that needed the lock is considered done** — either when the user explicitly says they're finished with that account, or before handing off to any other skill that does its own account pre-flight (`session-close` included). Don't defer restoration to "session end" as a passive backstop: nothing restores the account automatically if the session simply ends without an explicit unlock, and `session-close`'s own pre-flight/restore cycle is designed to undo *its own* temporary switch — it has no visibility into an unrelated lock already in effect when it starts, so running it does not reliably restore the true pre-lock account.
 
 ### Default stays per-call switching
 
@@ -89,4 +90,4 @@ Lock mode is opt-in per session, entered only via one of the two triggers above.
 
 `session-close`'s own `references/gh-auth-preflight.md` runs this same check once, at the start of a close-out run, and restores at Step 10. This skill is that logic made available for any mid-session moment a `gh` call needs it — not a replacement for session-close's pre-flight.
 
-If lock mode was entered mid-session, session-close's Step 10 restore is what actually reverts it — there's no separate lock-mode-specific restore step; the restore-at-session-end described above **is** that Step 10 restore.
+**If lock mode is still active when `session-close` runs, restore it first, explicitly, before invoking `session-close`.** Session-close's own pre-flight captures whatever account is active *when it starts* as the "original" account to restore to at its Step 10 — it has no way to know a lock was already in effect before it started, so it will treat the locked account as correct and restore right back to it, not to the true pre-lock account. Session-close's Step 10 restore and lock mode's own restore (above) are two independent mechanisms with no automatic handoff between them.
