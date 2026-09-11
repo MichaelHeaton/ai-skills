@@ -401,6 +401,28 @@ That default-on scope is limited to this repo's own checkouts — a PR here can'
 
 ---
 
+## PR-open staleness nudge (installed by default in this repo)
+
+A separate, stateless hook fires the same "PR-open" moment for a different purpose: prompting a skill-staleness check instead of a git-ops re-invocation (ai-skills#470).
+
+- `hooks/pr-open-staleness-nudge.py` (`PreToolUse`, matcher `Bash`) — prints a one-line nudge toward the `skill-staleness-check` skill before a `gh pr create` / `glab mr create` command, so local skill versions get compared against the claude.ai Skills store before the PR merges
+
+It's advisory only (always exits 0) and never blocks PR creation. Unlike the git-ops reminder pair above, it has no companion tracker hook — it fires on every matching PR-open command regardless of whether `skill-staleness-check` already ran that session, since staleness can change between one PR and the next.
+
+**Installed by default in this repo (`ai-skills`)**: wired into this repo's tracked `.claude/settings.json` alongside the other `PreToolUse`/`Bash` hooks. For any other repo where this nudge is wanted, add it via the `update-config` skill:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/pr-open-staleness-nudge.py" }] }
+    ]
+  }
+}
+```
+
+---
+
 ## Scope discipline
 
 This applies to all of the above: **fix what you touch, leave what you don't.**
