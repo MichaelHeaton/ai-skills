@@ -3,7 +3,11 @@
 skill when a PR/MR-creation command is about to run. Advisory only —
 always exits 0, never blocks PR creation. Fires on ai-skills#470: PR-open
 is the concrete trigger for a passive skill-staleness audit, so the user
-doesn't have to remember to invoke it manually."""
+doesn't have to remember to invoke it manually.
+
+Stdout must be empty or valid JSON: Cursor PreToolUse rejects plain-text
+nudge lines as invalid JSON and blocks the tool call.
+"""
 import json
 import re
 import sys
@@ -19,8 +23,16 @@ command = str((data.get("tool_input", {}) or {}).get("command", ""))
 if not COMMAND_RE.search(command):
     sys.exit(0)
 
-print(
+msg = (
     "[skill-staleness-check] Opening a PR — consider running the "
     "skill-staleness-check skill to compare local skill versions against "
-    "what's uploaded to the claude.ai Skills store before this merges.",
+    "what's uploaded to the claude.ai Skills store before this merges."
 )
+print(json.dumps({
+    "hookSpecificOutput": {
+        "hookEventName": "PreToolUse",
+        "permissionDecision": "allow",
+        "additionalContext": msg,
+    },
+    "systemMessage": msg,
+}))

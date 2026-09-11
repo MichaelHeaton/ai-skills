@@ -2,7 +2,11 @@
 """PreToolUse hook (Bash): nudge toward invoking the git-ops skill when a
 git commit/push or PR-creation command is about to run and git-ops hasn't
 fired yet this session. Advisory only — always exits 0, never blocks the
-command. Companion to git-ops-track.py, which records when git-ops fires."""
+command. Companion to git-ops-track.py, which records when git-ops fires.
+
+Stdout must be empty or valid JSON: Cursor PreToolUse rejects plain-text
+nudge lines as invalid JSON and blocks the tool call.
+"""
 import json
 import re
 import sys
@@ -24,9 +28,17 @@ flag_path = Path.home() / ".claude" / ".git-ops-sessions" / session_id
 if flag_path.exists():
     sys.exit(0)
 
-print(
+msg = (
     "[git-ops] The git-ops skill hasn't been invoked yet this session — its "
     "AGENT.md freshness check and pre-PR humanizer pass haven't been "
     "confirmed for this run. Consider invoking the git-ops skill before "
     "this commit/push/PR."
 )
+print(json.dumps({
+    "hookSpecificOutput": {
+        "hookEventName": "PreToolUse",
+        "permissionDecision": "allow",
+        "additionalContext": msg,
+    },
+    "systemMessage": msg,
+}))
