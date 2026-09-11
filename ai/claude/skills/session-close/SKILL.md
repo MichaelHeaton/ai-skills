@@ -5,7 +5,7 @@ last_updated: 2026-09-10
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
-compatibility: Requires gh CLI, glab CLI, git. Atlassian MCP needed only if Jira tickets were worked on.
+compatibility: gh CLI preferred; falls back to mcp__github__* MCP tools when absent (see "gh CLI availability" below). glab CLI, git. Atlassian MCP needed only if Jira tickets were worked on.
 ---
 
 Close out this session safely. The goal: nothing stranded in branches, all tickets reflect current state, next session starts with complete context.
@@ -21,15 +21,33 @@ MEMEX_ROOT="$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null)"
 
 Falls back to the standard workstation path when `$PWD` isn't a memex checkout (or `git rev-parse` fails). On a normal workstation session this resolves to the same directory as the hardcoded default, so nothing changes there.
 
-**No local vault at all?** Check `[[ -d "$MEMEX_ROOT/Raw" ]]` once, right after resolving the path above — same test `issue-create`'s `append-task-index.sh` already uses. A cloud/web session commonly has no local memex clone, which leaves Steps 9–10 with nothing to write to. Set a `NO_VAULT=1` flag here if the check fails — Steps 9 and 10 below cover what to do about it; nothing needs to happen at this point beyond setting the flag, since there's no session activity yet to record.
+**No local vault at all?** Check `[[ -d "$MEMEX_ROOT/Raw" ]]` once, right after resolving the path above — same test `issue-create`'s `append-task-index.sh` already uses. A cloud/web session commonly has no local memex clone, which leaves Step 9's task-index lookup with nothing to query. Set a `NO_VAULT=1` flag here if the check fails — Steps 9 and 10 below cover what to do about it; nothing needs to happen at this point beyond setting the flag, since there's no session activity yet to record.
+
+**gh CLI availability.** Some environments (Claude Code Remote/cloud sessions) have no `gh` binary at all — not just unauthenticated. Check once, before Step 1:
+
+```bash
+command -v gh >/dev/null 2>&1 && echo present || echo absent
+```
+
+If absent, every `gh`-dependent step in this skill (the branch-hygiene PR checks below, Step 1b's auth pre-flight, Steps 3–4's push/PR creation, Step 9's ticket cross-referencing, Step 10's ticket filing) has an `mcp__github__*` MCP equivalent — see git-ops's "gh CLI availability" section for the PR-command table, and issue-create's [gh-mcp-fallback.md](../issue-create/references/gh-mcp-fallback.md) for the issue-command table (`issue-create` itself already detects and falls back automatically, so Step 10's ticket-filing needs no extra handling here). `gh pr merge`, `gh auth switch`, and `verify-closes.sh` have no MCP substitute **as far as this doc has verified** (git-ops covers this) — if the actual connected GitHub MCP server in a given session exposes a merge tool, prefer it and update this note; don't assume this list is permanently exhaustive. Note affected steps as blocked-pending-gh in the Step 10 summary rather than skipping them silently.
+
+**No `~/.config/ai-skills/local.json`?** `GITHUB_PERSONAL_USER` (used in Step 1b's auth pre-flight and Steps 6, 9, 10 for personal-repo/account routing) has no fallback when this file doesn't exist — common in a fresh cloud/remote session. Check once:
+
+```bash
+[[ -f ~/.config/ai-skills/local.json ]] || echo "no local config — GITHUB_PERSONAL_USER unset"
+```
+
+If unset, ask the user for their personal GitHub username before any step needing `${GITHUB_PERSONAL_USER}`, rather than guessing or leaving it blank.
 
 **Context check before starting**: session-close runs at the tail of what's often an already-long session — the multi-repo scan and Step 6's skill review add real weight on top of that. If this has been a long conversation (many tool calls, multiple tasks), say so before beginning — as a user action, not something the agent can trigger, since `/compact` is a slash command only the user can run: *"This has been a long session — consider typing `/compact` now for a controlled compact before this checklist adds more weight, then say continue. Otherwise I'll proceed as-is."* Proceed with whatever they answer — don't block on it.
 
-**Check the most recent same-day summary before starting.** Before Step 1, check whether `$MEMEX_ROOT/Outputs/Session/session-close-[today's date].md` already exists — a second same-day run is common. **Check `origin/main`, not just the local working tree**, before concluding it doesn't exist: `git fetch` then `git show origin/main:Outputs/Session/session-close-[today's date].md`, and materialize it locally if present remotely. A worktree or fresh checkout may not have a file another same-day session already committed earlier today, and a local-only check silently misses it. If it exists (locally or via that remote check), read it first: it may still have unresolved items (a declined decision, an unticketed bug, a scoping question) from earlier today that this run needs to carry forward rather than silently overwrite when Step 10 writes its own summary.
+**Check the most recent same-day summary before starting.** Before Step 1, search for an existing today-dated session-summary ticket rather than assuming this is the day's first run — a second same-day run is common. Run `detect-context.sh` once now (Step 10 will reuse the same routing **when this session touched only one routing target** — see the multi-repo note below) and search that target for a `session-summary` ticket titled with today's date, e.g. for a GitHub target: `gh issue list --repo <owner/repo> --label session-summary --search "Session close summary — <today's date>" --state all --json number,title,url,body` (no `gh`? see the gh-availability note above). For a Jira target, `jira_search_issues(jql="project=<key> AND summary ~ \"Session close summary — <today's date>\" ORDER BY created DESC")`. If found, read it first: it may still have unresolved items (a declined decision, an unticketed bug, a scoping question) from earlier today that this run needs to carry forward — comment on the existing ticket in Step 10 instead of filing a duplicate.
 
-**If a merge/rebase conflict lands on this same file** — two different branches each independently created `session-close-[today's date].md` — diff the two versions before resolving it. If they're byte-identical, take either side. If they diverge, merge both sessions' content into one file rather than picking a side and silently dropping the other session's findings.
+**Multi-repo sessions — one target, chosen deliberately, not whatever `$PWD` happened to be at start.** `detect-context.sh` resolves a single routing target from wherever it's run. A session that touches a mix of repos (a work-org repo and personal GitHub repos, say) still needs exactly one place for the close-out ticket — don't silently let an accidental starting directory decide it. Pick the target repo with the most session activity (most commits/tickets touched this session); if that's a tie or unclear, ask the user once rather than guessing. File the single close-out ticket there, and have it list every repo touched this session in its body — don't split one session's summary across multiple tickets in multiple systems.
 
-**Also check the most recent prior-day summary for known-pending blockers scoped to the repos in this session.** Grep its "Pending" / "needs attention" section for items matching repos this session will touch, and surface any matches up front — don't make the user (or yourself) re-diagnose a blocker that was already solved and documented one session ago.
+**If two sessions independently file same-day summary tickets** — a race under concurrent sessions, since the check above is a snapshot — don't just let both stand. Once noticed (the freshness re-check most issue-create paths already run before confirming, or a later session's own same-day search), diff the two: if one is a strict subset of the other, close it as a duplicate with a comment pointing to the other; if they diverge, comment the missing content onto the ticket you keep, then close the other as a duplicate — never leave both open silently.
+
+**Also check the most recent prior-day summary for known-pending blockers scoped to the repos in this session.** Fetch it (via `gh issue view`/`jira_get_issue`, not a file read) and read its "Pending" / "needs attention" section for items matching repos this session will touch, and surface any matches up front — don't make the user (or yourself) re-diagnose a blocker that was already solved and documented one session ago.
 
 ## Step 1 — Discover repos with open work
 
@@ -350,7 +368,7 @@ Do not ask the user if they worked on tickets. Find them from the task index and
 
 **If no matches are found**: skip silently — no open question needed.
 
-**If `NO_VAULT=1`** (set above): skip the task-index lookup itself — there's no index to query — but still gather the same ticket list from git/PR activity, since the Step 10 fallback ticket needs it.
+**If `NO_VAULT=1`** (set above): skip the task-index lookup itself — there's no index to query — but still gather the same ticket list from git/PR activity, since Step 10's summary ticket needs it regardless of vault presence.
 
 ---
 
@@ -364,51 +382,14 @@ if [[ -n "${ORIGINAL_GH_ACCOUNT:-}" ]]; then
 fi
 ```
 
+**The close-out report is always filed as a labeled ticket via `issue-create` — never written to `Outputs/Session/*.md`.** This applies in every session, not only vault-less ones: a remote/web session scoped to a single repo has no memex access to write a file into, and even on a full workstation `Outputs/` is documented as ephemeral (`Outputs/README.md`) while a per-session file accumulating there indefinitely contradicts that. Filing a ticket gives every session — local or cloud — a durable, always-reachable home for the close-out record.
+
 **If `GH_AUTH_BROKEN` was set during Step 1's branch hygiene check**, record it under "⚠️ Pending" in this summary — e.g. *"`gh` keyring broken this session (`gh auth token`/`gh pr list` failed) — branch hygiene ran on the pure-git fallback only; run `gh auth refresh` before the next session and re-verify branch/PR state normally."* This is a session-boundary fact the next session needs, not just a mid-run print — don't let it be printed once during Step 1 and then dropped.
 
-**If `NO_VAULT=1`** (set before Step 1): this step's job — producing the close-out record — still needs to happen, it just can't be a local file write. By now Step 6's findings, Step 8's context note, and Step 9's git/PR-derived ticket list are all known, so this is the one point in the run with everything the record needs.
+By the time this step runs, Step 6's findings, Step 8's context note, and Step 9's git/PR-derived ticket list are all known, so this is the one point in the run with everything the record needs.
 
-- **Nothing worth recording** (no commits, no ticket updates, no Step 6 findings, no other reportable activity this session) — skip the fallback entirely, no placeholder ticket.
-- **Otherwise** — draft the same content the summary template below would have produced, then file it as a ticket via `issue-create` Path C, targeting `${GITHUB_PERSONAL_USER}/memex` (`domain/learning` fits unless the session's actual work suggests a more specific domain), labeled `needs-local-session` (description: "Blocked in a cloud/vault-less session — needs a local session with the vault cloned to finish"). Create the label first if the repo doesn't have it yet: `gh label create needs-local-session --repo ${GITHUB_PERSONAL_USER}/memex --description "Blocked in a cloud/vault-less session — needs a local session with the vault cloned to finish" --color ededed` (ignore a "already exists" error). **Skip Path C's C5** (`Raw/_GitHub-Issues-log.jsonl` append) when running this fallback — it's an unguarded write into the same `Raw/` directory this section just confirmed is missing, unlike C4 and C6 which already tolerate that. C6 itself is safe to run as normal; `append-task-index.sh` no-ops cleanly when `Raw/` is absent.
-- Skip the local file write below entirely either way, and confirm the ticket's URL (or "nothing to record") in the close-out reply instead of a summary-file path.
-
-Produce a brief close-out summary using the template in [references/session-summary-template.md](references/session-summary-template.md). Save to `$MEMEX_ROOT/Outputs/Session/session-close-[date].md` if non-trivial.
-
-Before writing the file, ensure the output directory exists:
-
-```bash
-mkdir -p "$MEMEX_ROOT/Outputs/Session"
-```
-
-After writing the new file, prune files older than 14 days — they've been consumed by at least one subsequent session and have no remaining handoff value.
-
-**⚠️ Commit the prune immediately — don't leave it as a bare filesystem delete.** A `find -delete` with no follow-up commit has stranded uncommitted deletions in the working tree at least three times before (each one silently discovered and cleaned up by a later, unrelated session — see [ai-skills#580](https://github.com/MichaelHeaton/ai-skills/issues/580)), because this step runs *after* the git-hygiene pass in Steps 1–5, so nothing later in this same run re-checks memex for what it just changed.
-
-**Key off the date encoded in the filename, not filesystem mtime.** On a freshly-cloned or ephemeral checkout (a Claude Code Remote/cloud session in particular), every file's mtime is the clone/checkout time, not the date it was actually written — `find -mtime` silently prunes nothing even when files are genuinely weeks old by their own filename, and the fallback of "suppress output when nothing pruned" makes that failure look identical to "nothing needed pruning."
-
-```bash
-NOW_EPOCH=$(date +%s)
-for f in "$MEMEX_ROOT"/Outputs/Session/session-close-*.md; do
-  [[ -f "$f" ]] || continue
-  fdate=$(basename "$f" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1)
-  [[ -z "$fdate" ]] && continue
-  fepoch=$(date -d "$fdate" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$fdate" +%s 2>/dev/null)
-  [[ -z "$fepoch" ]] && continue
-  days_old=$(( (NOW_EPOCH - fepoch) / 86400 ))
-  if (( days_old > 14 )); then
-    echo "$f"
-    rm "$f"
-  fi
-done
-```
-
-If the command printed any paths, immediately stage and commit them in the same repo, in a small dedicated commit (don't bundle into an unrelated commit):
-
-```bash
-cd "$MEMEX_ROOT" && git add -A Outputs/Session/ && \
-git commit -m "chore(session): prune 14+ day-old session-close files ($(date +%Y-%m-%d))"
-```
-
-If no files are pruned, suppress all of the above — no action needed means no report needed.
-
-**If the prune batch is large enough to be worth a cross-session pattern check** (several files at once, or it's been a while since the last prune), use the `memex-session-prune` skill *(global: ai-skills)* instead of the inline commands above — it mines the full text of the batch plus every previously-pruned file's history for recurring friction before deleting, and opens a PR rather than committing straight to main.
+- **Nothing worth recording** (no commits, no ticket updates, no Step 6 findings, no other reportable activity this session) — skip entirely, no new ticket. This holds even if a same-day ticket already exists with unresolved items from earlier today: an empty run has nothing to add, so leave that existing ticket exactly as it stands rather than commenting "nothing new" onto it — a no-op comment isn't worth the noise, and the ticket's unresolved items remain visible on it either way.
+- **Otherwise** — draft the close-out summary using the template in [references/session-summary-template.md](references/session-summary-template.md), then file it via the `issue-create` skill using its normal routing (its own Step 1 "Detect routing target" via `detect-context.sh`, or the same target already resolved above for the same-day check and the multi-repo note) — this session's own repo context decides Jira, GitHub-current-repo, or GitHub-Memex, exactly as it would for any other issue-create call; don't hardcode a fixed target. Title it `Session close summary — <date>[ - topic]`. Label it `session-summary` in addition to whatever labels that path normally applies (create the label first if the target repo doesn't have it yet — `gh label create session-summary --repo <owner/repo> --description "End-of-session close-out report" --color 5319e7`, or the GitHub MCP equivalent if `gh` is absent; ignore an "already exists" error).
+  - **If `NO_VAULT=1`** (set before Step 1) and routing lands on Path C (GitHub Issue in Memex): skip Path C's C5 (`Raw/_GitHub-Issues-log.jsonl` append) — it's an unguarded write into the same `Raw/` directory this run already confirmed is missing, unlike C4 and C6 which already tolerate that. C6 itself is safe to run as normal; `append-task-index.sh` no-ops cleanly when `Raw/` is absent. Add a second label, `needs-local-session` (description: "C5's Raw/ log append was skipped — this run had no local vault clone to write it into; the ticket itself filed normally and needs no further action unless that log entry specifically matters"), so the one real gap is visible on the ticket without overstating it as the whole record being blocked.
+  - If a same-day ticket was found in the pre-Step-1 check above, comment the new content onto that existing ticket instead of filing a duplicate.
+- Confirm the ticket's URL (or "nothing to record") in the close-out reply — never a summary-file path.

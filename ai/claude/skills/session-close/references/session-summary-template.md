@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.1.1
 principles_version: 1.0.0
-last_updated: 2026-08-13
+last_updated: 2026-09-10
 updated_by: claude
 ---
 
@@ -30,4 +30,4 @@ updated_by: claude
 - [one line from Step 8 — disciplined / patterns noticed / suggestions for next session]
 ```
 
-Save to `~/Projects/personal/memex/Outputs/Session/session-close-[date].md` if non-trivial. Delete after the next session picks it up.
+This is the body content for the close-out ticket filed via `issue-create` in Step 10 — not a local file. See session-close's Step 10 for routing and labeling.
