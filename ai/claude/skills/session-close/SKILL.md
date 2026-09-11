@@ -67,9 +67,11 @@ For each line, extract:
 **gh keyring health check (once, before the loop below).** A broken macOS keychain/keyring backend can make `gh` fail even though it's installed and was previously configured — distinct from `gh` being entirely absent (a separate, unrelated failure mode). Verify `gh` is actually authenticating before relying on it for this whole check:
 
 ```bash
-gh auth token >/dev/null 2>&1 && gh pr list --limit 1 >/dev/null 2>&1
+gh auth token >/dev/null 2>&1 && gh api user >/dev/null 2>&1
 GH_AUTH_BROKEN=$?
 ```
+
+Use `gh api user`, not `gh pr list`, for this probe — `gh pr list` fails with a repo/remote-detection error when run outside a `gh`-recognized GitHub repo, which is unrelated to keyring health and would false-positive this whole check if the session's current directory isn't one of the repos being scanned. `gh api user` only tests auth, independent of `$PWD`.
 
 If `GH_AUTH_BROKEN != 0`, don't silently skip branch hygiene — print the failure explicitly with a recovery hint, then fall back to a pure-git check per repo instead of the `gh pr list` flow below:
 
@@ -78,7 +80,8 @@ If `GH_AUTH_BROKEN != 0`, don't silently skip branch hygiene — print the failu
 Pure-git fallback, run for each repo in scope (no `gh` calls):
 
 ```bash
-DEFAULT_BRANCH=$(git -C <repo> symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+DEFAULT_BRANCH=$(git -C <repo> symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's@^origin/@@')
+[[ -z "$DEFAULT_BRANCH" ]] && DEFAULT_BRANCH="main"
 CURRENT_BRANCH=$(git -C <repo> branch --show-current)
 git -C <repo> status --short
 git -C <repo> fetch --prune origin 2>/dev/null
