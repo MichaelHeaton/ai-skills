@@ -1,7 +1,7 @@
 ---
-version: 1.5.0
+version: 1.5.1
 principles_version: 1.0.0
-last_updated: 2026-09-01
+last_updated: 2026-09-11
 updated_by: claude
 name: contextual-pr-review
 description: Review a GitHub PR — your own or a teammate's — by first loading the target repo's own conventions (CLAUDE.md/AGENTS.md, sibling directories with the same structural pattern) so the review checks the diff against real repo-specific rules instead of generic best practice. Always separates "what the PR does" from "findings"; checks the linked ticket's acceptance criteria and adds a verdict/open-questions section only when there's something real to report — sized to the diff, not a fixed template. Use for "review this PR", "look over PR #N", "<name> asked for a review on <url>", or before eyeballing a diff casually and trusting the author's own testing. A bare GitHub PR URL pasted into chat with no other accompanying instruction is itself sufficient to trigger this skill — treat the link alone as an implicit "review this PR" request, don't wait for explicit review language. Works for any repo, including GitHub Enterprise hosts (auto-detects GH_HOST from the remote) — deliberately non-Vault-scoped. Prefer this over /code-review for a bare "review PR #N"; pick /code-review when an effort level or --comment/--fix flag is named, or the target is a diff/branch/path rather than a PR.
