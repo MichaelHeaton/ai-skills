@@ -1,5 +1,5 @@
 ---
-version: 1.20.1
+version: 1.21.0
 principles_version: 1.0.0
 last_updated: 2026-09-10
 updated_by: claude
@@ -25,6 +25,29 @@ Apply these rules for every git operation, in every repo. They complement repo-s
 > A `NOT-LINKED:<N>` line means GitHub didn't parse that reference — the exact silent failure the "Closing multiple issues from one PR" rule below exists to prevent, but caught before merge instead of after. Rewrite the clause to repeat the keyword once per issue, update the PR body, and re-run the check clean before treating the PR as ready. This runs in addition to, not instead of, the post-merge check in "Post-merge issue verification" below — that one confirms the issues actually closed; this one confirms GitHub recognized the references in the first place.
 
 **If you already read this file fresh earlier in this session** (a formal `Skill` tool invocation, or having directly read/edited it), apply these rules directly rather than re-reading or reprinting the full body again for a second commit/PR in the same session — the freshness requirement above is about the content being current in context, not about the specific mechanism that put it there.
+
+---
+
+## gh CLI availability
+
+Every step below that shells out to `gh` assumes it's installed and authenticated. In a Claude Code Remote/cloud session, `gh` can be missing entirely — not just unauthenticated, not just unset credentials. Check once per session, before the first `gh` call:
+
+```bash
+command -v gh >/dev/null 2>&1 && echo present || echo absent
+```
+
+If absent, use the `mcp__github__*` MCP tools in place of `gh` for the operations below that have an equivalent:
+
+| `gh` command | Used in | `mcp__github__*` equivalent |
+| --- | --- | --- |
+| `gh pr list --head <branch> --state all --json ...` | branch-hygiene / merged-PR checks (session-close), "Before pushing to an existing branch" | `pull_request_read(method: "list", owner, repo, head: "<owner>:<branch>", state: "all")` |
+| `gh pr view <n> --json state,mergedAt` | post-create state check, "Merging a PR" re-check | `pull_request_read(method: "get", owner, repo, pullNumber: n)` |
+| `gh pr create --repo ... --title ... --body ... --head ... --base ...` | "PR / MR descriptions" | `create_pull_request(owner, repo, title, body, head, base)` |
+| `gh issue create` / `gh issue comment` | ticket creation/comments from skills that call into git-ops | route through the `issue-create` skill (already MCP-aware) / `mcp__github__add_issue_comment` |
+
+**No MCP equivalent — these stay `gh`-only.** `gh pr merge` ("Merging a PR"), `gh auth switch` / `gh auth token` ("Multi-account operations"), and `scripts/verify-closes.sh` (shells out to `gh` internally) have no MCP substitute. When `gh` is absent, these steps cannot run: say so explicitly rather than silently skipping the merge or the closes-verification — surface it in whatever summary or confirmation the calling skill produces, and either ask the user to run the equivalent `gh` command from their own terminal, or defer the step to a session where `gh` is available.
+
+**No `~/.config/ai-skills/local.json`?** Any step referencing `${GITHUB_PERSONAL_USER}` (personal-account routing in "Multi-account operations", the GH auth pre-flight callers use) has no fallback when this file is absent — check `[[ -f ~/.config/ai-skills/local.json ]]` once and, if missing, ask the user for their personal GitHub username rather than proceeding with an unset variable.
 
 ---
 
