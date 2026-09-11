@@ -139,7 +139,15 @@ Run this check for GitHub repos only. Skip GitLab, Bitbucket, or repos with no `
 
 ### Concurrent-session check (best-effort, non-blocking)
 
-Before committing anything in a repo, check for a second session already operating on it — a stale-state check alone only catches a *past* session, not one running right now. **Hard gate, per repo, not a one-time audit**: do not begin Step 2 for a given repo until this check has completed for that specific repo, and its actual `LIVE`/`STALE`/`CLEAR` output line — not a paraphrase of it — is what satisfies the gate. Detection commands, signal handling, and the gate's interaction with stale-branch resolution: [references/concurrent-session-check.md](references/concurrent-session-check.md).
+Before committing anything in a repo, check for a second session already operating on it — a stale-state check alone only catches a *past* session, not one running right now. **Hard gate, per repo, not a one-time audit**: do not begin Step 2 for a given repo until this check has completed for that specific repo, and its actual `LIVE`/`STALE`/`CLEAR` output line — not a paraphrase of it — is what satisfies the gate.
+
+**Name the script, don't rely on recalling it from the reference doc's filename.** Run it directly:
+
+```bash
+bash ~/.claude/skills/session-close/scripts/check-concurrent-session.sh <repo>
+```
+
+Full detection commands, signal handling, and the gate's interaction with stale-branch resolution: [references/concurrent-session-check.md](references/concurrent-session-check.md).
 
 ### Transcript-vs-working-tree reconciliation check
 
