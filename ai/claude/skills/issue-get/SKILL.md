@@ -1,7 +1,7 @@
 ---
-version: 1.1.2
+version: 1.1.3
 principles_version: 1.0.0
-last_updated: 2026-09-10
+last_updated: 2026-09-11
 updated_by: claude
 name: issue-get
 description: Fetch the full details of a specific task or ticket by ID. Works across GitHub Issues and Jira. Use when the user references #94, PROJ-12345, or similar — or pastes a bare ticket URL (GitHub or Jira).
@@ -35,6 +35,8 @@ Check `~/Projects/personal/memex/Raw/_task-index.jsonl` first — find the recor
 > ```
 >
 > That empty-token check is a keyring-health check, distinct from the stale-`GH_TOKEN` case above it — an empty result here means the keyring backend itself failed the lookup, not that a stale env var shadowed a good token (that's already handled by the `unset` on the line before).
+>
+> A third, distinct case is a **wrong active account**: `gh auth token` can succeed and return a non-empty value, yet the `gh issue view` call below still fails with an authorization- or not-found-style error, because the active `gh` account simply doesn't have access to the target repo. This is neither the keyring failure above (the token lookup worked fine) nor the stale-env-var case (a fresh token was exported) — don't reach for a keyring refresh here. Resolve it with the `gh-account-routing` skill (global: ai-skills).
 >
 > Always pass `--repo <owner/repo>` explicitly.
 
