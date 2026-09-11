@@ -217,6 +217,13 @@ bash ~/.claude/skills/git-ops/scripts/check-branch-identity.sh <repo-path> <expe
 
 A worktree checkout is exempt (its branch is pinned) — this only fires against a shared, non-worktree checkout, the same scope as the manual script above. A detached-`HEAD` checkout has no branch name to compare against, so the hook fails open there too (no baseline recorded, no block) — it's scoped to branch collisions specifically, not a general "is this checkout in the state I expect" check.
 
+**One-time nudge when the guard is missing entirely — mechanically enforced, not just a prose reminder.** The enforcement above only protects repos that actually have it wired, and a prose-only reminder is exactly the kind of thing that gets skipped in a long session (the same problem `git-ops-reminder.py` exists to solve for git-ops itself). `hooks/branch-guard-missing-nudge.py` (`PreToolUse`, matcher `Bash`) checks, on every `git commit` in a repo this session hasn't already nudged about:
+
+1. Does this repo's `.claude/settings.json` (or, if it has none, the global `~/.claude/settings.json`) already contain a `branch-guard.py` entry under `PreToolUse`?
+2. Does `~/.claude/hooks/branch-guard.py` exist on disk?
+
+If either check comes back negative, it prints a one-time advisory pointing at the `update-config` skill to install the block from the JSON snippet above into that repo's `.claude/settings.json` (or global) — advisory only, never blocks the commit. Dedupe is per (session, repo), tracked via a session-flag file under `~/.claude/.branch-guard-missing-sessions/`, the same pattern `git-ops-reminder.py`/`git-ops-track.py` use — so it fires once per repo per session, not on every subsequent commit. **Installed by default in this repo (`ai-skills`)**, same scope note as the enforcement hooks above: this default-on wiring exists only in `ai-skills`'s own tracked settings — every other repo needs the opt-in install step (`update-config`, routed to that repo's `.claude/settings.json` or global) before it gets the same nudge.
+
 ---
 
 ## Live concurrent-session detection

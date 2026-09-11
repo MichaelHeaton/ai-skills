@@ -64,6 +64,7 @@
         "matcher": "Bash",
         "hooks": [
           { "type": "command", "command": "python3 ~/.claude/hooks/branch-guard.py" },
+          { "type": "command", "command": "python3 ~/.claude/hooks/branch-guard-missing-nudge.py" },
           { "type": "command", "command": "python3 ~/.claude/hooks/git-ops-reminder.py" },
           { "type": "command", "command": "python3 ~/.claude/hooks/issue-create-reminder.py" },
           { "type": "command", "command": "python3 ~/.claude/hooks/issue-update-reminder.py" },
