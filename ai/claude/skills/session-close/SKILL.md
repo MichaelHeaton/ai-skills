@@ -1,5 +1,5 @@
 ---
-version: 1.20.1
+version: 1.21.0
 principles_version: 1.0.0
 last_updated: 2026-09-10
 updated_by: claude
@@ -64,7 +64,34 @@ For each line, extract:
 
 ### Branch hygiene check
 
-For each repo where `BRANCH != main` and `BRANCH != master`, check whether the current branch already has a merged or open PR — the session may have ended without switching back to main:
+**gh keyring health check (once, before the loop below).** A broken macOS keychain/keyring backend can make `gh` fail even though it's installed and was previously configured — distinct from `gh` being entirely absent (a separate, unrelated failure mode). Verify `gh` is actually authenticating before relying on it for this whole check:
+
+```bash
+gh auth token >/dev/null 2>&1 && gh pr list --limit 1 >/dev/null 2>&1
+GH_AUTH_BROKEN=$?
+```
+
+If `GH_AUTH_BROKEN != 0`, don't silently skip branch hygiene — print the failure explicitly with a recovery hint, then fall back to a pure-git check per repo instead of the `gh pr list` flow below:
+
+> ⚠️ `gh auth token` / `gh pr list` failed — the `gh` keyring may be broken. Try `gh auth refresh`, or see the `gh-account-routing` skill for account/keyring recovery.
+
+Pure-git fallback, run for each repo in scope (no `gh` calls):
+
+```bash
+DEFAULT_BRANCH=$(git -C <repo> symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+CURRENT_BRANCH=$(git -C <repo> branch --show-current)
+git -C <repo> status --short
+git -C <repo> fetch --prune origin 2>/dev/null
+git -C <repo> branch -vv | grep ': gone]'
+```
+
+- **`CURRENT_BRANCH != DEFAULT_BRANCH`** → flag drift the same way the PR-based check would: *"Checked out on `<CURRENT_BRANCH>` in `<repo-name>`, not `<DEFAULT_BRANCH>` — cannot confirm PR/merge state without `gh`, but this needs a look before the next session."*
+- **`git status --short` non-empty** → surface as uncommitted changes per Step 2, same as any other repo.
+- **Any `: gone]` line from `git branch -vv`** → candidate for the Step 5 local-branch cleanup (remote deleted after merge), same handling as the normal flow.
+
+This fallback cannot distinguish "merged PR, stale checkout" from "no PR yet, still in progress" — it only catches drift and gone-remote branches via git alone. Note that limitation plus the auth failure itself in the Step 10 "Pending" summary, so the next session knows branch hygiene ran degraded and `gh` needs attention. Retry the `gh` health check at the top of a later step if it's needed again (e.g. Step 1b's account pre-flight) rather than assuming it's still broken.
+
+**If `gh` is healthy**, run the normal PR-based check below. For each repo where `BRANCH != main` and `BRANCH != master`, check whether the current branch already has a merged or open PR — the session may have ended without switching back to main:
 
 ```bash
 gh pr list --head <branch> --state all --json number,state,title \
@@ -322,6 +349,8 @@ if [[ -n "${ORIGINAL_GH_ACCOUNT:-}" ]]; then
   gh auth switch --hostname github.com --user "${ORIGINAL_GH_ACCOUNT}" 2>/dev/null || true
 fi
 ```
+
+**If `GH_AUTH_BROKEN` was set during Step 1's branch hygiene check**, record it under "⚠️ Pending" in this summary — e.g. *"`gh` keyring broken this session (`gh auth token`/`gh pr list` failed) — branch hygiene ran on the pure-git fallback only; run `gh auth refresh` before the next session and re-verify branch/PR state normally."* This is a session-boundary fact the next session needs, not just a mid-run print — don't let it be printed once during Step 1 and then dropped.
 
 **If `NO_VAULT=1`** (set before Step 1): this step's job — producing the close-out record — still needs to happen, it just can't be a local file write. By now Step 6's findings, Step 8's context note, and Step 9's git/PR-derived ticket list are all known, so this is the one point in the run with everything the record needs.
 
