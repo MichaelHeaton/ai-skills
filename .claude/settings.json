@@ -94,6 +94,12 @@
         "hooks": [
           { "type": "command", "command": "python3 ~/.claude/hooks/ticket-write-verify-reminder.py" }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "python3 ~/.claude/hooks/cursor-ide-commit-guard.py" }
+        ]
       }
     ],
     "PostToolUse": [
