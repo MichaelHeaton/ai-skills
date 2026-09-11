@@ -21,9 +21,9 @@ Apply this operational test before asserting live state conversationally:
 - **Is the domain/service publicly reachable?** — a customer, board member, or member of the public can hit it directly (a public website, a production API, a customer-facing app), not just someone with VPN/internal-network access.
 - **Would an external stakeholder plausibly act on this claim if repeated to them?** — e.g. a board member telling a parent "the new site is live," a customer being pointed at a URL, a stakeholder reporting status upward.
 
-If either is true, the claim is in scope and needs the same live check as the relevant infra type below before you state it as confirmed — not just an HTTP status code or the fact that a deploy was triggered.
+**Both must be true** for the claim to be in scope: the domain/service is publicly reachable *and* an external stakeholder would plausibly act on the claim if repeated. When both hold, run the same live check as the relevant infra type below before stating it as confirmed — not just an HTTP status code or the fact that a deploy was triggered.
 
-If neither is true — an internal dashboard, a dev/staging environment, informal chatter about infra nobody outside the team can reach — the conversational carve-out still applies as before: describe it without running the full check, since no external party can act on the claim.
+If either is false — a dev/staging environment (not publicly reachable, even if someone might repeat what you say), an internal dashboard, or informal chatter about infra nobody outside the team can reach — the conversational carve-out still applies as before: describe it without running the full check, since either nobody outside the team can reach it or nobody would act on the claim. A status update like "the staging migration completed" stays out of scope under this test even though it could technically be "reported upward," because staging itself isn't publicly reachable.
 
 ## The core distinction
 
