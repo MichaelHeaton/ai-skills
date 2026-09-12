@@ -4,7 +4,7 @@ principles_version: 1.0.0
 last_updated: 2026-09-12
 updated_by: claude
 name: subagent-edit-verify
-description: Immediately diff a background agent's reported file writes/edits against actual current git state — right after the completion report, not deferred to session-close — to catch concurrent-checkout clobbering or other silent loss. Triggers whenever any background Agent (generic subagent spawn, dev-team-coder, or otherwise) reports writing or editing a file, before trusting that report as durable. Generalizes dev-team-manager's "verify Coder's report against actual repo state (git status --short, git log main..HEAD --oneline)" into a standalone check for any orchestrator. Use on "did that edit actually land", "verify the agent's file changes", "the agent said it wrote X but I want to confirm", or right after any Agent-tool completion claiming a write/edit. Complements subagent-completion-verify (confirms the agent finished at all) — this confirms claimed content matches disk. On mismatch, hand off to lost-edit-transcript-recovery to reconstruct content from the agent's transcript.
+description: Immediately diff a background agent's reported file writes/edits against actual current git state — right after the completion report, not deferred to session-close — to catch concurrent-checkout clobbering or other silent loss. Triggers whenever any background Agent (generic subagent spawn, dev-team-coder, or otherwise) reports writing or editing a file, before trusting that report as durable. Generalizes dev-team's Architect-step check ("verify Coder's report against actual repo state (git status --short, git log main..HEAD --oneline)") into a standalone check for any orchestrator. Use on "did that edit actually land", "verify the agent's file changes", "the agent said it wrote X but I want to confirm", or right after any Agent-tool completion claiming a write/edit. Complements subagent-completion-verify (confirms the agent finished at all) — this confirms claimed content matches disk. On mismatch, hand off to lost-edit-transcript-recovery to reconstruct content from the agent's transcript.
 compatibility: Requires git. Works in any git worktree the background agent wrote to; cloud-compatible.
 ---
 
@@ -12,7 +12,7 @@ compatibility: Requires git. Works in any git worktree the background agent wrot
 
 A background agent's completion report describes what it *believes* it did — not what is actually on disk. Between the agent writing a file and the parent reading its report, a concurrent checkout, a stash pop from another session, or a worktree collision can silently revert or clobber the change. Trusting the report without checking is how that loss goes unnoticed until session-close, if anyone notices at all.
 
-**Generalizes** the pattern the dev-team pipeline already applies narrowly: before trusting Coder's "done" report, dev-team-manager checks actual repo state (`git status --short`, `git log main..HEAD --oneline`) rather than the Coder's own summary. This skill names that pattern and applies it to *any* background agent reporting a file write — not just dev-team's Coder.
+**Generalizes** the pattern the dev-team pipeline already applies narrowly: before trusting Coder's "done" report, dev-team's Architect step checks actual repo state (`git status --short`, `git log main..HEAD --oneline`) rather than the Coder's own summary. This skill names that pattern and applies it to *any* background agent reporting a file write — not just dev-team's Coder.
 
 ## Trigger
 
