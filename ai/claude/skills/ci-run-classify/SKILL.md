@@ -4,7 +4,7 @@ principles_version: 1.0.0
 last_updated: 2026-09-12
 updated_by: claude
 name: ci-run-classify
-description: Classify one or more failing CI/Actions runs into real regression, bot/noise, or cancelled/empty-job before treating any of them as a problem worth investigating. Use whenever asked "why did the CI job fail", "did the merge break anything", "is this failure real", or as the CI-check behind post-merge-cleanup Step 5 — either as a discrete ad-hoc check or invoked from that step, without needing to edit post-merge-cleanup itself. Prevents false investigation driven by an automated dependency-bump/regenerate bot's own PR racing a real merge, or a job that shows failed but never actually ran a meaningful step. Generic across repos — describes bot and branch patterns, not one repo's specific bot names or branch scheme.
+description: Classify one or more failing CI/Actions runs into real regression, bot/noise, or cancelled/empty-job before treating any of them as a problem worth investigating. Use whenever asked "why did the CI job fail", "did the merge break anything", "is this failure real", or during post-merge-cleanup's own CI-check step when its lighter bot-vs-real heuristic needs the fuller three-bucket treatment — post-merge-cleanup does not currently call into this skill automatically, invoke it yourself when its own check isn't enough. Prevents false investigation driven by an automated dependency-bump/regenerate bot's own PR racing a real merge, or a job that shows failed but never actually ran a meaningful step. Generic across repos — describes bot and branch patterns, not one repo's specific bot names or branch scheme.
 compatibility: Requires gh CLI (or equivalent Actions/CI API access) to inspect run metadata and step-level logs. Cloud-compatible — no local-machine-only paths or tooling.
 ---
 
@@ -52,7 +52,7 @@ Check in this order and stop at the first match — don't run all three checks i
 
 ## Usage
 
-Invoke this ad-hoc for "why did this job fail" / "did the merge break anything" questions, or as the classification step behind `post-merge-cleanup`'s own CI-check (Step 5) when that step's own bot-vs-real heuristic needs the fuller three-bucket treatment — `post-merge-cleanup` calls into this skill rather than duplicating the logic; this skill does not assume it is only ever called that way.
+Invoke this ad-hoc for "why did this job fail" / "did the merge break anything" questions. It also applies during `post-merge-cleanup`'s own CI-check step, which has its own lighter, self-contained bot-vs-real heuristic (a narrower branch-name/zero-job check) — `post-merge-cleanup` does not currently delegate to this skill automatically, so reach for this skill yourself when that step's own check leaves the classification ambiguous, rather than assuming the two are already wired together.
 
 ## Report
 
