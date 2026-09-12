@@ -4,7 +4,7 @@ principles_version: 1.0.0
 last_updated: 2026-09-12
 updated_by: claude
 name: merge-collision-recovery
-description: Detect and repair the "fix-up commit raced a squash-merge and lost" pattern — a follow-up commit meant for an in-flight PR never landed because someone else squash-merged that PR first, so the squash commit on main looks complete but silently lacks the fix-up's content. Diffs origin/main's squashed file against what the fix-up intended, confirms the fix-up SHA isn't an ancestor of the squash commit, and drafts a corrective follow-up PR. Use when a fix-up seems to have vanished after a merge, or when asked "did my fix-up make it into the squash merge", "why is this file missing changes I pushed", "the PR merged but my follow-up commit isn't in main", "confirm whether this commit landed", or "check for a lost fix-up race". Narrower than git-squash-conflict-recover, which handles a session's own commits stranded after squash-merging its own branch — this skill covers the subtler case where someone else did the squash-merge and nothing on the surface signals loss. Cross-reference both.
+description: Detect and repair the "fix-up commit raced a squash-merge and lost" pattern — a follow-up commit meant for an in-flight PR never landed because someone else squash-merged that PR first, so the squash commit on main looks complete but silently lacks the fix-up's content. Diffs origin/main's squashed file against what the fix-up intended, confirms the race via commit timing plus ruling out a legitimate later edit (not a SHA-ancestor check, which can't distinguish this case since squashing always changes the SHA), and drafts a corrective follow-up PR. Use when asked "did my fix-up make it into the squash merge", "why is this file missing changes I pushed", "the PR merged but my follow-up commit isn't in main", "confirm whether this commit landed", or "check for a lost fix-up race". Narrower than git-squash-conflict-recover (a session's own commits stranded after squash-merging its own branch) — this covers someone else's squash-merge racing ahead, with nothing on the surface signaling loss.
 compatibility: Requires git CLI access to the repo and origin remote; gh CLI (or equivalent) to open the corrective PR.
 ---
 
@@ -31,19 +31,26 @@ A non-empty diff means the squash commit's content disagrees with what the fix-u
 
 ## 2. Confirm the fix-up really didn't land
 
-Check whether the fix-up SHA is an ancestor of the squash commit:
+**Don't check SHA ancestry — it can't answer this question.** Squashing always creates a brand-new commit; the fix-up's original SHA is *never* an ancestor of a squash commit regardless of whether its content actually made it in. `git branch --contains <fixup-sha>` and `git log --oneline <squash-sha> | grep <fixup-sha>` will both come back empty in every real case, including one where the content landed fine (folded into the squash by whoever merged it) — so neither can distinguish "raced and lost" from "already there under a different SHA."
 
-```bash
-git branch --contains <fixup-sha>
-```
+Use timing and content instead:
 
-Or walk the squash commit's own history:
+1. **Was the fix-up committed before the squash-merge happened?** Compare the fix-up commit's timestamp against the squash merge's actual merge time:
 
-```bash
-git log --oneline <squash-sha> | grep <fixup-sha>
-```
+   ```bash
+   git show <fixup-sha> --format=%cI -s
+   gh pr view <original-pr> --json mergedAt -q .mergedAt
+   ```
 
-**If `<fixup-sha>` is not an ancestor of `<squash-sha>`, it raced and lost** — the squash was created from a tree that didn't yet include the fix-up's commit. If it *is* an ancestor, the content diff in step 1 has a different cause (e.g. a later commit reverted or overwrote it) — don't proceed with the recovery in step 3.
+   If the fix-up's commit time is *before* `mergedAt`, it existed in time to have been included — if step 1's diff still shows it's missing, that's real evidence of a race, not just a timing coincidence.
+
+2. **Rule out a legitimate later edit** — check whether any commit landed on `main` *after* the squash-merge that touches the same file and could explain the discrepancy on its own:
+
+   ```bash
+   git log --oneline --since="<mergedAt>" -- <path/to/file>
+   ```
+
+   If nothing shows up, there's no alternative explanation for the drift — the fix-up raced and lost. If a later commit does show up, inspect it first (`git show <that-sha> -- <path/to/file>`); it may be the actual cause of the diff in step 1, not a lost race — don't proceed with the recovery in step 3 until you've ruled that out.
 
 ## 3. Recovery — land the missing content on a fresh branch
 
