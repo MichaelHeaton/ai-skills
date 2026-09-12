@@ -240,6 +240,48 @@ bash ~/.claude/skills/git-ops/scripts/check-branch-identity.sh <repo-path> <expe
 
 A worktree checkout is exempt (its branch is pinned) — this only fires against a shared, non-worktree checkout, the same scope as the manual script above. A detached-`HEAD` checkout has no branch name to compare against, so the hook fails open there too (no baseline recorded, no block) — it's scoped to branch collisions specifically, not a general "is this checkout in the state I expect" check.
 
+**Cursor IDE branch switches — a distinct risk from both the agent-initiated checkout above and the separate-OS-process case in "Live concurrent-session detection" below.** A user can switch branches directly through Cursor's IDE sidebar — no agent tool call involved at all — while this session still has uncommitted work in progress or believes it's on a different branch. That's neither of the two cases already covered: it isn't a second process (`ps aux` won't show anything, and in a Cursor multi-tab workspace there may not even be a second process — see the multi-tab note under "Live concurrent-session detection"), and it isn't this session running `git checkout` itself (`branch-guard-track.py` only records an expectation when _this session_ runs `git checkout`/`git switch` via `Bash` — an IDE sidebar switch never goes through `Bash` at all).
+
+Two consequences of an IDE-driven switch, either of which can happen silently:
+
+- Uncommitted work this session had in progress gets **left behind on the previous branch's tip** (not discarded outright, but easy to lose track of) when the sidebar switch checks out a different branch.
+- The **next Edit/Write lands on the wrong branch** — the session keeps writing files believing it's still on the branch it last knew about, with no error surfaced anywhere.
+
+**Gap in existing mechanical enforcement**: `branch-guard.py` (see above) only fires as a `PreToolUse` hook on `git commit` via `Bash` — it has no visibility into an IDE sidebar action, and nothing re-checks branch identity between one Edit/Write and the next. So an IDE-driven switch can go completely undetected until the next `git commit` attempt, by which point several Edit/Write calls may already have landed on the wrong branch. Confirmed by reading both `branch-guard.py` and `branch-guard-track.py` in full: neither hook is wired to `Edit`/`Write`, and `branch-guard-track.py`'s state file is only ever updated from a `Bash`-tool `git checkout`/`git switch` invocation — an IDE sidebar switch updates neither.
+
+**Before any Edit/Write after an unexpected branch change** (the active branch doesn't match what this session last explicitly checked out or created, and you didn't just run `git checkout`/`git switch` yourself), run the branch-identity check before writing anything:
+
+```bash
+bash ~/.claude/skills/git-ops/scripts/check-branch-identity.sh <repo-path> <expected-branch>
+```
+
+- **`MATCH`** or **`WORKTREE:<actual>`** — proceed as usual.
+- **`MISMATCH:<actual>`** with a dirty working tree (`git status --short` non-empty) — **stop.** Do not run any further Edit/Write until the mismatch is resolved; writing files now risks landing them on a branch this session never intended to be on.
+
+**Recovering uncommitted edits left behind on the previous branch tip:**
+
+1. `git log <previous-branch> --oneline -10` — confirm what commits (if any) are sitting on the branch the session was on before the switch.
+2. `git diff <previous-branch>` (compared against the current branch, or against its own previous known-good commit) — see exactly what uncommitted or committed-but-unmerged work is there.
+3. If the work is a clean commit on `<previous-branch>` that belongs on the current branch: `git cherry-pick <sha>`.
+4. If the work was never committed (still working-tree-only on `<previous-branch>` and the IDE switch didn't discard it): check out `<previous-branch>` again, commit or stash it there, then cherry-pick/reapply onto the correct branch — don't try to hand-copy uncommitted diffs across a branch switch from memory.
+5. Once recovered, re-run the branch-identity check to confirm the working branch now matches what the session expects before resuming Edit/Write.
+
+**Mechanical enforcement of this specific gap**: `hooks/cursor-ide-commit-guard.py` (`PreToolUse`, matcher `Edit|Write`) automates the check above — it compares the current branch against `branch-guard-track.py`'s own recorded expectation (same state file, not a separate tracking mechanism) before every Edit/Write, and blocks (non-zero exit) only when the branch has drifted **and** the working tree is dirty. A clean tree or a branch that still matches the recorded expectation is allowed silently, so an intentional agent-driven branch change (which already updates the same state file via `branch-guard-track.py` on `git checkout`/`git switch`) never false-positives. This is deliberately narrower and earlier-firing than `branch-guard.py` — it's a complement, not a replacement: `branch-guard.py` still guards the `git commit` moment for the multi-process case, and this hook guards every Edit/Write in between for the IDE-sidebar case.
+
+**Installed by default in this repo (`ai-skills`)**, same scope as the other hooks in this section — wired into this repo's tracked `.claude/settings.json` under `PreToolUse`/`Edit|Write`. For any other repo where this protection is wanted, add it via the `update-config` skill:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/cursor-ide-commit-guard.py" }] }
+    ]
+  }
+}
+```
+
+---
+
 **One-time nudge when the guard is missing entirely — mechanically enforced, not just a prose reminder.** The enforcement above only protects repos that actually have it wired, and a prose-only reminder is exactly the kind of thing that gets skipped in a long session (the same problem `git-ops-reminder.py` exists to solve for git-ops itself). `hooks/branch-guard-missing-nudge.py` (`PreToolUse`, matcher `Bash`) checks, on every `git commit` in a repo this session hasn't already nudged about:
 
 1. Does this repo's `.claude/settings.json` (or, if it has none, the global `~/.claude/settings.json`) already contain a `branch-guard.py` entry under `PreToolUse`?
