@@ -1,5 +1,5 @@
 ---
-version: 1.2.0
+version: 1.2.1
 principles_version: 1.0.0
 last_updated: 2026-09-11
 updated_by: claude
@@ -70,7 +70,7 @@ Match the check to what's actually being claimed — don't just re-read the sour
 - After the refresh, poll until `status.sync.revision` shows the expected SHA — and until the workload's actual pods/config reflect the change (see Kubernetes check above) — before asserting the merge is deployed or synced.
 - This is a GitOps sync-lag check, not `argo-pause-cascade` — that skill pauses cascading Argo sync during emergency kubectl work (a controlled-intervention concern); this one is about waiting for sync state to be trustworthy before asserting it.
 
-**A green HTTP/blackbox probe does not confirm application-level health.** HTTP 200 only proves the endpoint responded — it doesn't rule out a locked database, a failed auth flow, or a crashed worker returning a 200 with an error payload. When a user reports failures despite a green probe, don't stop at HTTP-green as the verification — add an app-level check: inspect the actual response body/payload, run a DB query count, or exercise the real auth flow.
+**A green HTTP/blackbox probe does not confirm application-level health.** HTTP 200 only proves the endpoint responded — it doesn't rule out a locked database, a failed auth flow, or a crashed worker returning a 200 with an error payload. When a user reports failures despite a green probe, don't stop at HTTP-green as the verification — hand off to the `app-health-verify` skill *(global: ai-skills)* for the full layered check (response body, database, auth flow, worker signals); this skill's job ends at confirming the service is deployed and responding, not whether it's functionally healthy underneath.
 
 **Ansible**
 

@@ -26,7 +26,7 @@ Run layers in order. Each layer's finding stands on its own — don't let a pass
 
 ### Layer 1 — Basic HTTP/blackbox status (reference, don't repeat)
 
-This is `infra-state-verify`'s territory: confirming the service actually responds and, for public-facing production infra, that the claim is backed by a real check rather than an assumption. If that hasn't been established yet, run `infra-state-verify`'s checks first. Once a response is confirmed, move to Layer 2 — a status code alone is not a health check.
+This is `infra-state-verify`'s territory: confirming the service actually responds and, for public-facing production infra, that the claim is backed by a real check rather than an assumption. If that hasn't been established yet, run `infra-state-verify`'s checks first. `infra-state-verify` itself hands off to this skill for exactly this reason — its own "green probe doesn't confirm application-level health" note points here for the full layered procedure, rather than trying to own body/DB/auth checks itself. Once a response is confirmed, move to Layer 2 — a status code alone is not a health check.
 
 ### Layer 2 — Response-body inspection
 
