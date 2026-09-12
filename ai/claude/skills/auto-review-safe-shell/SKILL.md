@@ -38,7 +38,7 @@ Always split into two separate Bash tool calls:
    gh issue create --repo <owner/repo> --title "<title>" --body "<body>"
    ```
 
-Resist the "one command is simpler" instinct — the two-block split is the whole point. A merged block that happens to work once doesn't mean it's safe; it means Auto-review didn't happen to fire that time.
+Resist the "one command is simpler" instinct — the two-block split is the whole point. A merged block that happens to work once doesn't mean the risk is gone; it means nothing happened to catch the gap that particular time.
 
 ## Failure mode to watch for
 
@@ -57,7 +57,7 @@ This is not a new rule invented in the abstract — it generalizes a pattern `is
 
 `git-ops`'s multi-account guidance recommends the *opposite* of splitting in one specific case: `GH_TOKEN=$(gh auth token --user <account>) gh pr create ...` as a single command, preferred over `gh auth switch` precisely because it avoids mutating global CLI auth state. This does not contradict the rule above — it's a different shape entirely:
 
-- **git-ops's scoped form is one atomic command.** The credential resolution and the mutation live or die together — if `gh auth token` fails, the whole command fails immediately, with no intervening step where the shell could move on to the mutation with stale or empty credential state. There's no unverified handoff to go wrong.
+- **git-ops's scoped form is one atomic command, with no step boundary in between.** `VAR=$(cmd) other_cmd` does not itself abort if `cmd` fails — `other_cmd` still runs, with `VAR` set to whatever (possibly empty) output `cmd` produced. What it *doesn't* have is a separate, already-finished step that looked complete and could be silently trusted later: the resolution and the mutation are evaluated as one unit, in one command, with nothing in between for a stale or empty value to hide behind unnoticed. Whatever goes wrong shows up in that single command's own output immediately, not several steps downstream.
 - **This skill's trigger is a multi-step sequence** — an earlier step exports/resolves the credential and *finishes*, then a later, separate step in the same block trusts that the export succeeded. That gap between steps is where a blocked or silently-failed export can leave a stale value for the mutation to use unnoticed.
 
 Test: if resolving the credential and performing the mutation are one command with no step boundary between them, it's git-ops's safe scoped form, not this skill's risk shape. If there's a step boundary — a completed export, then a separate command that assumes it worked — split them per this skill.
