@@ -36,6 +36,11 @@ repos:
         entry: python3 scripts/hooks/check-tier-a-version.py
         language: system
         files: ^(principles/.*\.md|ai/claude/skills/[^/]+/SKILL\.md|ai/cursor/rules/.*\.mdc)$
+      - id: skill-frontmatter-lint
+        name: Lint SKILL.md frontmatter conventions
+        entry: python3 scripts/hooks/skill-frontmatter-lint.py
+        language: system
+        files: ^ai/claude/skills/[^/]+/SKILL\.md$
       - id: reconcile-symlinks
         name: Reconcile ai-skills symlinks after merge/commit
         entry: bash scripts/reconcile-symlinks.sh
