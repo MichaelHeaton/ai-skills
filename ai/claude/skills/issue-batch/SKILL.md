@@ -46,16 +46,18 @@ Show a summary table before creating anything — this step never skips, even wh
 
 ## 5. Create in parallel, index sequentially
 
-**For a GitHub-routed batch (Path B/C), run `issue-create`'s Step 0.5 sandbox/auth probe once before starting the parallel loop below — never skip straight to parallel creates.** A sandboxed `GraphQL: Forbidden` hits every parallel `gh issue create` call identically, and an unchecked batch will silently produce N empty-looking `CREATED=` lines instead of one clear failure. One upfront probe catches this before it can masquerade as N separate mysteries.
+**For a GitHub-routed batch (Path B/C), create the first issue on its own via `gh issue create` (issue-create's normal GraphQL path) before starting the parallel loop below — never skip straight to parallel creates.** A bare auth probe (`gh api user`, a REST call) isn't sufficient on its own: sandbox network ACLs can allow REST while still blocking the GraphQL endpoint `gh issue create` actually uses, so a REST-only probe can report success while every parallel GraphQL create is about to fail identically. Creating the real first issue exercises the exact call the parallel loop depends on, not a proxy for it.
 
-- **Probe fails** (per issue-create Step 0.5: token/account mismatch, or the `required_permissions: ["all"]` retry and REST fallback both dead-end): **abort the whole batch now.** Report one clear error — which probe step failed and why — and do not run any of the parallel creates in step 1 below. Do not let individual creates fail silently one-by-one; a single upfront failure is far easier to diagnose and fix than a batch that half-completed with no indication which items actually landed.
-- **Probe succeeds**: proceed with the parallel loop exactly as before — this check adds one auth call up front, nothing else changes on the happy path.
+- **First create succeeds via plain `gh issue create`**: GraphQL works in this sandbox. Proceed with the remaining N-1 creates in parallel via `gh issue create` exactly as before — this adds one sequential create up front, nothing else changes on the happy path.
+- **First create returns `GraphQL: Forbidden`**: run `issue-create`'s Step 0.5 in full (auth probe → `required_permissions: ["all"]` retry → REST fallback → escalate) to get that first issue created one way or another.
+  - **If Step 0.5's REST fallback is what succeeded** (meaning GraphQL is genuinely blocked in this sandbox, not just a one-off): don't parallelize the rest via `gh issue create` — every one of them would hit the identical `Forbidden`. Instead, run the remaining N-1 creates **sequentially via the same REST fallback** (`gh api --method POST repos/<owner>/<repo>/issues`), or abort and report "GraphQL blocked in this sandbox, N-1 more issues to create via REST" if sequential REST creation is itself too slow/risky for the batch size — don't silently fall back to parallel GraphQL calls that are already known to fail.
+  - **If Step 0.5 dead-ends entirely** (token/account mismatch unresolved, or the sandbox denies REST too): **abort the whole batch now.** Report one clear error — which Step 0.5 stage failed and why — and do not attempt any further creates. Do not let individual creates fail silently one-by-one; a single upfront failure is far easier to diagnose and fix than a batch that half-completed with no indication which items actually landed.
 
-Jira-routed batches (Path A) have no equivalent sandbox failure mode — skip the probe and proceed directly to the parallel loop.
+Jira-routed batches (Path A) have no equivalent sandbox failure mode — skip this check and proceed directly to the parallel loop.
 
-Once approved (and, for GitHub, once the probe above has succeeded):
+Once approved:
 
-1. Run all creation calls (`gh issue create` or `jira_create_issue`) in parallel for speed.
+1. **Jira (Path A)**: run all `jira_create_issue` calls in parallel for speed. **GitHub (Path B/C)**: the first issue is already created (per the check above) — for the remaining N-1, follow whichever branch above applied: parallel `gh issue create` calls on the happy path, or sequential REST creates (one at a time, not parallel) if GraphQL turned out to be blocked.
 2. After all creations return, append each one to the task index **sequentially** — per `issue-create`'s own batch-creation guidance, this step is never optional even when the per-issue flow was skipped for parallelism; a missing index entry means the ticket won't surface in `session-close` or `issue-list`.
 
 ## 6. Confirm
