@@ -1,7 +1,7 @@
 ---
-version: 1.2.1
+version: 1.2.2
 principles_version: 1.0.0
-last_updated: 2026-09-11
+last_updated: 2026-09-12
 updated_by: claude
 name: infra-state-verify
 description: Gate any claim about live infrastructure state behind an explicit ground-truth check, so "declared in code" never gets asserted as "confirmed running." Use before publishing a PR description, wiki/Confluence page, Slack/chat message, or status report that says a cluster is running, a feature is enabled in production, a service is deployed, a migration completed, or similar — and also before telling the user in chat that a public-facing production domain or service is live/up/deployed, since that conversational claim can be repeated onward to an external stakeholder. Trigger on phrases like "is running", "is live", "is enabled in production", "confirm this is deployed", "cluster is up", "shipped to prod", "Argo sync lag", "Application still shows the old revision", "post-merge GitOps verify", or any time a draft or in-session reply is about to describe live infra state that a teammate, stakeholder, or the public could act on. Internal asides stay out of scope: answering the user's question about an internal dashboard, a dev/staging environment, or other non-public infra conversationally still does not require a live check. Only conversational claims about public-facing production infrastructure are gated alongside published artifacts — see "Scope" below for the operational test. This skill is distinct from `argo-pause-cascade` (pausing cascading Argo sync during emergency kubectl work, a controlled-intervention concern — this skill is about waiting for sync state before trusting it, not pausing anything) — that is a separate, unrelated skill and out of scope here.
