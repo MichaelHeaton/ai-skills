@@ -7,13 +7,19 @@ version/date format. This check does NOT re-validate field presence -- it only
 covers the two constraints Tier A doesn't: the name-matches-directory rule, and
 the description length cap.
 
-GRANDFATHERED: a handful of skills already exceed the description length cap
-from before this check existed. Enforcing the cap retroactively on every future
-edit to those files (even a one-line, unrelated change) would block ordinary
-maintenance with no migration path. Length is grandfathered per-name in
-LENGTH_EXEMPT below -- exempted skills still get the name-match check, and any
-new description for a NON-exempt skill is enforced from this check's introduction
-onward, so the exemption list closes rather than grows.
+GRANDFATHERED, WITH A FROZEN CEILING: a handful of skills already exceeded the
+description length cap from before this check existed. Enforcing the cap
+retroactively on every future edit to those files (even a one-line, unrelated
+change) would block ordinary maintenance with no migration path -- but an
+unbounded exemption would let exactly those already-over-length files grow
+without limit forever, which defeats the point of having a cap at all. Each
+grandfathered skill's ceiling is frozen at its own length when this check was
+introduced (2026-09-12, recorded in LENGTH_EXEMPT_CEILING below) -- the file
+can shrink freely, or hold steady, but can't grow past that frozen number.
+Trim under DESCRIPTION_MAX_CHARS and remove from this dict entirely rather
+than adding a new name here; a non-exempt skill is enforced against
+DESCRIPTION_MAX_CHARS from this check's introduction onward, so this dict
+closes rather than grows.
 """
 from __future__ import annotations
 
@@ -23,18 +29,19 @@ from pathlib import Path
 DESCRIPTION_MAX_CHARS = 1024
 
 # Skills whose description already exceeded DESCRIPTION_MAX_CHARS when this
-# check was introduced (2026-09-12). Trim and remove from this list rather
-# than adding a new name here.
-LENGTH_EXEMPT = {
-    "confluence-section-edit",
-    "contextual-pr-review",
-    "iac-plan-verify",
-    "infra-rehearsal-session",
-    "infra-state-verify",
-    "issue-create",
-    "issue-update",
-    "skill-session-handoff",
-    "vault-support",
+# check was introduced (2026-09-12), mapped to their exact length at that
+# time -- the frozen ceiling those files may not grow past. Trim under
+# DESCRIPTION_MAX_CHARS and remove the entry rather than raising the number.
+LENGTH_EXEMPT_CEILING = {
+    "confluence-section-edit": 1141,
+    "contextual-pr-review": 1193,
+    "iac-plan-verify": 1056,
+    "infra-rehearsal-session": 1148,
+    "infra-state-verify": 1589,
+    "issue-create": 1063,
+    "issue-update": 1412,
+    "skill-session-handoff": 1045,
+    "vault-support": 1184,
 }
 
 
@@ -69,11 +76,21 @@ def check_file(path: Path) -> list[str]:
             )
 
     description = fm.get("description", "")
-    if description and len(description) > DESCRIPTION_MAX_CHARS and name not in LENGTH_EXEMPT:
-        errors.append(
-            f"{path}: description is {len(description)} chars, exceeds max of "
-            f"{DESCRIPTION_MAX_CHARS} (see docs/guides/skill-conventions.md)"
-        )
+    if description:
+        limit = LENGTH_EXEMPT_CEILING.get(name, DESCRIPTION_MAX_CHARS)
+        if len(description) > limit:
+            if name in LENGTH_EXEMPT_CEILING:
+                errors.append(
+                    f"{path}: description is {len(description)} chars, exceeds this "
+                    f"skill's frozen grandfather ceiling of {limit} chars (set at "
+                    f"introduction of this check -- shrink it, don't grow it further; "
+                    f"see docs/guides/skill-conventions.md)"
+                )
+            else:
+                errors.append(
+                    f"{path}: description is {len(description)} chars, exceeds max of "
+                    f"{DESCRIPTION_MAX_CHARS} (see docs/guides/skill-conventions.md)"
+                )
 
     return errors
 
