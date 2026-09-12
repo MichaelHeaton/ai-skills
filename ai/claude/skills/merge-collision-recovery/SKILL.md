@@ -44,13 +44,14 @@ Use timing and content instead:
 
    If the fix-up's commit time is *before* `mergedAt`, it existed in time to have been included — if step 1's diff still shows it's missing, that's real evidence of a race, not just a timing coincidence.
 
-2. **Rule out a legitimate later edit** — check whether any commit landed on `main` *after* the squash-merge that touches the same file and could explain the discrepancy on its own:
+2. **Check for a later commit on the same file** — not because it could explain step 1's diff (that diff is pinned to the squash commit's own tree at merge time, so nothing committed afterward can affect it), but as a safety check before recovering in step 3: a later commit on the same file could be legitimate follow-on work that step 3's recovery would otherwise clobber if applied blindly.
 
    ```bash
    git log --oneline --since="<mergedAt>" -- <path/to/file>
+   git fetch origin main   # make sure this is checked against origin/main, not a stale local branch
    ```
 
-   If nothing shows up, there's no alternative explanation for the drift — the fix-up raced and lost. If a later commit does show up, inspect it first (`git show <that-sha> -- <path/to/file>`); it may be the actual cause of the diff in step 1, not a lost race — don't proceed with the recovery in step 3 until you've ruled that out.
+   If nothing shows up, proceed to step 3 — recovering the fix-up's content won't step on anything else. If a later commit does show up, inspect it first (`git show <that-sha> -- <path/to/file>`) and reconcile it with the fix-up's content in step 3's recovery rather than overwriting it.
 
 ## 3. Recovery — land the missing content on a fresh branch
 
