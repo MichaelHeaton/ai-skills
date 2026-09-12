@@ -67,7 +67,7 @@ def add(event, matcher, command):
     if target is None:
         blocks.append({"matcher": matcher, "hooks": [entry]})
         return "added (new matcher block)"
-    if entry not in target["hooks"]:
+    if not any(h.get("command") == command for h in target["hooks"]):
         target["hooks"].append(entry)
         return "added (existing matcher block)"
     return "already present"
