@@ -25,7 +25,7 @@ Don't guess between them. Check signatures first.
 
 - `git worktree add` fails on a path outside this session's allowed working directory or worktree root
 - A write to `.git/config` (or another repo-internal file) is denied outright, not with a permissions/ownership error from the OS
-- An intermittent `GraphQL: Forbidden` on a mutating `gh` call (`gh issue create`, `gh api --method POST`, etc.) that comes and goes across otherwise-identical invocations — this is the exact case `issue-create`'s Step 0.5 already documents and verified as a sandbox-ACL issue, not a token problem. See `ai/claude/skills/issue-create/SKILL.md` Step 0.5 for the confirmed precedent and its probe sequence.
+- An intermittent `GraphQL: Forbidden` on a mutating `gh` call (`gh issue create`, `gh api --method POST`, etc.) that comes and goes across otherwise-identical invocations — this is the exact case `issue-create`'s Step 0.5 already documents as a sandbox-ACL issue, not a token problem. See `ai/claude/skills/issue-create/SKILL.md` Step 0.5 for that precedent and its probe sequence.
 - The failure is about *where* or *what* the command is allowed to do, not *who* it's authenticated as
 
 **Account-mismatch signatures** (points to cause 2):
@@ -48,7 +48,8 @@ gh api user --jq .login
 ```
 
 - **Probe fails, or returns a login that doesn't match the target repo's expected owner** — this is cause 2 (account mismatch). Go to Step 3b.
-- **Probe succeeds with the correct login, but the original command still fails** — the token and account are fine, so it isn't a credential problem. This is cause 1 (sandbox ACL). Go to Step 3a.
+- **Probe succeeds with the correct login, but the original command still fails with an OAuth-scope-shaped error** (the error explicitly names a missing scope, e.g. "requires the 'repo' or 'workflow' scope") — this is a third cause outside this skill's two-way triage: the account is right but the token lacks a permission it needs. Neither sandbox-ACL fixes (Step 3a) nor account-routing (Step 3b) resolve this — the token itself needs re-authorizing with the missing scope (`gh auth refresh -s <scope>`), which is a credential fix distinct from both.
+- **Probe succeeds with the correct login, and the original command fails without naming a specific missing scope** — the account is fine and nothing points to a scope gap, so treat it as cause 1 (sandbox ACL). Go to Step 3a.
 
 ## Step 3a: Sandbox ACL — fix in this shell, or hand off
 
