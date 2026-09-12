@@ -1,7 +1,7 @@
 ---
-version: 1.2.0
+version: 1.3.0
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-09-12
 updated_by: claude
 ---
 
@@ -113,6 +113,7 @@ Brief orientation paragraph.
 - Write instructions in imperative form ("Do X", not "You should do X")
 - Explain *why* behind non-obvious steps
 - No comments in code blocks that only restate the code
+- **Don't assert unverified internals of a named mechanism.** A claim about how a specific named gate, scanner, or approval system behaves — what it scores, when it fires, what triggers it — needs a citable source (a doc section, a comment in the actual implementation) in the same sentence or immediately adjacent. Without one, describe the *observed effect* instead ("this got blocked once when X and Y were combined") rather than asserting the *mechanism* ("X gate scores this combination as high-risk"). A plausible-sounding but false claim about internals is worse than an honest "I don't know why, but here's what happened" — it reads as authoritative and can mislead every skill or reader that cites it afterward. (Surfaced twice by the same review cycle on one skill: an invented Auto-review risk-scoring rule survived a full rewrite pass because the second draft moved the same unsourced claim to a different sentence instead of removing it.)
 
 ### Environment compatibility (local-only vs. cloud-compatible)
 
