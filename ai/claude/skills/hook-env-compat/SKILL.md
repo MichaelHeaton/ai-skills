@@ -26,7 +26,7 @@ For each script under `ai/claude/hooks/` that a `PreToolUse` or `PostToolUse` ma
 1. **Read the script's success/non-blocking path** — the branch that runs when nothing warrants a block (e.g. `git-ops-reminder.py`'s early `sys.exit(0)` returns when the command doesn't match, and its nudge path prints JSON and exits 0).
 2. **Check what that path writes to stdout.** Flag it if:
    - It calls `print()` with a plain string (not run through `json.dumps` or equivalent) on a path meant to be advisory only.
-   - It writes JSON, but the shape doesn't match Cursor's expected decision fields (`decision`, `reason`) or a documented hookSpecificOutput shape — verify against a script in this repo already confirmed working (`git-ops-reminder.py`, `pr-open-staleness-nudge.py`) rather than assuming a shape from memory.
+   - It writes JSON, but doesn't match the shape already confirmed working in this repo (`git-ops-reminder.py`, `pr-open-staleness-nudge.py`: a top-level `hookSpecificOutput` object with `hookEventName`/`permissionDecision`/`additionalContext`, plus a top-level `systemMessage`) — compare the candidate's actual output against one of those two scripts' real output rather than assuming a shape from memory.
 3. **Check the script's exit codes.** Flag a script that exits non-zero on every path (no `sys.exit(0)` early-return for the non-blocking case), unless its own docstring says it's an intentional enforcement hook.
 4. **Read the docstring first** — every hook in this repo documents whether it's advisory or enforcement, and several (`git-ops-reminder.py`, `pr-open-staleness-nudge.py`) already state the Cursor-JSON requirement explicitly. Don't re-derive intent from behavior alone when the author already stated it.
 
