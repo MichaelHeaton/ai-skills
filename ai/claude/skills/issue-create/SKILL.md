@@ -1,7 +1,7 @@
 ---
-version: 2.1.0
+version: 2.2.0
 principles_version: 1.0.0
-last_updated: 2026-08-16
+last_updated: 2026-09-11
 updated_by: claude
 name: issue-create
 description: Create a new task, issue, or story in the right system — GitHub Issues (Memex) or Jira — based on the current repo context. Handles template, routing, project assignment, issues log, and task index automatically. Use when the user asks to create a task, capture an action item, add something to the backlog, "log this as an issue", "make a ticket for", "create a story for", "this should be its own ticket", "separate ticket for X", "let's decompose", "track this for later", or similar. Also fires autonomously — always use this skill when Claude itself decides to create any issue (during triage, research, session-close, or any workflow), when creating multiple issues in a batch, or whenever about to call gh issue create or glab issue create directly, or whenever about to call a ticketing MCP tool directly such as jira_create_issue (Jira) or mcp__github__issue_write (GitHub MCP server, common in Claude Code Remote/cloud sessions with no gh CLI). Work org remotes → Jira Story; everything else → GitHub Issue (current repo, or Memex when no repo context).
@@ -18,7 +18,7 @@ Create a new task in the right system based on where you're working. See `refere
 
 **Never combine `export GH_TOKEN=...` (or any credential lookup) with `gh issue create` or another mutating `gh` call in the same shell invocation.** Run them as two separate Bash tool calls: block 1 exports the token and verifies it's non-empty; block 2 only creates the issue. A blocked or denied credential-export step can silently prevent the second block from ever running — if that happens mid-skill, the ticket was never created; re-attempt the create once the token is confirmed set, don't assume a mixed block that appeared to run actually created anything.
 
-**Under a sandboxed shell, an intermittent `GraphQL: Forbidden` on `gh issue create` (Path B/C) is often a Shell ACL problem, not a stale token.** Before re-exporting `GH_TOKEN` or otherwise assuming the credential is the issue, retry the same call with the shell's `required_permissions: ["all"]` — a valid token can still get `Forbidden` if the sandbox itself is scoping which network calls that shell invocation is allowed to make. Keep the two-block rule above either way; this is about which fix to reach for first, not a reason to combine the export and create steps.
+**Under a sandboxed shell, an intermittent `GraphQL: Forbidden` on `gh issue create` (Path B/C) is often a Shell ACL problem, not a stale token.** Don't assume the credential is the issue and don't re-export `GH_TOKEN` blindly — run Step 0.5's auth probe first, it tells you which of the two different fixes (sandbox network deny vs. token/account mismatch) actually applies. Keep the two-block rule above either way; this is about which fix to reach for first, not a reason to combine the export and create steps.
 
 ## Steps
 
@@ -40,6 +40,38 @@ command -v gh >/dev/null 2>&1 && echo present || echo absent
 ```
 
 If absent, every `gh`-dependent step below (de-dupe check, B0, B2–B5, C3, C4, C7) has an MCP equivalent — see [references/gh-mcp-fallback.md](references/gh-mcp-fallback.md). Jira (Path A) already uses MCP tools exclusively and is unaffected.
+
+### 0.5. Sandbox `Forbidden` probe (GitHub CLI paths only)
+
+Only relevant to Path B/C (`gh` present, per the check above) — Jira's Path A has no equivalent failure mode. Run this the first time a `gh issue create` (or `gh api`) call in this session returns `GraphQL: Forbidden`, before retrying anything else.
+
+1. **Probe which account the token actually resolves to:**
+
+   ```bash
+   unset GH_TOKEN
+   export GH_TOKEN=$(gh auth token --user "${GITHUB_PERSONAL_USER}")
+   gh api user --jq .login
+   ```
+
+2. **Probe fails or returns the wrong login** — this is a token/account mismatch, not a sandbox problem. Re-export `GH_TOKEN` for the correct account (see the `gh-account-routing` skill _(global: ai-skills)_ if unsure which account should own the target repo), then re-run this probe before touching issue creation again.
+
+3. **Probe succeeds (correct login) but `gh issue create` still returns `GraphQL: Forbidden`** — the token is fine; the sandboxed shell itself is scoping which network calls this invocation is allowed to make. Retry the same create call once with the shell tool's `required_permissions: ["all"]`.
+
+4. **`required_permissions: ["all"]` retry still fails, or that option isn't available to this session** — use the REST fallback, which succeeds in sandboxes where the GraphQL-based `gh issue create` is blocked:
+
+   ```bash
+   gh api --method POST "repos/<owner>/<repo>/issues" \
+     -f title="<title>" \
+     -f body="<rendered body>" \
+     -f "labels[]=priority/<priority>" \
+     -f "labels[]=domain/<domain>"
+   ```
+
+   This returns the same issue JSON shape (`number`, `html_url`) as `gh issue create` — extract those and continue with the rest of the path's steps (labels are already applied via `-f labels[]=...`, so no separate label-seeding call is needed).
+
+5. **Escalate instead of retrying further** when step 4's REST fallback also fails with a network-level error (not a `4xx` from GitHub) — that means this sandbox denies outbound network access entirely for this shell, which no amount of re-authing or retrying fixes. Hand off to a full-permissions shell or subagent rather than looping on creates that will keep failing the same way.
+
+Keep the public-repo scrub reminder (B0: no employer names, internal hostnames, Jira keys, or secrets in issue bodies) regardless of which path (GraphQL or REST) actually created the issue.
 
 ### 1. Detect routing target
 
