@@ -65,6 +65,8 @@ If `--contains` lists a branch, the commit isn't actually lost — check that br
    git -C ../recover-<short-desc> cherry-pick <sha>
    ```
 
+   **If this conflicts** (the worktree's `main` has moved on since the stash/commit was made — realistic given this is exactly the kind of drift a concurrent-session collision produces): resolve the conflicting hunks by hand, `git add` the resolved files, then `git cherry-pick --continue` (or, for a stash apply conflict, resolve and `git stash drop <stash-sha>` only after confirming the resolved content is correct — never abandon mid-conflict without either finishing or explicitly `--abort`ing). Don't force the stash/commit's exact old content over a legitimate intervening change — reconcile the two.
+
 3. Commit, push, and open a PR through the normal git-ops flow (branch naming, commit message format, PR description).
 
 ## 4. Stash disposition — when to drop, when to keep
@@ -74,8 +76,8 @@ If `--contains` lists a branch, the commit isn't actually lost — check that br
 Once the PR merges and you've confirmed the recovered content matches what was in the stash, it's safe to drop:
 
 ```bash
-git stash list --format='%H %gd %gs'   # re-find the entry by SHA — its stash@{n} index may have shifted
-git stash drop <stash-sha or current stash@{n}>
+git stash list --format='%H %gd %gs'   # re-find the entry's CURRENT stash@{n} by its SHA — the index shifts
+git stash drop <current stash@{n}>     # `drop` only accepts stash@{n}, not a bare commit SHA — apply does, drop doesn't
 ```
 
 If the PR review changes the content (edits during review, conflicts resolved differently), keep the original stash a while longer as a reference for what the pre-recovery state actually was.
