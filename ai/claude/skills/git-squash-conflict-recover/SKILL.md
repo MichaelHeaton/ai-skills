@@ -26,17 +26,24 @@ This is the baseline — anything already inside that squash commit is *not* par
 
 ## Step 2 — identify the stranded delta
 
-The stale branch still has its full pre-squash history plus whatever landed after the merge. Find just the commits `main` doesn't have:
+**⚠️ Every commit on the stale branch will show up here, including the pre-squash ones — that's expected, not a sign something went wrong.** Squashing rewrites history: the squash commit's SHA is new and its individual pre-squash commits are never its ancestors, so `git log main..<stale-branch>` will *always* list the full pre-squash history plus anything added after, no matter how up to date `main` is. Don't treat their appearance as "main wasn't fetched" or "the squash didn't capture them" — expect the full list and use content comparison, not presence in this log, to sort out which commits are the real delta.
 
 ```bash
 git fetch origin main
 git log main..<stale-branch> --oneline
 ```
 
-- Commits that predate the squash-merge and are already represented in `<squash-sha>` will usually **not** appear here (they're ancestors `main` already contains via the squash, once `main` is up to date) — if they do appear, it means `main` was fetched stale or the squash didn't fully capture them; re-verify against Step 1 before proceeding.
-- What's left is the real delta — typically just the follow-up commit(s) made *after* the squash-merge landed. These are the only commits worth carrying forward.
+To find the real delta among everything this lists:
 
-If it's unclear whether a commit's content already made it into the squash, compare its patch directly against the squash commit's diff (`git show <squash-sha> -- <file>` vs. `git show <candidate-sha> -- <file>`) rather than guessing from commit messages alone.
+- **Commit timing is the fastest first filter, not proof on its own**: anything authored/committed *before* the squash-merge landed is presumptively already inside `<squash-sha>`; anything *after* is presumptively the real delta. Cross-check with `git show <squash-sha> --format=%cI -s` for the squash's own commit time.
+- **Confirm with content, don't stop at timing** — for each candidate delta commit, compare its patch against the squash commit's diff for the same file(s):
+
+  ```bash
+  git show <squash-sha> -- <file>
+  git show <candidate-sha> -- <file>
+  ```
+
+  If the candidate's changes are already present in the squash commit's diff, it's not real delta — drop it. What's left after this filter is the actual delta worth carrying forward, typically just the follow-up commit(s) made after the merge.
 
 ## Step 3 — cut a fresh branch off updated `main`
 
@@ -81,14 +88,14 @@ This is riskier than the fresh-branch approach (rewrites shared history on a bra
 
 ## Step 6 — verify before deleting the stale branch
 
-**Never force-delete the stale branch blind.** Confirm its content is either on `main` already or captured in the new branch:
+**Never force-delete the stale branch blind.** `git cherry` is the wrong tool here — it compares patch-IDs by commit, and a squash commit's combined diff never patch-matches its individual pre-squash commits, so it will show `+` (unmerged) for the stale branch's own history *permanently*, whether or not anything is actually missing from `main`. Use a content diff instead, which doesn't care about commit-graph shape:
 
 ```bash
-git cherry main <new-branch-name>
-git cherry main <stale-branch>
+git fetch origin main
+git diff main <stale-branch>
 ```
 
-Both should show every commit as `-` (already reachable from `main`'s ancestry, whether via the original squash or the new branch's merge). If `<stale-branch>` still shows `+` lines after the new PR merges, something didn't make it over — go back to Step 2 before deleting anything.
+An empty diff means every line of content unique to the stale branch is already present in `main` (via the original squash plus the new PR's merge) — safe to delete. Any remaining diff output means real content hasn't landed yet — go back to Step 2 and re-check the delta before deleting anything.
 
 Once clean:
 
@@ -101,6 +108,6 @@ If a PR still exists open against the stale branch, close it with a comment poin
 
 ## Relationship to other skills
 
-- **post-merge-cleanup** owns the routine pull/worktree/branch-delete/redeploy sequence after a normal merge, and its squash-recovery verification pattern (`git cherry` against a squash commit) is what Step 1/6 above reuse — read it for the underlying rationale if that isn't already familiar.
+- **post-merge-cleanup** owns the routine pull/worktree/branch-delete/redeploy sequence after a normal merge, including its own squash-merge branch-deletion fallback (`git branch -d` refusing on a squash-merged branch, verified instead via commit-message search) — this skill's Step 6 content-diff check is a more general version of that same "confirm the content actually landed before deleting" discipline.
 - **wrong-branch-commit-recovery** solves a related but distinct problem: commits on a branch with the *wrong identity* (misnamed relative to its ticket/prefix), independent of merge state. This skill is for a branch with the *right* identity that's simply stale relative to a squash-merge that already happened.
 - Further reading on this scenario's origin: #543, #549.
