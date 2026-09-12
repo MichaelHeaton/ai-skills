@@ -19,7 +19,7 @@ Per `docs/guides/agent-conventions.md`, don't assert *why* the block exists beyo
 - **Permission-restricted but reachable** (`sandbox-blocked-op-router`'s territory) — a `gh`/`git` call fails with an auth or scope error; retrying with elevated permissions, or fixing the account/token in use, can resolve it.
 - **Genuinely network-unreachable** (this skill) — a `kubectl`/`ssh`/`curl` call to a private LAN host times out, refuses the connection, or fails DNS resolution for an internal-only hostname, and would fail identically no matter which credentials or permission level ran it.
 
-If it's unclear which shape applies, run `sandbox-blocked-op-router` first — this skill assumes that triage already happened and landed on "not fixable by permissions."
+If it's unclear which shape applies, run `sandbox-blocked-op-router` first — this skill assumes that triage already happened and landed on "not fixable by permissions." **Merge-order note**: `sandbox-blocked-op-router` (ai-skills#657) was authored alongside this skill and may not be deployed yet in every environment — if the `Skill` tool doesn't recognize it, treat that as the expected repo-vs-deployed-environment gap this repo's own `CLAUDE.md` already documents (read its SKILL.md directly from the repo checkout), not as evidence the skill doesn't exist.
 
 ## Step 1 — Detect the block
 

@@ -104,7 +104,7 @@ Match the check to what's actually being claimed — don't just re-read the sour
 **When the required check itself can't run**, the fallback depends on why:
 
 - **Blocked by security controls** (Auto-review denies reading a secret the natural check needs, e.g. an API key for a GraphQL smoke test): substitute a probe that avoids the credential entirely — a DB row count, login-page reachability, or an equivalent non-secret signal — and document which check actually ran in place of the blocked one.
-- **Blocked by network reachability** (a sandboxed session's `kubectl`/SSH can't reach a private LAN host): this is a third outcome, distinct from pass/fail — emit the exact command(s) needed, ask the user to run them and paste the output, then interpret the pasted result. A blocked attempt is not itself the ground-truth check; don't improvise a workaround that skips verification instead of handing it off.
+- **Blocked by network reachability** (a sandboxed session's `kubectl`/SSH can't reach a private LAN host): this is a third outcome, distinct from pass/fail — emit the exact command(s) needed, ask the user to run them and paste the output, then interpret the pasted result. A blocked attempt is not itself the ground-truth check; don't improvise a workaround that skips verification instead of handing it off. `sandbox-exec-delegate` *(global: ai-skills)* generalizes this exact generate-command/paste/interpret procedure into a standalone, referenceable skill — use it directly instead of re-deriving the sequence here.
 
 If neither substitute is available in the moment either, say so explicitly in the draft rather than silently asserting the state — see the distinction below.
 
