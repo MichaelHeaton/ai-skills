@@ -48,6 +48,8 @@ A diffstat (files touched + line counts) is enough context for a decision. Only 
 
 ### 4. Prompt per stale stash: apply, drop, or defer
 
+**⚠️ Before acting on any stash below**: the stash stack is shared across worktrees and concurrent sessions on the same repo. Never run a bare `git stash pop` or `git stash drop` against a shared stack without first confirming which entry is whose — identify it by message/tag and re-resolve its current `stash@{N}` index right before acting, since indices shift as other entries are pushed or popped. See `git-ops`'s guidance on concurrent-session stash safety for the fuller rationale; this skill just applies it at audit time.
+
 Present each stale stash (repo, age, one-line summary) and ask the user to choose:
 
 - **Apply now** — `git stash apply stash@{N}` (not `pop`, so the stash entry survives until the user confirms the working tree is right, then drop it explicitly).
@@ -57,10 +59,6 @@ Present each stale stash (repo, age, one-line summary) and ask the user to choos
 
 - **Defer explicitly** — don't just leave it. Suggest filing it via `deferred-scope-record` (global: ai-skills) so the deferral has a durable unblock condition (a ticket or vault note) rather than silently surviving as unowned WIP for another audit cycle.
 
-### 5. Safety note on shared stash stacks
-
-The stash stack is shared across worktrees and concurrent sessions on the same repo. Never run a bare `git stash pop` or `git stash drop` against a shared stack without first confirming which entry is whose — identify it by message/tag and re-resolve its current `stash@{N}` index right before acting, since indices shift as other entries are pushed or popped. See `git-ops`'s guidance on concurrent-session stash safety for the fuller rationale; this skill just applies it at audit time.
-
-### 6. Report
+### 5. Report
 
 One line per repo: how many stale stashes found, and the resolution (applied / dropped / deferred to `<ticket-or-note>`) for each. If a repo had no stale stashes, say so — don't stay silent.
