@@ -92,10 +92,12 @@ This is riskier than the fresh-branch approach (rewrites shared history on a bra
 
 ```bash
 git fetch origin main
-git diff main <stale-branch>
+git diff main <stale-branch> -- <files the stale branch actually touches>
 ```
 
-An empty diff means every line of content unique to the stale branch is already present in `main` (via the original squash plus the new PR's merge) — safe to delete. Any remaining diff output means real content hasn't landed yet — go back to Step 2 and re-check the delta before deleting anything.
+**Scope the diff to the stale branch's own files, not a whole-tree diff.** An unscoped `git diff main <stale-branch>` also picks up unrelated commits that landed on `main` from other work after the stale branch was cut — those show up as non-empty diff output that has nothing to do with whether *this* branch's content made it over, producing a false "not safe yet" reading. Scoping to the touched files avoids that false alarm.
+
+An empty (scoped) diff means every line of content unique to the stale branch is already present in `main` (via the original squash plus the new PR's merge) — safe to delete. Any remaining diff output means real content hasn't landed yet — go back to Step 2 and re-check the delta before deleting anything.
 
 Once clean:
 
