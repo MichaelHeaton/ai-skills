@@ -53,6 +53,8 @@ Use timing and content instead:
 
    If nothing shows up, proceed to step 3 — recovering the fix-up's content won't step on anything else. If a later commit does show up, inspect it first (`git show <that-sha> -- <path/to/file>`) and reconcile it with the fix-up's content in step 3's recovery rather than overwriting it.
 
+**Known out-of-scope cases**: this skill assumes the fix-up was genuinely dropped by a squash-merge race. Two cases outside that scope won't be distinguished by the checks above: (1) the fix-up's content was deliberately excluded or reworked during PR review, not raced away — timing alone can look identical; (2) the fix-up's commit time is *after* `mergedAt`, meaning it was never in a position to race in the first place. Either case still routes through step 3's corrective PR, which gets human review before merging — so a misdiagnosis here costs an unnecessary PR, not a silent bad merge.
+
 ## 3. Recovery — land the missing content on a fresh branch
 
 ```bash
