@@ -24,10 +24,10 @@ Any of the following, encountered mid-investigation:
 
 Do not silently retry the sign request, fall back to a different auth path, or route around the failure without the operator seeing what happened.
 
-State plainly:
+State plainly — **redact per the Non-negotiable section below before including any of the following in the conversation, a ticket, or any other output**, since raw Vault error bodies are exactly where a token or key fragment is most likely to leak:
 
-- **What command failed** — the exact `vault write ssh/sign/...` invocation or wrapper command (e.g. `pve-ssh <host>`), with any Vault token or key material redacted (see Non-negotiable below).
-- **What error came back** — the actual error text or the shape of the malformed response (e.g. "response returned but `data` key was absent").
+- **What command failed** — the exact `vault write ssh/sign/...` invocation or wrapper command (e.g. `pve-ssh <host>`).
+- **What error came back** — the actual error text or the shape of the malformed response (e.g. "response returned but `data` key was absent"). Redact before pasting — this is the single most likely place secret material leaks, since it's raw output from Vault, not something you composed yourself.
 - **What this blocks** — name the specific step of the original investigation that needed the signed cert (e.g. "blocks pulling `journalctl` from host X").
 
 ## Step 2 — Switch to direct-paste evidence collection
