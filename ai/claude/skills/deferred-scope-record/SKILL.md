@@ -46,25 +46,39 @@ Ask only for what's missing; infer as much as possible from the conversation alr
 
 If genuinely ambiguous, default to a **ticket** — it surfaces in triage and can be closed as won't-do later, whereas a vault note that should have been a ticket tends to get forgotten.
 
-### 3. File the record
+### 3. Confirm before filing
 
-**Ticket path** — invoke `issue-create` with:
+State the four captured fields back in one short block and ask for a go-ahead before creating anything — a casual "let's skip that for now" is common enough in ordinary conversation that this skill should never spawn a real ticket or vault note without the user seeing exactly what's about to be recorded. Skip this confirmation only if the user's own phrasing already explicitly asked for the record ("file that as deferred," "make a note of that deferral") — otherwise, wait for a yes.
+
+### 4. File the record
+
+**Ticket path** — invoke `issue-create`. `issue-create` requires its own user-story template (Acceptance Criteria and Test Plan sections are mandatory on every path, per `issue-create/references/user-story-template.md` — a deferral record has to satisfy that contract like any other ticket, not bypass it):
 
 - **Title**: imperative statement of the deferred item
-- **Body**: the four fields, structured plainly —
+- **Body**: the standard user-story template, with the four deferral fields as the Background section, and explicit "N/A — this is a scope-deferral record, no executable behavior" for both Acceptance Criteria and Test Plan (per this repo's own convention that "N/A, stated explicitly" satisfies the requirement for tickets with no behavior to verify) —
 
   ```markdown
+  ## Background
+
   **Deferred item:** <item>
   **Rationale:** <constraint/why not now>
   **Unblock condition:** <specific condition>
 
   *Captured via deferred-scope-record.*
+
+  ## Acceptance Criteria
+
+  N/A — this is a scope-deferral record, no executable behavior.
+
+  ## Test Plan
+
+  N/A — this is a scope-deferral record, no executable behavior.
   ```
 
 - **Priority**: `low` unless the user says otherwise — deferred work is rarely urgent by definition.
 
-**Vault note path** — write to the same Memex vault `issue-create` and `memex-dump` use. Append to an existing relevant note if one clearly matches the topic; otherwise create a new note under a `Deferred/` path, using the same four-field structure as the ticket body above. Do not invoke `memex-decide` for this — that skill is for finalized ADR-style decisions with its own template; a deferral is not yet a settled architectural decision.
+**Vault note path** — write to the same Memex vault `issue-create` and `memex-dump` use. Append to an existing relevant note if one clearly matches the topic; otherwise create a new note under a `Deferred/` path, using the same four-field structure as the ticket's Background section above (Acceptance Criteria/Test Plan sections don't apply to a vault note — that requirement is specific to `issue-create`'s ticket contract). Do not invoke `memex-decide` for this — that skill is for finalized ADR-style decisions with its own template; a deferral is not yet a settled architectural decision.
 
-### 4. Confirm
+### 5. Confirm
 
 One line: what was deferred, where it was recorded (ticket link or vault note path), and the unblock condition — so the user can immediately verify the record captured what they meant.
