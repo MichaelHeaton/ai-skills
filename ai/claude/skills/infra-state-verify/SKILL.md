@@ -1,5 +1,5 @@
 ---
-version: 1.2.0
+version: 1.2.1
 principles_version: 1.0.0
 last_updated: 2026-09-11
 updated_by: claude
@@ -81,7 +81,7 @@ Match the check to what's actually being claimed — don't just re-read the sour
 
 **Vault SSH CA signing** — if signing fails, document the failure in the draft and ask the operator to paste the journal/dmesg output (or equivalent); don't assert the unverified state as confirmed just because the request was sent.
 
-**Which observability stack** — before querying metrics/logs for a target host, confirm which stack actually ingests it (cloud vs. local) first. An empty result from the wrong stack looks identical to missing data from the right one — treat an empty result as a possible wrong-stack query, not automatically "nothing to report."
+**Which observability stack** — an empty result from the wrong stack looks identical to missing data from the right one, so never treat an empty result as "nothing to report" on its own. Hand off to the `observability-stack-router` skill *(global: ai-skills)* to actually determine which stack (cloud vs. local, or another documented alternative) ingests the target host before querying — this skill's job is trusting the result once you've queried the right place, not deciding where to query in the first place.
 
 **Cloud CLI (AWS/Azure/GCP)**
 
