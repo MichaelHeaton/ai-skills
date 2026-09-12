@@ -5,7 +5,7 @@ last_updated: 2026-09-12
 updated_by: claude
 name: design-assumption-audit
 description: Before drafting an architecture doc, design proposal, or topology recommendation naming specific tools/stores/mechanisms (a credential store, cloud provider, compute platform, or already-deployed service), probe the environment's documented conventions instead of defaulting to a generic "best practice" choice. Checks AGENTS.md, ~/.config/ai-skills/local.json (or the repo's equivalent config), and known-inventory references for what's already standardized/deployed per category, and flags conflicts before the first paragraph is written, not after a human catches it mid-draft. Use before writing a design doc, architecture proposal, or topology recommendation, or when asked "what does this environment use for X" or "sanity-check this against our setup". Motivated by a session drafting AWS Secrets Manager for a homelab design before the operator corrected it to Vault + Apple Password — a rewrite neither impl-preflight nor grill-me caught, since both fire later.
-compatibility: Requires read access to AGENTS.md and, where present, ~/.config/ai-skills/local.json or the repo's equivalent private config.
+compatibility: Cloud-compatible — degrades gracefully without ~/.config/ai-skills/local.json (a local-machine-only path); falls back to AGENTS.md and known inventory, and says so explicitly when a category has no documented answer available.
 ---
 
 # Design Assumption Audit
