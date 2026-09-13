@@ -1,5 +1,5 @@
 ---
-version: 1.7.0
+version: 1.8.0
 principles_version: 1.0.0
 last_updated: 2026-09-13
 updated_by: claude
@@ -125,10 +125,11 @@ Otherwise skip Manager and go straight to your summary — most tickets don't ne
 
 **For diffs that already cross the size/risk threshold above** (auth/credential handling, a persistent background service install, or similar) **spawn Manager in parallel with Tester instead of waiting for Tester to finish first.** A backtest found Manager catching real bugs — a data-loss race, an orphaned-file redaction gap — that Tester's first pass missed, and running strictly sequential meant those findings only surfaced after a full Tester pass, burning rework rounds against the pipeline's cap that earlier parallel spawning would have avoided. This only applies to diffs that already meet the risk threshold above — don't spawn Manager speculatively before Tester on ordinary tickets.
 
-Manager does two things, not one:
+Manager does three things, not two:
 
 1. **Judgment gate** on Tester's findings — pass/fail, not a diplomatic summary. If something's wrong, it says ship/rework/escalate, plainly.
 2. **Process verification** — did the review tooling that should have run on this diff actually run (`iac-reviewer` for infra changes, `deep-review` for anything security/perf/architecture-sensitive, `adobe-security-suite` where applicable)? A backtest against 20 real merged PRs found the actual gaps weren't missing capability — they were existing tools never getting invoked before merge. Manager's job includes catching that.
+3. **Security-control regression gate** — flags REWORK if the diff disables, weakens, or removes a security control (commented-out auth middleware, a widened firewall/network ACL, a disabled cert/TLS verification flag, a removed rate limit, or equivalent) with no linked tracking ticket naming an owner and revert-by date referenced in a commit message or the ticket/plan text. A linked ticket that already covers it clears the gate. See [principles/engineering-practices.md](../../../../principles/engineering-practices.md)'s "DevSecOps — shift security left" line for the rationale. This check only runs when Manager is already spawned under the conditions above — it is not a new spawn trigger.
 
 If Manager escalates, it reports back to you and to the Architect step (this session) — not a silent loop. **Hard cap**: after 2 rounds of flag → replan → recode, stop and escalate to the user regardless of Manager's verdict.
 
