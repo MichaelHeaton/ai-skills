@@ -13,6 +13,7 @@ Day-to-day checklist form of the engineering philosophy this workspace assumes. 
 
 ## Checklist
 
+- **Trust but verify (a.k.a. Rule of Two) — verification before action, not headcount.** Trust whoever did the work; verify with an independent check before anything hard-to-reverse ships. That check can be another person, another AI, or a test suite — "two" is a floor, not a fixed count, and depth (one check or a hundred) is fine as long as it's independent of whoever made the claim. No single actor signs off on its own unverified work; auto-merge is legitimate once the verification has earned that trust.
 - **DRY — single source of truth.** Before a fact gets a second home, ask which one wins when they disagree. No instant answer means two sources of truth, not one.
 - **IaC — no config that isn't committed.** A change made by hand that would be lost on rebuild doesn't exist yet.
 - **GitOps — merge is the apply button.** Running the deploy command by hand instead of merging is a sign the pipeline doesn't cover this case — worth fixing, not routing around.
