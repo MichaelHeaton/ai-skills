@@ -1,7 +1,7 @@
 ---
-version: 1.4.0
+version: 1.5.0
 principles_version: 1.0.0
-last_updated: 2026-09-10
+last_updated: 2026-09-13
 updated_by: claude
 name: decision-council
 description: Run any decision, plan, or tradeoff through 7 AI advisors with distinct thinking styles, a blind peer review round, and a final chairman synthesis. Based on Karpathy's LLM Council methodology. TRIGGERS: "council this", "decision council", "run the council", "war room this", "pressure-test this", "stress-test this", "debate my options", "gut check this", "get a second opinion on this", "talk me out of this". STRONG TRIGGERS when combined with a real decision: "should I X or Y", "which option", "I can't decide", "I'm torn between", "validate this decision". Do NOT trigger on: factual lookups, creation tasks (write me X), or casual questions without a meaningful tradeoff. ALSO TRIGGERS after a council has already produced a verdict, when the user corrects a factual premise the verdict rested on: "actually, X isn't the case", "I was wrong about Y", "that assumption is wrong", "the premise was off", "that's not actually who/what/why" — see Step 6 (premise correction).
@@ -184,6 +184,33 @@ Produce the council verdict using this exact structure. Be direct. Do not hedge.
 ```
 
 Present the full verdict in chat as markdown. No files generated unless the user asks.
+
+---
+
+## Step 4.5 — Offer to log as a durable decision
+
+This step triggers after a verdict lands — either Step 4's chairman synthesis, or the landslide-consensus shortcut (the section between Step 2 and Step 3 that skips peer review + chairman when 6+/7 advisors converge). It does not apply mid-pipeline or before a verdict exists.
+
+**Ask the user once:** whether to log this as a durable decision via `memex-decide`.
+
+**If yes** — do not dump the raw transcript into `memex-decide`. Map the council's own output onto `memex-decide`'s required fields (see its Step 1 "Extract decision details" for the exact field names) so its own extraction has nothing left to do except possibly ask about Title/Domain if genuinely not inferable:
+
+| memex-decide field | Sourced from |
+| --- | --- |
+| Title | A short noun phrase derived from the framed question (Step 1.B) |
+| Domain | Inferred from Step 1.A's loaded context; if not inferable, leave it for `memex-decide`'s own Step 1 to ask — don't duplicate that prompt here |
+| Decision | The chairman's "## The Recommendation" section (or, for the landslide shortcut, the synthesized verdict text) |
+| Context | The framed question's stakes/context (Step 1.B items 2–4: key context from user + memory + what's at stake) |
+| Rationale | "## Where the Council Agrees" plus the Recommendation's reasoning (or, for the landslide shortcut, the convergence reasoning across advisors) |
+| Alternatives Rejected | "## Where the Council Clashes" — the dissenting/alternative positions and why they were not chosen |
+| Consequences | "## One Thing to Do First" plus any risks noted in "## Blind Spots Caught" |
+| Source | "Decision council — 7 advisors + peer review + chairman synthesis" for the full-pipeline case, or "Decision council — landslide consensus (N/7 advisors), peer review and chairman skipped" for the shortcut case |
+
+With these fields populated, invoke `memex-decide` via the Skill tool, passing the mapped fields in the prompt/args. This is not the raw-transcript dump Step 5 offers — it's a structured handoff.
+
+**If no** — fall through to Step 5 (transcript save) unchanged. Step 5's transcript save is a separate, independent, still-optional output — declining the durable-decision log here does not skip or replace it.
+
+See principles/engineering-practices.md — "Decisions get a durable record, not just a memory."
 
 ---
 
