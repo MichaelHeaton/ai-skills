@@ -13,6 +13,7 @@ Day-to-day checklist form of the engineering philosophy this workspace assumes. 
 
 ## Checklist
 
+- **Encode the order, don't remember it.** When steps must happen in a specific sequence, declare the dependency in the pipeline itself (an explicit `needs:`, a skip-condition on the competing path — whatever the tool provides) with the reasoning written down, not just in a comment a human has to read first. A note saying "run this after that" is a suggestion; a gate that blocks the next step until the precondition is provably true is enforcement. If correctness requires ten PRs in a strict order, that's fine — repeatability beats minimizing PR count.
 - **DRY — single source of truth.** Before a fact gets a second home, ask which one wins when they disagree. No instant answer means two sources of truth, not one.
 - **IaC — no config that isn't committed.** A change made by hand that would be lost on rebuild doesn't exist yet.
 - **GitOps — merge is the apply button.** Running the deploy command by hand instead of merging is a sign the pipeline doesn't cover this case — worth fixing, not routing around.
