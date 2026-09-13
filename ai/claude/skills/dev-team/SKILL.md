@@ -1,7 +1,7 @@
 ---
-version: 1.6.0
+version: 1.7.0
 principles_version: 1.0.0
-last_updated: 2026-08-16
+last_updated: 2026-09-13
 updated_by: claude
 name: dev-team
 description: Run a ticket through a lightweight multi-agent build pipeline — Architect plans and asks clarifying questions, Coder implements, Tester adversarially checks the diff, Docs updates stale documentation, and a conditional Manager gates on risk. Use when working a ticket end-to-end and you want plan approval before code gets written, or when you say "run this through dev-team", "spin up the dev team on this ticket", "architect this ticket", "build this with the team" — or open with plain ticket-start phrasing like "start #NNN", "let's work #NNN", "pick up #NNN", or "work on #NNN". Offer or invoke on that phrasing instead of defaulting to in-session coding — triggering only surfaces the Architect plan; Coder never runs until you approve it. Complements decision-council (which resolves opinions/tradeoffs, not builds) and reuses model-route for per-role model selection. Do NOT use for a quick one-line fix — the Architect step exists to catch ambiguity on real work, not to gate trivial changes.
@@ -34,6 +34,8 @@ Read the ticket. Do NOT spawn any agents yet.
 Once approved, spawn `dev-team-coder` via the Agent tool with: the approved plan, the ticket text, and the file list from step 1. Nothing else — no full-repo dump.
 
 Route the model via `model-route`'s decision table before spawning (implementation-tier work is `sonnet` by default; only override if the plan itself flags unusually hard cross-cutting reasoning).
+
+**Coder now proves failure before fixing it (adopted via `decision-council` review, 2026-09-13).** Before implementing, Coder reproduces the actual bug for a bug-fix ticket, or defines and fails the equivalent verification check for new-capability work (a health/readiness probe, an integration test against a new surface) — then confirms it passes after the fix. That check gets committed as a persisted, discoverable artifact (a test-suite addition, or a named diagnostic script when no test harness applies) instead of an ephemeral local run, so it keeps doing work later: running automatically going forward, or giving whoever triages a related production failure a known place to look. Full requirement lives in `dev-team-coder.md`. This isn't gated on ticket type — Coder applies it whenever a meaningful failure signal exists and states explicitly when it doesn't, rather than writing a trivial or tautological check to satisfy the letter of the requirement. Tester (Step 3) spot-checks that the evidence is real rather than re-deriving it.
 
 **Before trusting Coder's "completed" report, verify actual repo state directly** — a task status of "completed" reflects the harness's task lifecycle, not necessarily that a commit landed. Coder has self-reported done while work was still uncommitted or a verification loop was still in progress. Run, in Coder's worktree:
 
