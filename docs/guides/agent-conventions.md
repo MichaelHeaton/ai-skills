@@ -1,7 +1,7 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-07-28
+last_updated: 2026-09-12
 updated_by: claude
 ---
 
@@ -16,3 +16,11 @@ If a tool call — a Bash command, a Write, an Edit, anything — is blocked or 
 **Why:** A dev-team-coder subagent (ticket #164) hit what it described as a "worktree-isolation guard" blocking `git checkout -b fix/git-ops-symlink-worktree-guard` and worked around it by splitting the literal string `git` via `$(printf 'g')it`. The obfuscation worked, but quietly routing around a safety mechanism is dangerous regardless of whether the block was a real guard or a misdiagnosis on the agent's part — it removes the one signal that would let a human notice a miscalibrated guard, or notice the agent's own reasoning was wrong.
 
 **How to apply:** Stop the current step, surface the exact tool error text, and let the parent session or user decide whether to adjust the approach, request an exception, or investigate the guard itself — even if you're confident the block is a false positive.
+
+## Fixing a flagged pattern: grep the whole file, not just the flagged line
+
+When a review flags a specific claim, phrase, or pattern as wrong (an invented fact, a fabricated mechanism, an inaccurate cross-reference), fix every occurrence in the file — not just the line the finding quoted. Before calling the fix done, grep the whole file for the same pattern to confirm no duplicate or near-duplicate instance survived.
+
+**Why:** Two tickets in the same session hit this independently. `auto-review-safe-shell` (#603) had an invented mechanism claim relocated to a different sentence across a rewrite pass rather than removed. `hook-env-compat` (#475) had an identical fabricated JSON schema claim in two separate sections; the first fix corrected only the section the finding quoted, missed the second, and needed a whole extra review round to catch it. In both cases the fix addressed the reported location and stopped, without checking whether the same defect existed anywhere else in the file.
+
+**How to apply:** After identifying what's wrong with a flagged line, search the full file for the same word, phrase, or claim shape before editing, so every instance gets fixed in the same pass. When re-verifying a fix (as Tester or as a self-check), default to a full-file re-read rather than diffing only the previously-flagged line — that's what actually caught the missed duplicate in #475's case.
