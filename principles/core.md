@@ -1,8 +1,8 @@
 ---
-version: 1.0.1
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-05-29
-updated_by: human
+last_updated: 2026-09-13
+updated_by: claude
 ---
 
 # Core principles
