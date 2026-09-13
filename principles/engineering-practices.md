@@ -13,6 +13,7 @@ Day-to-day checklist form of the engineering philosophy this workspace assumes. 
 
 ## Checklist
 
+- **Trust but verify (a.k.a. Rule of Two) — verification before action, not headcount.** Trust whoever did the work; verify with an independent check before anything hard-to-reverse ships. That check can be another person, another AI, or a test suite — "two" is a floor, not a fixed count, and depth (one check or a hundred) is fine as long as it's independent of whoever made the claim. No single actor signs off on its own unverified work; auto-merge is legitimate once the verification has earned that trust.
 - **Encode the order, don't remember it.** When steps must happen in a specific sequence, declare the dependency in the pipeline itself (an explicit `needs:`, a skip-condition on the competing path — whatever the tool provides) with the reasoning written down, not just in a comment a human has to read first. A note saying "run this after that" is a suggestion; a gate that blocks the next step until the precondition is provably true is enforcement. If correctness requires ten PRs in a strict order, that's fine — repeatability beats minimizing PR count.
 - **DRY — single source of truth.** Before a fact gets a second home, ask which one wins when they disagree. No instant answer means two sources of truth, not one.
 - **IaC — no config that isn't committed.** A change made by hand that would be lost on rebuild doesn't exist yet.
