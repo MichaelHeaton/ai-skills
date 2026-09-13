@@ -202,11 +202,11 @@ This step triggers after a verdict lands — either Step 4's chairman synthesis,
 | Decision | The chairman's "## The Recommendation" section (or, for the landslide shortcut, the synthesized verdict text) |
 | Context | The framed question's stakes/context (Step 1.B items 2–4: key context from user + memory + what's at stake) |
 | Rationale | "## Where the Council Agrees" plus the Recommendation's reasoning (or, for the landslide shortcut, the convergence reasoning across advisors) |
-| Alternatives Rejected | "## Where the Council Clashes" — the dissenting/alternative positions and why they were not chosen |
-| Consequences | "## One Thing to Do First" plus any risks noted in "## Blind Spots Caught" |
+| Alternatives Rejected | "## Where the Council Clashes" — the dissenting/alternative positions and why they were not chosen (or, for the landslide shortcut, note plainly that no formal dissent round occurred — 6+/7 advisors converged independently, so state that briefly rather than inventing a clash that wasn't there) |
+| Consequences | "## One Thing to Do First" plus any risks noted in "## Blind Spots Caught" (or, for the landslide shortcut, note that no peer-review blind-spot round ran, and draw consequences from the advisors' own stated risks/caveats instead) |
 | Source | "Decision council — 7 advisors + peer review + chairman synthesis" for the full-pipeline case, or "Decision council — landslide consensus (N/7 advisors), peer review and chairman skipped" for the shortcut case |
 
-With these fields populated, invoke `memex-decide` via the Skill tool, passing the mapped fields in the prompt/args. This is not the raw-transcript dump Step 5 offers — it's a structured handoff.
+With these fields populated, invoke `memex-decide` via the Skill tool, passing the mapped fields as its `args`. This is not the raw-transcript dump Step 5 offers — it's a structured handoff.
 
 **If no** — fall through to Step 5 (transcript save) unchanged. Step 5's transcript save is a separate, independent, still-optional output — declining the durable-decision log here does not skip or replace it.
 
