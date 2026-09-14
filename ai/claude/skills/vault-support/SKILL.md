@@ -1,7 +1,7 @@
 ---
-version: 1.4.0
+version: 1.4.1
 principles_version: 1.0.0
-last_updated: 2026-09-10
+last_updated: 2026-09-14
 updated_by: claude
 name: vault-support
 description: "Analyze vault support content — Slack threads, Jira tickets, direct research questions, documentation gap sessions, or a batch/channel-wide sweep across many threads at once — to fact-check the team bot, identify documentation gaps, and generate knowledge-extraction questions. Use when the user pastes a Slack thread (including a bare Slack message URL with no other framing), references a vault ticket, asks a vault behavior/config question directly, wants to identify what's missing in the wiki, or wants a batch audit across many threads at once. Triggers on: vault questions, bot responses, AppRole, policy PRs, KV2, 403, permission denied, access denied, seal, onboarding pasted from Slack, vault ticket, vault runbook, vault restore procedure, vault behavior, researching vault, how does vault handle, look at this vault ticket, wiki gaps, documentation backlog, doc backlog, what's missing in the wiki, identify documentation gaps, audit our docs, build a doc backlog, find wiki gaps, what are we missing in the docs, audit the channel this week, how many times did the bot get this wrong, check the last N threads, sample recent threads, what pages is the bot drawing from."
@@ -125,11 +125,16 @@ Compare the support bot's response to what the local docs say. If the support bo
 - Was the support bot correct, partially correct, or wrong?
 - If wrong/partial: what specifically did it miss or get wrong?
 
-**Suggested Response**
+---
+
+### 💬 REPLY TO SEND NOW (draft only — nothing has been sent)
+
 Draft a response the user can post in Slack. Keep it conversational (not copy-paste from docs). Include:
 
 - The actual answer with specific steps
 - Where it comes from (doc name is fine, no need for full path)
+
+---
 
 **Clarifying Questions** (if needed)
 If the docs don't fully answer the question, list 2–3 questions the user should ask in the thread — phrase them as things they would actually say in Slack.
@@ -229,7 +234,9 @@ For all cases, end with:
 
 ---
 
-### Gap Analysis
+### 📋 DOC FIXES TO FILE LATER (not a reply — nothing here goes to Slack)
+
+**Gap Analysis**
 
 **Confluence changes needed:**
 
@@ -261,3 +268,5 @@ Good candidates: recurring gap pattern (3+ threads), team answer that resolves a
 ## Output format
 
 Scannable headers. Bullets for lists. Blockquote for the suggested Slack response. Summarize long gap lists.
+
+**Never let the reply-now track and the file-later track run together unlabeled.** When a response includes both Step 4's Suggested Response and Step 5's Gap Analysis, keep them as two visually distinct blocks — the `💬 REPLY TO SEND NOW` header and the `📋 DOC FIXES TO FILE LATER` header (see Steps 4 and 5) — with a rule (`---`) between them. A reader should be able to tell at a glance which part is a draft they could copy into Slack right now versus which part is backlog work for later, without having to parse prose to find the boundary. This matters because nothing in this skill's output has actually been sent or filed by the time it's shown — both tracks are proposals awaiting the user's action.
