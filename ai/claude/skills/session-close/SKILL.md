@@ -1,7 +1,7 @@
 ---
-version: 1.21.0
+version: 1.22.0
 principles_version: 1.0.0
-last_updated: 2026-09-10
+last_updated: 2026-09-14
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
@@ -323,6 +323,7 @@ The subagent returns only a findings table, a new-skill-ideas table, and a short
 - **Spawn failure or usage/quota error** (not deployed, errors out before running, hits a quota limit) → fall back to invoking `skill-review` directly in-session with the same annotated list as SA1 context: run SA2-SA4 in-session and still file tickets for every finding (SA5). Note in the Step 10 summary that the subagent failed and the in-session fallback ran, so it's visible rather than silently dropped.
 - **Empty result that's actually valid** (the subagent ran cleanly and genuinely found nothing) → accept it as-is, no fallback needed. Log "no skill changes identified — nothing to ticket" in Step 10 the same as a clean in-session run would.
 - **Truncated or malformed output** (a findings table cut off mid-row, unparseable structure) → resume the same subagent invocation once before falling back to the in-session path — a truncation is often a one-off, and re-running in-session throws away work the subagent may have already done correctly. Only fall back to in-session SA2-SA4 if the resume also comes back malformed.
+- **Stall** (the subagent spawned cleanly — no spawn/usage error — but produces no first-turn output within the expected window) → distinct from the spawn-failure case above, which errors out immediately rather than going quiet. Resume the same subagent invocation once. If it's still stalled after that single resume, fall back to in-session SA2-SA4 the same way the malformed-output case does, so the skill-review audit still completes rather than being silently dropped. This case only applies when first-turn output never arrives — it has no effect on the normal path where the subagent responds promptly.
 
 **Reminder**: ai-skills is a public repo. Ticket content must be scrubbed of Employer-internal hostnames, internal ticket keys used as examples, security details, and anything sensitive. This scrub is the parent session's responsibility (SA5) — it does not happen inside the subagent.
 
