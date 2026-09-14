@@ -1,7 +1,7 @@
 ---
-version: 1.21.0
+version: 1.21.1
 principles_version: 1.0.0
-last_updated: 2026-09-10
+last_updated: 2026-09-14
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
@@ -102,6 +102,8 @@ Use `gh api user`, not `gh pr list`, for this probe — `gh pr list` fails with 
 If `GH_AUTH_BROKEN != 0`, don't silently skip branch hygiene — print the failure explicitly with a recovery hint, then fall back to a pure-git check per repo instead of the `gh pr list` flow below:
 
 > ⚠️ `gh auth token` / `gh pr list` failed — the `gh` keyring may be broken. Try `gh auth refresh`, or see the `gh-account-routing` skill for account/keyring recovery.
+
+**Mid-run `GraphQL: Forbidden` (the upfront check above passed, but a later `gh` call in the loop fails anyway).** `gh` working earlier in the session and then failing intermittently is not the same failure as the upfront check catching a broken keyring — don't jump straight to "keyring is broken" and fall back to the pure-git path. Run `issue-create`'s Step 0.5 sandbox probe *(global: ai-skills)* first: it distinguishes a token/account mismatch from the sandboxed shell scoping network calls, and only the former is an actual keyring problem. Keep true keyring failure (Step 0.5's probe fails outright, or its REST fallback also fails) as the last branch — retry via `required_permissions: ["all"]` or the REST fallback before setting `GH_AUTH_BROKEN` this late in the run.
 
 Pure-git fallback, run for each repo in scope (no `gh` calls):
 
