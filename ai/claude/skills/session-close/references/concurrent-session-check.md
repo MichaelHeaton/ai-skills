@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-08-16
+last_updated: 2026-09-14
 updated_by: claude
 ---
 
@@ -33,3 +33,18 @@ git -C <repo> reflog --since="@${SESSION_START_TS}" --oneline
 Every entry here should map to something this session itself did (its own checkouts, commits, merges). An entry that doesn't — a commit, checkout, or stash this session didn't perform — is treated the same as a `LIVE` match: surface the same warning before proceeding. This signal is strongest early in a session, before its own git activity has piled up enough reflog entries to make "mine vs. not mine" tedious to eyeball; it's still best-effort, not a substitute for the two checks above.
 
 **Hard gate — per repo, not a one-time audit.** Completing this check for one repo does not clear the gate for any other repo still pending. Do not begin Step 2 for a given repo until this check has completed for that specific repo. If the check flags a merged PR (stale branch) **and** the repo has uncommitted changes, resolve those changes first via Step 2's normal flow (commit+push to the stale branch, discard, or leave pending) **while still on the stale branch**. Only once the working tree is clean, switch to `main` (`git checkout main && git pull`). Never check out `main` while changes are uncommitted, and never commit directly on `main` — any further work after switching needs a new branch per git-ops first. A repo skipped due to a `gh` failure does not satisfy this gate — flag it in Step 10 as "branch state unverified" and treat it as if a stale branch were possible (don't let Step 2 silently assume it's clean).
+
+## Worktree isolation for Step 10's git mutations
+
+Detection alone — `LIVE`/`STALE`/`CLEAR`, the origin-move check, reflog freshness — only helps if it happens to run at the right moment. It cannot catch a second, *live* session that checks out a different branch on the same shared, non-worktree checkout in the gap between this session's own `git checkout`/`git add` and its own `git commit`/`git push` — by the time any of the signals above would fire again, the mutation has already landed on whatever branch happened to be current at commit time. An earlier fix hardened the *stale*-branch case (a branch whose recorded state had drifted since this session last touched it, caught by `check-branch-identity.sh`'s `MATCH`/`MISMATCH` check in Step 1b) — that check runs once, before a repo's work begins, so it does not cover a branch pointer that moves again *during* this session's own sequence of git calls.
+
+Step 10's memex session-summary write/commit/push sequence is the highest-risk instance of this: it runs late in the session, after everything else, in the same shared checkout every other step used — exactly the conditions for another session's concurrent activity to have moved the branch pointer since Step 1b last checked it. Rather than re-checking branch identity between every individual git call in the sequence, do the mutation somewhere a second session's checkout can't reach it:
+
+```bash
+git -C <repo> fetch origin --quiet
+git -C <repo> worktree add <repo>/.claude/worktrees/session-close-<run-id> -b <summary-branch> origin/<default-branch>
+```
+
+Run the write/commit/push sequence inside `<repo>/.claude/worktrees/session-close-<run-id>` instead of `<repo>` itself — a worktree has its own `HEAD`, so another session switching the shared checkout's current branch cannot move it out from under this one, by construction. This is the same isolation `EnterWorktree`/git-ops already use for coding-agent work, applied here to session-close's own git mutations. Once pushed and confirmed (`git ls-remote --heads origin <summary-branch>`), remove the worktree (`git worktree remove <path>`) rather than leaving it behind for the next session to trip over.
+
+This applies at minimum to Step 10's session-summary sequence; extend it to any other session-close git mutation in a shared, non-worktree checkout where the concurrent-session risk above is a real concern for that repo.

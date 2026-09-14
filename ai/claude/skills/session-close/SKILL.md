@@ -1,7 +1,7 @@
 ---
-version: 1.21.0
+version: 1.22.0
 principles_version: 1.0.0
-last_updated: 2026-09-10
+last_updated: 2026-09-14
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
@@ -403,6 +403,8 @@ fi
 **If `GH_AUTH_BROKEN` was set during Step 1's branch hygiene check**, record it under "⚠️ Pending" in this summary — e.g. *"`gh` keyring broken this session (`gh auth token`/`gh pr list` failed) — branch hygiene ran on the pure-git fallback only; run `gh auth refresh` before the next session and re-verify branch/PR state normally."* This is a session-boundary fact the next session needs, not just a mid-run print — don't let it be printed once during Step 1 and then dropped.
 
 By the time this step runs, Step 6's findings, Step 8's context note, and Step 9's git/PR-derived ticket list are all known, so this is the one point in the run with everything the record needs.
+
+**Run this sequence's git mutations in a dedicated worktree, not the shared checkout.** A concurrent session sharing this repo's primary checkout can switch its current branch between this session's own git calls, mid-sequence — the same collision risk [references/concurrent-session-check.md](references/concurrent-session-check.md)'s detection signals only catch if they happen to run at the right moment. Isolate the write/commit/push below in its own worktree instead: procedure and cleanup in that reference's "Worktree isolation for Step 10's git mutations" section.
 
 - **Nothing worth recording** (no commits, no ticket updates, no Step 6 findings, no other reportable activity this session) — skip entirely, no new ticket. This holds even if a same-day ticket already exists with unresolved items from earlier today: an empty run has nothing to add, so leave that existing ticket exactly as it stands rather than commenting "nothing new" onto it — a no-op comment isn't worth the noise, and the ticket's unresolved items remain visible on it either way.
 - **Otherwise** — draft the close-out summary using the template in [references/session-summary-template.md](references/session-summary-template.md), then file it via the `issue-create` skill using its normal routing (its own Step 1 "Detect routing target" via `detect-context.sh`, or the same target already resolved above for the same-day check and the multi-repo note) — this session's own repo context decides Jira, GitHub-current-repo, or GitHub-Memex, exactly as it would for any other issue-create call; don't hardcode a fixed target. Title it `Session close summary — <date>[ - topic]`. Label it `session-summary` in addition to whatever labels that path normally applies (create the label first if the target repo doesn't have it yet — `gh label create session-summary --repo <owner/repo> --description "End-of-session close-out report" --color 5319e7`, or the GitHub MCP equivalent if `gh` is absent; ignore an "already exists" error).
