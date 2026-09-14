@@ -1,7 +1,7 @@
 ---
-version: 1.21.0
+version: 1.21.1
 principles_version: 1.0.0
-last_updated: 2026-09-10
+last_updated: 2026-09-14
 updated_by: claude
 name: git-ops
 description: Universal git hygiene guide — fires on the *first* git commit, push, PR, or MR operation in a session and every one after, not only retroactively at session-close. Covers branching rules, commit message format, PR/MR description format, and pre-commit checks scoped to modified files (including terraform fmt). Applies regardless of which other skills are active. Trigger on: any request to commit, push, open a PR or MR, "git commit", "create a PR", "push this", "open a pull request", "submit a MR", "ready to merge", or any variation of committing or sharing code changes.
@@ -44,6 +44,8 @@ If absent, use the `mcp__github__*` MCP tools in place of `gh` for the operation
 | `gh pr view <n> --json state,mergedAt` | post-create state check, "Merging a PR" re-check | `pull_request_read(method: "get", owner, repo, pullNumber: n)` |
 | `gh pr create --repo ... --title ... --body ... --head ... --base ...` | "PR / MR descriptions" | `create_pull_request(owner, repo, title, body, head, base)` |
 | `gh issue create` / `gh issue comment` | ticket creation/comments from skills that call into git-ops | route through the `issue-create` skill (already MCP-aware) / `mcp__github__add_issue_comment` |
+
+**Pitfall — `--head` belongs to `gh pr list`, not `gh pr view`.** `gh pr view` takes a positional argument (`gh pr view <n>`, a branch name, or a URL — as used in the table row above and throughout this file); `gh pr view --head <branch>` fails with `unknown flag: --head`. To look up a PR by branch name, either pass the branch positionally (`gh pr view <branch> --repo <owner/repo>`) or use `gh pr list --head <branch>` first to get the PR number.
 
 **No MCP equivalent — these stay `gh`-only, as far as this doc has verified.** `gh pr merge` ("Merging a PR"), `gh auth switch` / `gh auth token` ("Multi-account operations"), and `scripts/verify-closes.sh` (shells out to `gh` internally) have no known MCP substitute. If the actual connected GitHub MCP server in a given session turns out to expose a merge tool, prefer it and update this note — don't assume this list is permanently exhaustive. When `gh` is absent and no substitute is available, these steps cannot run: say so explicitly rather than silently skipping the merge or the closes-verification — surface it in whatever summary or confirmation the calling skill produces, and either ask the user to run the equivalent `gh` command from their own terminal, or defer the step to a session where `gh` is available.
 
@@ -364,6 +366,22 @@ This environment often has more than one `gh` account active (e.g. a personal ac
 ## Pre-commit checks
 
 Run checks **only on files you are modifying**. Do not run repo-wide formatters or linters as a side effect of an unrelated change — it pollutes the diff and steps on other people's in-flight work. Terraform fmt scoping, the configured-tool table for other languages, the shared-repo formatting rule, and the pre-commit-hook auto-fix recovery step: [references/pre-commit-checks.md](references/pre-commit-checks.md).
+
+---
+
+## Terraform destroy/create — same-PR allowlist updates
+
+Some Terraform setups gate destructive changes (destroy, replace, or re-create) behind a merge-time auto-apply allowlist — a workspace-level file (e.g. `terraform/<workspace>/.ci-auto-apply-allowlist`) listing the exact resource addresses CI is permitted to apply automatically. If a plan under a workspace like this creates, destroys, or replaces resources, the allowlist update belongs in the **same PR** as the plan, not a follow-up.
+
+**Why:** a PR that changes gated resources without updating the allowlist can pass review and merge cleanly, then fail at auto-apply time with an error like `not allowlisted: <resource address>` — the change is stuck mid-merge, needing a same-day follow-up PR just to unblock what should have shipped in one.
+
+Before opening a PR with a Terraform plan that creates, destroys, or replaces resources:
+
+- Check whether the target workspace gates auto-apply behind an allowlist file
+- If it does, add every affected resource address to that file in this PR
+- Confirm the plan's resource list and the allowlist entries match exactly — a partial update still blocks
+
+This is a general IaC-gate pattern, not specific to any one repo — check the target repo's own CI/CD docs for its exact allowlist file location and gate mechanism.
 
 ---
 
