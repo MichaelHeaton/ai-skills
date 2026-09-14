@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-08-16
+last_updated: 2026-09-14
 updated_by: claude
 name: backlog-burndown
 description: Orchestrated ticket-cleanup pass over a project's open backlog — pulls tickets, groups them by size/risk, makes sure each one has a real Test Plan before touching code, routes implementation through dev-team or a direct edit depending on size, validates every diff against its Test Plan before closing, and reports a per-ticket summary. Use for a batch backlog cleanup session, "burn down the backlog", "close out these tickets", "process the open ticket queue", or an unattended/scheduled cleanup pass. Complements issue-triage (splits an oversized ticket, doesn't implement anything) and dev-team (builds one ticket end-to-end, doesn't orchestrate a batch or gate on Test Plans).
@@ -39,6 +39,16 @@ For each ticket, check for a `## Test Plan` section (required on tickets created
 
 - **Trivial lane** — edit directly in this session, same branch/commit discipline `git-ops` requires for any change.
 - **Non-trivial lane** — run the ticket through `dev-team`'s full pipeline (Architect plan → approval → Coder → Tester → conditional Docs/Manager). Use `dev-team`'s own batch mode when working several non-trivial tickets in the same pass (batched plan approval, self-polled PR merge state, mandatory direct diff verification per ticket).
+
+### 3a. Parallel dispatch safety (fanning work out to multiple background agents)
+
+If the batch is large enough that this session dispatches several tickets to concurrent background agents (beyond `dev-team`'s own sequential batch mode above) — this is the orchestrating session's own decision, not something the skill's Step 3 requires, but when it's made, it requires the following without exception. This section exists because an actual overnight run fanned out 8-wide against a shared checkout with none of these, producing real branch/HEAD-swap collisions, near-miss uncommitted-work captures, and merge-conflicting PRs that all bumped the same file's version line from the same stale base (a decision-council review of that run, 2026-09-14, is the source of this section — see the durable decision log for the full verdict).
+
+- **Mandatory worktree per cluster, no exceptions.** Every parallel worker gets its own `git worktree add` before touching any file — not as a recovery move after a collision is detected, but as the first action, every time, including for "just one small ticket." This alone structurally eliminates the shared-checkout failure mode regardless of what files anything touches.
+- **Cap default concurrency.** Don't fan out to an unbounded number of parallel workers by default — pick a sane default (e.g. 3-4 concurrent clusters) and require an explicit reason to exceed it, so going wider is something the orchestrating session opts into, not the silent default.
+- **Check for another live session in the same checkout before dispatching.** If the environment can enumerate other active sessions (e.g. a peer-session list), check it first — unattended multi-agent concurrency against a checkout a human is actively using is a more serious failure mode than agent-vs-agent collisions (a person's uncommitted work, not just a frontmatter merge conflict). If another session is active, surface that explicitly to the user before proceeding rather than treating it as background noise.
+- **Do not build file-collision prediction** (diffing ticket text or open-PR contents against each other to route work or avoid conflicts) as a substitute for the above. It was evaluated and rejected: querying already-open PRs cannot see sibling clusters starting in the same instant, which is exactly the collision this section exists to prevent — a pre-dispatch check gives false confidence on the case it can't see, at real ongoing maintenance cost.
+- **Same-file sequential work needs no new ordering system.** With worktrees mandatory, two tickets that turn out to touch the same file simply produce two branches that merge one after the other through the normal merge-commit workflow (this repo disallows rebase-merge) — resolve the conflict at merge time like any other, don't build a pre-dispatch rebase/sequencing protocol to avoid it.
 
 ## 4. Validate against the Test Plan
 
