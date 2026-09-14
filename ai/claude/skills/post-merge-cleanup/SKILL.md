@@ -1,5 +1,5 @@
 ---
-version: 1.0.3
+version: 1.1.0
 principles_version: 1.0.0
 last_updated: 2026-09-14
 updated_by: claude
@@ -21,6 +21,37 @@ No change to the happy path — when the agent itself opens the PR, auto-trigger
 ## When multiple PRs merge close together in the same repo
 
 Complete the full cleanup sequence (pull-main through redeploy) for the first merge before making any new commit in that repo — don't start on the second PR's follow-up work while the first is only partially cleaned up. A commit made between "first PR merged" and "first PR's cleanup finished" risks landing on a branch whose PR just merged, producing an avoidable conflict PR. Process merges in the order they landed, one full cleanup at a time.
+
+**This is the default for two merges landing close together.** For a longer run of same-repo merges — three or more, or whenever the user explicitly signals batch processing — see "Burst/batch mode" below instead. It changes this rule's don't-start-the-next-commit-before-cleanup-finishes guarantee only for the expensive Step 4/5 checks; Steps 1–3 still run after every merge, in order, exactly as described here.
+
+## Burst/batch mode (rapid same-repo multi-PR merges)
+
+When several PRs merge back-to-back in the same repo within one session — a deliberate multi-PR run, not the occasional close-together pair covered above — running Step 4 (redeploy) and Step 5 (Actions check) after every single merge re-checks a state that's about to change again within minutes. Burst mode defers those two steps to the end of the batch while still keeping main and local git state in sync after every merge.
+
+**Signal to enter burst mode** — either is sufficient:
+
+- The user says so explicitly ("processing N PRs in a row," "burst mode," "batch-merging these")
+- Three or more PRs have been confirmed merged in the same repo within this session, with more still queued
+
+**Intermediate merges** (any merge that isn't the last in the batch) — run only:
+
+1. Pull main (fast-forward)
+2. Remove the worktree (if one was used)
+3. Delete the local (and remote, if needed) branch
+
+Skip Step 4 and Step 5 for every intermediate merge — do not redeploy or check Actions after each one.
+
+**Burst end** (the last merge in the batch, or the burst is explicitly declared over) — run the full sequence: Steps 1–3 as above, plus:
+
+- Step 4 — Redeploy / rebuild
+- Step 5 — Check the latest Actions run on the default branch
+
+**Single-PR / non-burst path is unchanged.** Outside a declared or detected burst, every merge still runs the full five-step sequence immediately, per the default described above.
+
+### Failure modes
+
+- **Burst abandoned mid-way** (session ends, or the remaining queued PRs never land) — the last intermediate merge's skipped Step 4/5 is still pending, not waived. Run the full Step 4 + Step 5 pass before ending the session, or before starting unrelated work in this repo, rather than letting a burst that never reached its declared end skip redeploy/Actions-check indefinitely.
+- **Actions comes back red on the burst-end pass** — surface it the same way Step 5 already reports a single-merge failure, but call out explicitly that it may reflect any merge in the burst, not just the last one — none of the intermediate merges were checked individually, so isolating which one introduced the failure may require checking Actions runs for those commits after the fact.
 
 ## 1. Pull main (fast-forward)
 
@@ -103,4 +134,13 @@ A failing latest run belongs in the cleanup summary itself (workflow name + URL)
 ✓ local branch deleted (remote already auto-deleted)
 ✓ redeployed via `make install-system`
 ✓ latest Actions run on main: passed (or: ✗ FAILED — <workflow> <url>)
+```
+
+**In burst mode**, an intermediate merge's report omits the last two lines entirely rather than printing them as skipped — there's nothing to report on redeploy/Actions until the burst-end pass runs them:
+
+```
+✓ main synced (fast-forward)
+✓ worktree removed
+✓ local branch deleted (remote already auto-deleted)
+— redeploy and Actions check deferred to burst end
 ```
