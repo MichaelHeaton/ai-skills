@@ -1,7 +1,7 @@
 ---
-version: 1.1.1
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-09-14
 updated_by: claude
 name: memex-decide
 description: Log a finalized decision into the Memex wiki as a persistent ADR-style document. Use when a decision has been reached through a structured process (decision council, research, discussion) and needs a permanent home — not a ticket. Writes to Wiki/Concepts/{Topic}-Decision.md, updates Wiki/log.md, Wiki/index.md, Wiki/Concepts/README.md, and Wiki/overview.md. Does NOT create a ticket — that's memex-dump's job. Trigger on: "log this decision", "document this decision", "write this up as a decision", "save this to the wiki", "archive this decision", "memex this decision", "create a decision doc", "add this to the wiki", at the end of a decision-council run when the user says to save or archive the output. SKIP when the user wants to capture a raw thought, idea, or unresolved question — use memex-dump for those.
@@ -38,6 +38,14 @@ Gather from context (don't ask for things already in the conversation):
 - **Source** — how the decision was reached (decision council, research, discussion, etc.)
 
 If any required field is missing and can't be inferred from context, ask once before proceeding.
+
+**Check for an existing contradictory decision.** Before finalizing the details above, grep `$MEMEX_ROOT/Wiki/Concepts/` for existing decision docs on the same or overlapping topic:
+
+```bash
+grep -ril "{topic keyword}" "$MEMEX_ROOT/Wiki/Concepts/"*-Decision.md 2>/dev/null
+```
+
+If an existing doc covers the same topic and the new decision contradicts or reverses it, note its path and title — Step 3 uses them to mark the old doc superseded and cross-link the new one.
 
 ---
 
@@ -86,6 +94,7 @@ updated: {YYYY-MM-DD}
 ## Context
 
 {Why this decision was needed}
+{If Step 1 found a contradicted prior decision doc: This supersedes [[Wiki/Concepts/{old-filename-without-extension}|{Old Title}]]: {one-line note on what changed}.}
 
 ## Rationale
 
@@ -104,6 +113,14 @@ updated: {YYYY-MM-DD}
 {How the decision was reached — decision council, research, team discussion, etc.}
 EOF
 ```
+
+**If Step 1 found a contradicted prior decision doc, supersede it.** Insert this line right after the old doc's frontmatter, before its first heading:
+
+```
+> **Superseded {in part|fully}** — see [[Wiki/Concepts/{new-filename-without-extension}|{Title}]].
+```
+
+The new doc's `## Context` section (above) already cross-links back to the old one — no separate step needed there.
 
 ---
 
