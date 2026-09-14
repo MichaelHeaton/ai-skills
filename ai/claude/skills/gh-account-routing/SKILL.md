@@ -1,7 +1,7 @@
 ---
-version: 1.0.0
+version: 1.0.1
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-09-14
 updated_by: claude
 name: gh-account-routing
 description: Detect and switch to the correct gh account for a repo's owner before any gh command mid-session — not only at session boundaries — then restore the prior account once the triggering task completes. Use before any ad hoc gh call (checking a PR, viewing an issue, cloning) against a repo whose owner doesn't match the currently active gh account, especially when checking status across multiple repos in different GitHub orgs within one session. Also invoke this immediately after any gh command fails with a repository-resolution error (e.g. GraphQL "could not resolve to a Repository") — that failure signature is a documented entry point in its own right, not just something a pre-flight check should have caught. Complements session-close's own account pre-flight, which only runs at session start/end.
@@ -77,7 +77,7 @@ Two triggers, both requiring confirmation before locking — this is never a sil
 
 Once confirmed:
 
-1. **Capture the true pre-lock account** before switching — `gh auth status` right now, not whatever `session-close`'s own pre-flight might see later. This is the account lock mode is ultimately responsible for restoring; don't rely on any other skill's pre-flight to have captured it correctly, since a skill invoked *after* the lock is already active only ever sees the locked account as "current," not the original.
+1. **Reuse the `ORIGINAL_GH_ACCOUNT` already captured during the switch that triggered the automatic offer** — Step 2's capture happens before that switch touches anything, so it's already the true pre-lock account. Don't re-query `gh auth status` at confirmation time to "recapture" it: by then the active account may or may not have already been restored by that switch's own Step 3 cycle, and re-deriving the value from whichever account happens to be active at that moment is exactly the ambiguity this step exists to avoid. If lock mode is entered via the **explicit** trigger instead (no prior switch this session to reuse a capture from), capture fresh with `gh auth status` per Step 2 before switching, same as any other switch. This is the account lock mode is ultimately responsible for restoring; don't rely on any other skill's pre-flight to have captured it correctly, since a skill invoked *after* the lock is already active only ever sees the locked account as "current," not the original.
 2. Switch to the target account (Step 2), same as normal.
 3. Skip the restore-after-task step (Step 3) for every subsequent call to that account — stay switched.
 4. **Restore explicitly, as its own step, before the task or session that needed the lock is considered done** — either when the user explicitly says they're finished with that account, or before handing off to any other skill that does its own account pre-flight (`session-close` included). Don't defer restoration to "session end" as a passive backstop: nothing restores the account automatically if the session simply ends without an explicit unlock, and `session-close`'s own pre-flight/restore cycle is designed to undo *its own* temporary switch — it has no visibility into an unrelated lock already in effect when it starts, so running it does not reliably restore the true pre-lock account.
