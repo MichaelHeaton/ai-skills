@@ -55,7 +55,11 @@
       "Bash(bash ~/.claude/skills/git-ops/scripts/verify-closes.sh*)",
       "mcp__atlassian__confluence_get_page_children",
       "mcp__atlassian__confluence_get_page_diff",
-      "mcp__2026a88b-8ad2-4256-9eca-84b6d836599b__slack_read_thread"
+      "mcp__2026a88b-8ad2-4256-9eca-84b6d836599b__slack_read_thread",
+      "Bash(unset GH_TOKEN)",
+      "Bash(curl -sI *)",
+      "Bash(git -C * branch --show-current)",
+      "Bash(command -v *)"
     ]
   },
   "hooks": {

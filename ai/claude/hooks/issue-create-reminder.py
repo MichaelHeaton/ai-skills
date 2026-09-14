@@ -18,7 +18,15 @@ import re
 import sys
 from pathlib import Path
 
-BASH_COMMAND_RE = re.compile(r"\b(gh\s+issue\s+create|glab\s+issue\s+create)\b")
+# Tolerate global flags between the binary and its subcommand (e.g.
+# `gh --repo owner/repo issue create`) without matching across a shell
+# separator into an unrelated command.
+_SEP = r"(?!&&|\|\||;|\|)"
+_FLAGS = rf"(?:\s+{_SEP}\S+){{0,6}}"
+BASH_COMMAND_RE = re.compile(
+    rf"\bgh{_FLAGS}\s+issue\s+create\b"
+    rf"|\bglab{_FLAGS}\s+issue\s+create\b"
+)
 MCP_TOOL_RE = re.compile(r"(^|_)(jira_create_issue|save_issue|issue_write)$", re.IGNORECASE)
 
 try:
@@ -27,7 +35,9 @@ except Exception:
     sys.exit(0)
 
 tool_name = str(data.get("tool_name", ""))
-tool_input = data.get("tool_input", {}) or {}
+tool_input = data.get("tool_input", {})
+if not isinstance(tool_input, dict):
+    tool_input = {}
 
 is_direct_call = False
 if tool_name == "Bash":
