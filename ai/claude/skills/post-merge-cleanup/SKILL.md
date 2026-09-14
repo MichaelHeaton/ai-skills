@@ -75,6 +75,8 @@ git -C <repo> worktree remove <worktree-path>
 
 Skip this step entirely if the work happened in the main checkout — not every merge involves a worktree.
 
+**A `git worktree remove --force` can trigger Auto-review's smart-mode gate** — a safety checkpoint on high-velocity writes, not a failed command. It surfaces as a native approval card, not an error. Request approval via the card and continue (same pattern git-ops's batch-branch-delete note documents for `git branch -d`).
+
 ## 3. Delete the local (and remote, if needed) branch
 
 ```bash
@@ -88,6 +90,8 @@ git -C <repo> log main --oneline | grep -F "<distinctive commit message text>"
 ```
 
 **Remote branch**: skip deletion if GitHub/GitLab already auto-deleted it (check `gh pr view <n> --json headRepositoryOwner,headRefName` or the merge response) — don't assume it needs manual cleanup.
+
+**A `git push --delete origin <branch>` can trigger Auto-review's smart-mode gate** — same safety checkpoint as the worktree-remove case above, not a failed command. It surfaces as a native approval card. Request approval via the card and continue.
 
 **Misnamed-branch recovery via squash**: if session context shows the merged PR's tip was a recovery of commits that originally lived on a different, misnamed branch — later squashed into whatever branch actually merged — don't trust an empty `origin/main..<branch>` diff as proof nothing was stranded. A squash rewrites history, so that three-dot diff can read empty even when the recovered content never actually landed the way it was supposed to. This needs a more rigorous check than the commit-message grep above — a squash changes both the commit hash and message, so grepping for the original message won't reliably confirm the content landed:
 
