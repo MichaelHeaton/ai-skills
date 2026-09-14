@@ -369,6 +369,22 @@ Run checks **only on files you are modifying**. Do not run repo-wide formatters 
 
 ---
 
+## Terraform destroy/create — same-PR allowlist updates
+
+Some Terraform setups gate destructive changes (destroy, replace, or re-create) behind a merge-time auto-apply allowlist — a workspace-level file (e.g. `terraform/<workspace>/.ci-auto-apply-allowlist`) listing the exact resource addresses CI is permitted to apply automatically. If a plan under a workspace like this creates, destroys, or replaces resources, the allowlist update belongs in the **same PR** as the plan, not a follow-up.
+
+**Why:** a PR that changes gated resources without updating the allowlist can pass review and merge cleanly, then fail at auto-apply time with an error like `not allowlisted: <resource address>` — the change is stuck mid-merge, needing a same-day follow-up PR just to unblock what should have shipped in one.
+
+Before opening a PR with a Terraform plan that creates, destroys, or replaces resources:
+
+- Check whether the target workspace gates auto-apply behind an allowlist file
+- If it does, add every affected resource address to that file in this PR
+- Confirm the plan's resource list and the allowlist entries match exactly — a partial update still blocks
+
+This is a general IaC-gate pattern, not specific to any one repo — check the target repo's own CI/CD docs for its exact allowlist file location and gate mechanism.
+
+---
+
 ## Before pushing to an existing branch
 
 Before every `git push` to a feature branch, check whether its PR is already merged — pushing to a merged branch orphans commits, and a three-dot diffstat is not reliable evidence of pending work after a squash-merge. Merged-PR check, squash-merge diffstat caveat, and CI/CD re-run behavior: [references/pushing-to-existing-branch.md](references/pushing-to-existing-branch.md).
