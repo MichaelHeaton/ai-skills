@@ -1,7 +1,7 @@
 ---
-version: 1.4.0
+version: 1.4.1
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-09-14
 updated_by: claude
 name: agent-md-sync
 description: Generate and maintain component-level AGENTS.md files — either for a single named component (skips full-repo discovery, jumps straight to reading and drafting) or across an entire repo (scan mode). Keeps AI context co-located with code so agents can navigate specific roles, modules, or components without scanning the whole repo. Detects and respects a repo's existing AGENT.md/AGENTS.md convention rather than assuming one. Called automatically by git-ops before PR creation to catch stale or missing component AGENT.md/AGENTS.md files. Trigger on: "generate agent md for this role", "create component AGENTS.md", "scan repo for components", "check which AGENT.md files are stale", "document this module", "add AI context to this role", or when git-ops invokes it before PR creation.
