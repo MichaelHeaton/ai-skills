@@ -18,8 +18,14 @@ import re
 import sys
 from pathlib import Path
 
+# Tolerate global flags between the binary and its subcommand (e.g.
+# `gh --repo owner/repo issue comment 123`, `glab -R group/repo issue close
+# 5`) without matching across a shell separator into an unrelated command.
+_SEP = r"(?!&&|\|\||;|\|)"
+_FLAGS = rf"(?:\s+{_SEP}\S+){{0,6}}"
 BASH_COMMAND_RE = re.compile(
-    r"\b(gh\s+issue\s+(comment|close|edit|reopen)|glab\s+issue\s+(note|close|update|reopen))\b"
+    rf"\bgh{_FLAGS}\s+issue\s+(comment|close|edit|reopen)\b"
+    rf"|\bglab{_FLAGS}\s+issue\s+(note|close|update|reopen)\b"
 )
 
 try:
@@ -28,7 +34,9 @@ except Exception:
     sys.exit(0)
 
 tool_name = str(data.get("tool_name", ""))
-tool_input = data.get("tool_input", {}) or {}
+tool_input = data.get("tool_input", {})
+if not isinstance(tool_input, dict):
+    tool_input = {}
 
 is_direct_call = False
 if tool_name == "Bash":

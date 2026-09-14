@@ -93,16 +93,22 @@ DIFF_BASE="$(resolve_diff_base "$BASE")"
 # with zero output, indistinguishable from a genuinely clean result.
 echo "check-pr-diff: repo=$(git rev-parse --show-toplevel 2>/dev/null || pwd) branch=$(git branch --show-current 2>/dev/null || echo '(detached)') diff_base=${DIFF_BASE}" >&2
 
-# Load ignore list
-declare -A IGNORED
+# Load ignore list. Plain newline-delimited string instead of an associative
+# array — `declare -A` needs bash 4+, and macOS ships bash 3.2 as the default
+# `/bin/bash` (GPLv3 licensing), which `#!/usr/bin/env bash` resolves to
+# unless a newer bash happens to be first on $PATH. Each entry is wrapped in
+# leading/trailing newlines so membership tests can't false-positive on a
+# path that's merely a substring of another entry.
+IGNORED=$'\n'
 if [[ -f ".agent-md-ignore" ]]; then
   while IFS= read -r line; do
     line="${line%%#*}"  # strip inline comments
     line="${line// /}"  # strip spaces
     [[ -z "$line" ]] && continue
-    IGNORED["$line"]=1
+    IGNORED="${IGNORED}${line}"$'\n'
   done < ".agent-md-ignore"
 fi
+is_ignored() { [[ "$IGNORED" == *$'\n'"$1"$'\n'* ]]; }
 
 # This script only reports on existing files — it never writes a new
 # AGENT.md/AGENTS.md itself, so there's no need to resolve one preferred
@@ -115,19 +121,25 @@ has_either_agent_md() {
   [[ -f "$1/AGENT.md" || -f "$1/AGENTS.md" ]]
 }
 
-# Get all files changed in this branch vs base (three-dot diff for branch-only changes)
-mapfile -t ALL_CHANGED < <(git diff --name-only "${DIFF_BASE}...HEAD" 2>/dev/null || git diff --name-only "${DIFF_BASE}..HEAD" 2>/dev/null || true)
+# Get all files changed in this branch vs base (three-dot diff for branch-only changes).
+# A plain `while read` loop instead of `mapfile` — `mapfile`/`readarray` is also
+# bash 4+ only, the same class of gap as the `declare -A` fix above.
+ALL_CHANGED=()
+while IFS= read -r __changed_file; do
+  ALL_CHANGED+=("$__changed_file")
+done < <(git diff --name-only "${DIFF_BASE}...HEAD" 2>/dev/null || git diff --name-only "${DIFF_BASE}..HEAD" 2>/dev/null || true)
 
 if [[ ${#ALL_CHANGED[@]} -eq 0 ]]; then
   exit 0
 fi
 
 # Which component dirs had EITHER convention's file updated in this branch?
-declare -A AGENT_UPDATED_DIRS
+AGENT_UPDATED_DIRS=$'\n'
 while IFS= read -r -d '' f; do
   dir=$(dirname "$f")
-  AGENT_UPDATED_DIRS["$dir"]=1
+  AGENT_UPDATED_DIRS="${AGENT_UPDATED_DIRS}${dir}"$'\n'
 done < <(printf '%s\0' "${ALL_CHANGED[@]}" | grep -zE 'AGENTS?\.md$' || true)
+is_agent_updated() { [[ "$AGENT_UPDATED_DIRS" == *$'\n'"$1"$'\n'* ]]; }
 
 # Is a directory a recognized component type?
 is_component_dir() {
@@ -152,7 +164,7 @@ find_component_boundary() {
 
   while [[ "$dir" != "." && "$dir" != "" ]]; do
     # Skip ignored paths
-    if [[ -v "IGNORED[$dir]" ]]; then
+    if is_ignored "$dir"; then
       return 0
     fi
 
@@ -171,7 +183,7 @@ find_component_boundary() {
 }
 
 # Process each changed file
-declare -A REPORTED_DIRS
+REPORTED_DIRS=$'\n'
 
 for file in "${ALL_CHANGED[@]}"; do
   # Skip AGENT.md/AGENTS.md files themselves (either convention)
@@ -184,11 +196,11 @@ for file in "${ALL_CHANGED[@]}"; do
   boundary_dir="${boundary#*:}"
 
   # Skip if already reported
-  [[ -v "REPORTED_DIRS[$boundary_dir]" ]] && continue
-  REPORTED_DIRS["$boundary_dir"]=1
+  [[ "$REPORTED_DIRS" == *$'\n'"${boundary_dir}"$'\n'* ]] && continue
+  REPORTED_DIRS="${REPORTED_DIRS}${boundary_dir}"$'\n'
 
   if [[ "$boundary_type" == "has-agent-md" ]]; then
-    if [[ -v "AGENT_UPDATED_DIRS[$boundary_dir]" ]]; then
+    if is_agent_updated "$boundary_dir"; then
       echo "OK:$boundary_dir"
     else
       echo "STALE:$boundary_dir"

@@ -56,6 +56,7 @@ Employer- and domain-specific values belong in **`~/.config/ai-skills/local.json
 4. [principles/deployment.md](principles/deployment.md)
 5. [principles/versioning.md](principles/versioning.md)
 6. [principles/token-efficiency.md](principles/token-efficiency.md)
+7. [principles/engineering-practices.md](principles/engineering-practices.md)
 
 ## Security
 

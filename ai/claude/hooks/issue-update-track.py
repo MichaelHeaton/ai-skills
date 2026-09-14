@@ -11,7 +11,9 @@ try:
 except Exception:
     sys.exit(0)
 
-tool_input = data.get("tool_input", {}) or {}
+tool_input = data.get("tool_input", {})
+if not isinstance(tool_input, dict):
+    tool_input = {}
 skill = str(tool_input.get("skill", "")).strip().lower()
 if skill != "issue-update":
     sys.exit(0)
