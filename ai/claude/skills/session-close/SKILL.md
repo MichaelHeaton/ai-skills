@@ -1,5 +1,5 @@
 ---
-version: 1.21.1
+version: 1.22.0
 principles_version: 1.0.0
 last_updated: 2026-09-14
 updated_by: claude
@@ -30,6 +30,8 @@ command -v gh >/dev/null 2>&1 && echo present || echo absent
 ```
 
 If absent, every `gh`-dependent step in this skill (the branch-hygiene PR checks below, Step 1b's auth pre-flight, Steps 3–4's push/PR creation, Step 9's ticket cross-referencing, Step 10's ticket filing) has an `mcp__github__*` MCP equivalent — see git-ops's "gh CLI availability" section for the PR-command table, and issue-create's [gh-mcp-fallback.md](../issue-create/references/gh-mcp-fallback.md) for the issue-command table (`issue-create` itself already detects and falls back automatically, so Step 10's ticket-filing needs no extra handling here). `gh pr merge`, `gh auth switch`, and `verify-closes.sh` have no MCP substitute **as far as this doc has verified** (git-ops covers this) — if the actual connected GitHub MCP server in a given session exposes a merge tool, prefer it and update this note; don't assume this list is permanently exhaustive. Note affected steps as blocked-pending-gh in the Step 10 summary rather than skipping them silently.
+
+**Shell execution backend unavailable — distinct from a hook block.** A hook rejecting a specific command (the Cursor JSON/stdout mismatch in Step 2, or a pre-commit block) is a decision about *that* command; the main-session Bash/Shell tool itself returning "no exit status" or reporting the execution backend unavailable is the execution layer failing outright, with no command-level decision involved. Don't stall the checklist retrying it. Delegate the git/gh steps for the affected repo to a `shell` subagent instead (Agent tool, `subagent_type: shell`), passing each step as an explicit prompt that includes the repo path — the subagent runs in its own execution context and isn't affected by the main session's backend failure. Note which steps ran via delegation in the Step 10 summary, so the record shows they didn't run directly.
 
 **No `~/.config/ai-skills/local.json`?** `GITHUB_PERSONAL_USER` (used in Step 1b's auth pre-flight and Steps 6, 9, 10 for personal-repo/account routing) has no fallback when this file doesn't exist — common in a fresh cloud/remote session. Check once:
 
