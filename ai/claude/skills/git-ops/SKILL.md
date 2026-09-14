@@ -1,7 +1,7 @@
 ---
-version: 1.21.0
+version: 1.21.1
 principles_version: 1.0.0
-last_updated: 2026-09-10
+last_updated: 2026-09-14
 updated_by: claude
 name: git-ops
 description: Universal git hygiene guide — fires on the *first* git commit, push, PR, or MR operation in a session and every one after, not only retroactively at session-close. Covers branching rules, commit message format, PR/MR description format, and pre-commit checks scoped to modified files (including terraform fmt). Applies regardless of which other skills are active. Trigger on: any request to commit, push, open a PR or MR, "git commit", "create a PR", "push this", "open a pull request", "submit a MR", "ready to merge", or any variation of committing or sharing code changes.
@@ -364,6 +364,22 @@ This environment often has more than one `gh` account active (e.g. a personal ac
 ## Pre-commit checks
 
 Run checks **only on files you are modifying**. Do not run repo-wide formatters or linters as a side effect of an unrelated change — it pollutes the diff and steps on other people's in-flight work. Terraform fmt scoping, the configured-tool table for other languages, the shared-repo formatting rule, and the pre-commit-hook auto-fix recovery step: [references/pre-commit-checks.md](references/pre-commit-checks.md).
+
+---
+
+## Terraform destroy/create — same-PR allowlist updates
+
+Some Terraform setups gate destructive changes (destroy, replace, or re-create) behind a merge-time auto-apply allowlist — a workspace-level file (e.g. `terraform/<workspace>/.ci-auto-apply-allowlist`) listing the exact resource addresses CI is permitted to apply automatically. If a plan under a workspace like this creates, destroys, or replaces resources, the allowlist update belongs in the **same PR** as the plan, not a follow-up.
+
+**Why:** a PR that changes gated resources without updating the allowlist can pass review and merge cleanly, then fail at auto-apply time with an error like `not allowlisted: <resource address>` — the change is stuck mid-merge, needing a same-day follow-up PR just to unblock what should have shipped in one.
+
+Before opening a PR with a Terraform plan that creates, destroys, or replaces resources:
+
+- Check whether the target workspace gates auto-apply behind an allowlist file
+- If it does, add every affected resource address to that file in this PR
+- Confirm the plan's resource list and the allowlist entries match exactly — a partial update still blocks
+
+This is a general IaC-gate pattern, not specific to any one repo — check the target repo's own CI/CD docs for its exact allowlist file location and gate mechanism.
 
 ---
 
