@@ -172,7 +172,10 @@ try:
 except Exception:
     sys.exit(0)
 
-command = str((data.get("tool_input", {}) or {}).get("command", ""))
+tool_input = data.get("tool_input", {})
+if not isinstance(tool_input, dict):
+    tool_input = {}
+command = str(tool_input.get("command", ""))
 match = find_git_invocation(command, {"checkout", "switch"})
 if not match:
     sys.exit(0)

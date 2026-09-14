@@ -18,6 +18,8 @@
 
 Public repo. No employer names, Jira keys, or internal URLs in commits. Placeholder definitions: [categories/tags.yaml](categories/tags.yaml).
 
+**If a real near-miss ever justifies building an automated check** (not preemptively — this manual rule has been sufficient so far), reach for a **tiered block/redact/hash/pass taxonomy** rather than a single blunt allow/deny gate: `block` for hard-stop cases (credentials, tokens), `redact` for content safe to keep with the sensitive span removed, `hash` for values needed for correlation without exposing the raw value, and `pass` for everything else. This pattern was extracted from a `decision-council` pass on issue #401 (evaluating [github.com/ruvnet/ruflo](https://github.com/ruvnet/ruflo)) and deliberately not implemented — see #471.
+
 ## Skills (current)
 
 Skill bodies: `ai/claude/skills/`. Deploy: `make install-system` (copy-only). Conventions: [docs/guides/skill-conventions.md](docs/guides/skill-conventions.md). Multi-AI layout: [docs/multi-ai.md](docs/multi-ai.md).
