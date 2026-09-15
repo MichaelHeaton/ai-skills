@@ -59,7 +59,12 @@
       "Bash(unset GH_TOKEN)",
       "Bash(curl -sI *)",
       "Bash(git -C * branch --show-current)",
-      "Bash(command -v *)"
+      "Bash(command -v *)",
+      "Bash(gh repo view *)",
+      "Bash(gh run list*)",
+      "Bash(gh pr list*)",
+      "Bash(gh auth status)",
+      "Bash(bash */check-concurrent-session.test.sh*)"
     ]
   },
   "hooks": {
