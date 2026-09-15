@@ -1,7 +1,7 @@
 ---
-version: 1.9.0
+version: 1.10.0
 principles_version: 1.0.0
-last_updated: 2026-09-04
+last_updated: 2026-09-15
 updated_by: claude
 name: skill-review
 description: Review and improve skills — either a single skill or all skills used in the current session. Single-skill mode: audits a SKILL.md against conventions, incorporates session learnings, and tunes triggering. Session-audit mode: reflects on the conversation for skill friction and workflow gaps worth turning into new skills; scans usage counters for zero/dormant-usage skills across ALL installed skills, not just this session's; and flags skills whose SKILL.md hasn't been touched in 90+ days — run at the end of every session, or proactively right after a SKILL.md is edited directly (not through `skill-create`, which already reviews). Also invoked programmatically by a parent session passing pre-collected context (sub-agent mode: SA1 by parent, SA2–SA4 in sub-agent). Triggers on: "review this skill", "improve skill X", "skill isn't working well", "tune skill description", "session skill review", "audit skills", "stale skills", or when session-close reaches its skill hygiene step.
@@ -86,7 +86,7 @@ Produce three lists:
 
 **Existing skills to improve** — name the skill, describe the specific fix (quote the friction if possible, or "stale — last touched N days ago" for a staleness-only flag). Offer to run single-skill mode on it now or create a ticket in ai-skills.
 
-**New skill ideas** — proposed name + one sentence on what it does. Offer to invoke `skill-create` now or create a ticket in ai-skills.
+**New skill ideas** — proposed name + one sentence on what it does. **Resolve the shape before filing, don't leave it as an open question in the ticket body.** Per `principles/core.md`'s "Decision authority" section: check `references/conventions.md` and existing sibling skills for precedent on standalone-vs-wrapper, project-vs-global, and scope — decide it, and state the decision with its one-line rationale in the ticket instead of a "confirm before implementing" note. Only leave an actual open question in the ticket when it's a priority/goals call nothing in the repo settles (e.g. whether this is worth building at all right now) — that's the sole case where a human still needs to weigh in. Offer to invoke `skill-create` now or create a ticket in ai-skills.
 
 **Stale skills** (from SA0) — name each, its lifetime `usageCount` and `lastUsedAt` (or "never"), and why it was flagged. Propose disabling via `skillOverrides: {"<name>": "off"}` in `.claude/settings.local.json` (project skill) or `~/.claude/settings.json` (global skill) — reversible by removing the entry. Get explicit confirmation before disabling anything; don't apply silently.
 
