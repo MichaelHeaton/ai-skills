@@ -59,12 +59,7 @@
       "Bash(unset GH_TOKEN)",
       "Bash(curl -sI *)",
       "Bash(git -C * branch --show-current)",
-      "Bash(command -v *)",
-      "Bash(gh repo view *)",
-      "Bash(gh run list*)",
-      "Bash(gh pr list*)",
-      "Bash(gh auth status)",
-      "Bash(bash */check-concurrent-session.test.sh*)"
+      "Bash(command -v *)"
     ]
   },
   "hooks": {
@@ -77,7 +72,8 @@
           { "type": "command", "command": "python3 ~/.claude/hooks/git-ops-reminder.py" },
           { "type": "command", "command": "python3 ~/.claude/hooks/issue-create-reminder.py" },
           { "type": "command", "command": "python3 ~/.claude/hooks/issue-update-reminder.py" },
-          { "type": "command", "command": "python3 ~/.claude/hooks/pr-open-staleness-nudge.py" }
+          { "type": "command", "command": "python3 ~/.claude/hooks/pr-open-staleness-nudge.py" },
+          { "type": "command", "command": "python3 ~/.claude/hooks/pr-concurrent-session-nudge.py" }
         ]
       },
       {
