@@ -1,7 +1,7 @@
 ---
-version: 1.2.0
+version: 1.3.0
 principles_version: 1.0.0
-last_updated: 2026-09-14
+last_updated: 2026-09-15
 updated_by: claude
 name: backlog-burndown
 description: Orchestrated ticket-cleanup pass over a project's open backlog — pulls tickets, groups them by size/risk, makes sure each one has a real Test Plan before touching code, routes implementation through dev-team or a direct edit depending on size, validates every diff against its Test Plan before closing, and reports a per-ticket summary. Use for a batch backlog cleanup session, "burn down the backlog", "close out these tickets", "process the open ticket queue", or an unattended/scheduled cleanup pass. Complements issue-triage (splits an oversized ticket, doesn't implement anything) and dev-team (builds one ticket end-to-end, doesn't orchestrate a batch or gate on Test Plans).
@@ -23,7 +23,9 @@ Pull open tickets via `issue-list` _(global: ai-skills)_, scoped to whatever the
 
 Use `dev-team`'s own carve-out as the boundary: if a ticket would qualify for dev-team's "do NOT use for a quick one-line fix" exclusion, it's trivial here too. When genuinely unsure which lane a ticket belongs in, default to non-trivial — a wrongly-escalated trivial ticket costs a fast Architect pass; a wrongly-trivialized real ticket costs a shipped bug with no plan review.
 
-**Present the grouped list before starting anything** — a table of ticket, lane, and one-line reason — so the user can move a ticket between lanes before implementation begins.
+**"Ambiguous scope" is not automatically a skip.** A ticket that only needs an implementation-shape decision (standalone skill vs. wrapper, which existing pattern to follow) is non-trivial, not unresolvable — route it through `dev-team`, whose Architect step now resolves that class of ambiguity itself per `principles/core.md`'s "Decision authority" section instead of stopping to ask. Reserve the `⏭ skipped: ambiguous scope` report line (Step 6) for the narrow remainder Architect itself couldn't resolve — a genuine priority/goals call with no precedent to decide it — not for every ticket that merely lacks a fully-specified plan up front.
+
+**Present the grouped list before starting anything** — a table of ticket, lane, and one-line reason — so the user can move a ticket between lanes before implementation begins. **Unattended/scheduled run, no user present**: skip this checkpoint — proceed with the default lane assignment from the rule above and record the full grouping table in the Step 6 report instead, so the run doesn't stall waiting on a confirmation nobody can give.
 
 ## 2. Confirm a Test Plan exists
 
@@ -70,7 +72,7 @@ One line per ticket, plus a batch total:
 ✓ #94 — trivial, implemented, validated, closed
 ✓ #95 — non-trivial (dev-team), implemented, validated, closed
 ✗ #96 — non-trivial, implemented, Test Plan step 2 failed — NOT closed, needs rework
-⏭ #97 — skipped: ambiguous scope, deferred to user
+⏭ #97 — skipped: scope hinges on a priority call Architect couldn't resolve from precedent, deferred to user
 
 4 tickets processed — 2 closed, 1 needs rework, 1 skipped
 ```

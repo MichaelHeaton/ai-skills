@@ -1,7 +1,7 @@
 ---
-version: 1.21.1
+version: 1.22.0
 principles_version: 1.0.0
-last_updated: 2026-09-14
+last_updated: 2026-09-15
 updated_by: claude
 name: git-ops
 description: Universal git hygiene guide — fires on the *first* git commit, push, PR, or MR operation in a session and every one after, not only retroactively at session-close. Covers branching rules, commit message format, PR/MR description format, and pre-commit checks scoped to modified files (including terraform fmt). Applies regardless of which other skills are active. Trigger on: any request to commit, push, open a PR or MR, "git commit", "create a PR", "push this", "open a pull request", "submit a MR", "ready to merge", or any variation of committing or sharing code changes.
@@ -472,6 +472,8 @@ The rule "invoke git-ops on the first git commit/push/PR and every one after" (f
 
 Both are advisory only (always exit 0, confirmed by reading both scripts) and never block a command.
 
+**⚠️ Wiring order when adding a new `matcher: Bash` hook here.** A `matcher: Bash` PreToolUse hook fires on _every_ Bash call, not just the one it's meant for — so adding its `settings.json` entry before the hook file itself exists at the deployed path (`~/.claude/hooks/<name>.py`) breaks every Bash tool call in the current session with a Python file-not-found error until the file exists there, since a non-zero hook process exit reads as a hard block, not an advisory. Create/verify the deployed file first (or via `Write`, which isn't gated by this hook), confirm it with a harmless Bash command, and only then add the `settings.json` entry.
+
 **Installed by default in this repo (`ai-skills`)**: both hooks are wired into this repo's tracked `.claude/settings.json`, so any session working inside `ai-skills` gets the reminder automatically. **This gap had recurred more than once even with the hooks available and documented** (see ai-skills#330, #347) — the repeat cause was that "documented, opt-in" isn't the same as "on," so this repo now wires them by default rather than leaving that step to be remembered.
 
 That default-on scope is limited to this repo's own checkouts — a PR here can't write to a user's live global `~/.claude/settings.json` (outside the repo, on Claude's own `Edit` deny-list — see `hooks/inline-bash-hooks.md`) or to any other repo's tracked settings. For any other repo where this reminder is wanted, add the same block via the `update-config` skill, routed to that repo's `.claude/settings.json` (or global, if it should apply everywhere):
@@ -506,6 +508,28 @@ It's advisory only (always exits 0) and never blocks PR creation. Unlike the git
   "hooks": {
     "PreToolUse": [
       { "matcher": "Bash", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/pr-open-staleness-nudge.py" }] }
+    ]
+  }
+}
+```
+
+---
+
+## Concurrent-session PR nudge (installed by default in this repo)
+
+Resolves ai-skills#346's "pre-PR-creation check" branch: warn before opening a PR if another live Claude Code session appears to be working the same repo right now — a real collision risk (branch/HEAD swap under a shared checkout), not just a reminder.
+
+- `hooks/pr-concurrent-session-nudge.py` (`PreToolUse`, matcher `Bash`) — before a `gh pr create` / `glab mr create` command, runs `session-close`'s own `check-concurrent-session.sh` against the session's `cwd` and surfaces a warning if it reports `LIVE:`
+
+Reuses `session-close`'s existing detection script rather than a second mechanism — same best-effort, non-blocking semantics (always exits 0). No new lock/registry: per `principles/core.md`'s "Decision authority" section, worktree-per-session discipline (already required for parallel dispatch — see `backlog-burndown`'s "Parallel dispatch safety" section) plus this nudge at the one place a collision actually surfaces (PR creation) covers the ticket's ask without inventing new state to maintain.
+
+**Installed by default in this repo (`ai-skills`)**: wired into this repo's tracked `.claude/settings.json` alongside the other `PreToolUse`/`Bash` hooks. For any other repo where this nudge is wanted, add it via the `update-config` skill:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/pr-concurrent-session-nudge.py" }] }
     ]
   }
 }
