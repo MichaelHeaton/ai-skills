@@ -1,7 +1,7 @@
 ---
-version: 1.8.0
+version: 1.9.0
 principles_version: 1.0.0
-last_updated: 2026-08-14
+last_updated: 2026-09-15
 updated_by: claude
 name: skill-create
 description: Create a new Claude Code extensibility artifact — skill, subagent, hook, or MCP server — from scratch using a guided interview. Handles the full lifecycle: capturing intent, selecting the right artifact type, naming, writing the config/SKILL.md, testing, iterating, and saving to the repo. Use this whenever the user wants to build or capture a workflow, or says "make a skill for X", "turn this into a skill", "new skill", "make a subagent for X", "create a hook for X", "add an MCP server", "set up MCP for X", "adapt this into a skill", "make our own version of", "build a skill based on", "port this skill", "create a version of [X skill]", or "automate X with a hook".
@@ -305,6 +305,8 @@ Good test prompts are:
 **MCP servers:** After restart, confirm the server appears in the status bar. Run a tool call that exercises the server and verify the response. Check for auth errors or missing env vars early — they fail silently until first use.
 
 **A brand-new skill can't be dispatched via the `Skill` tool in its own creation session** — deployment requires `make install-system` and a session reload before the Skill tool's metadata picks up a new skill. A same-session "let's try it now" exercise has to be done by hand, following the written SKILL.md steps directly, not through the `Skill` tool. This is expected mechanics, not a bug — don't mistake the dispatch failure for something wrong with the new skill.
+
+**No live user present (unattended dry-run).** "Share test prompts with the user, wait for review" can't happen when this skill was invoked from an unattended/scheduled run (e.g. `dev-team`'s Architect handing off a `type/new-skill` ticket during a `backlog-burndown` pass with nobody there to answer). Don't skip Steps 6 and 8 outright in that case — substitute the scaled-down, non-interactive procedure in [references/unattended-dry-run.md](references/unattended-dry-run.md), which produces a graded pass/fail report instead of silence.
 
 ---
 
