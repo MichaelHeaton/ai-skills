@@ -1,13 +1,27 @@
 ---
-version: 1.6.2
+version: 1.7.0
 principles_version: 1.0.0
-last_updated: 2026-09-11
+last_updated: 2026-09-20
 updated_by: claude
 name: issue-update
-description: Update a task or ticket — change status, add a comment, edit labels, close it, or sync the task index. Works across GitHub Issues, GitLab Issues, and Jira. Also the right tool for closing tickets found stale/duplicate/superseded during a backlog-triage pass, not just active single-ticket work. Use when the user says "close issue #X", "mark PROJ-12345 done", "update the description of PROJ-123", "update PROJ-123" (including a bare "update <ticket-id>" meaning add a comment, not just a status change), "scope this ticket to", "scope this down to only X", "narrow the scope of this ticket", "transition this to closed", "this ticket is done — close it", "transition to blocked", "close as duplicate", "close as stale", "close as superseded", "closing during triage", "add a comment to <ticket>", "post a comment on <ticket>", "correct the description of <ticket>", "fix the wording on <ticket>", "add a follow-up to <ticket>", "post a fix to <ticket>", or similar — including comment-posting and correction requests that don't contain the word "update" at all. Also fires autonomously — always use this skill when Claude itself decides to comment on, close, relabel, or transition any ticket, or whenever about to call `gh issue comment`/`gh issue close`/`gh issue edit`/`glab issue note`/`glab issue close`/`jira_add_comment`/`jira_transition_issue`/`jira_update_issue` directly instead of through this skill.
+description: Update a ticket — workflow Status (In Progress/Groomed/Done), comment, labels, close, or task-index sync. GitHub (HomeLab Project Status), GitLab, Jira. Use for close/comment/relabel/transition requests and when starting or parking implementation (set Status in the same pass — see references/workflow-status.md). Also fires autonomously before any direct gh/glab/jira ticket mutation. Triggers: "close #X", "mark done", "update PROJ-123", "mark in progress", "move to Groomed", "add a comment", "close as duplicate/stale".
 ---
 
 Update an existing task in its source system and keep the task index in sync.
+
+## Non-negotiable — workflow Status when working a ticket
+
+Progress comments alone do **not** update the board. Whenever you **start**, **park**, or **finish** work on a ticket, update workflow Status in the same pass:
+
+| Moment | HomeLab Project Status | Jira |
+| --- | --- | --- |
+| Start / focus / begin implement | **In Progress** (active child + capability parent) | Transition to In Progress |
+| Park / switch away | **Groomed** + `Next action:` comment, or leave In Progress if still Focus | Matching “ready” / park transition if any |
+| Finish | Close issue → **Done** | Done / Closed |
+
+Full commands and soft-WIP rules: [references/workflow-status.md](references/workflow-status.md).
+
+This applies whether the user asked to “update status” or you are autonomously implementing — Status moves with the work.
 
 ## Description edit policy
 
@@ -77,6 +91,12 @@ gh issue edit {NUMBER} --repo {owner/repo} --body "{updated body}"
 
 # Reopen
 gh issue reopen {NUMBER} --repo {owner/repo}
+
+# HomeLab Project workflow Status (project 15) — required when starting/parking work
+# See references/workflow-status.md
+gh project item-edit 15 --owner MichaelHeaton \
+  --url "https://github.com/{owner}/{repo}/issues/{NUMBER}" \
+  --field Status --value "In Progress"   # or Groomed / Icebox
 ```
 
 #### GitLab Issues
@@ -148,6 +168,7 @@ Report what changed:
 - "Closed [#94](url) — task index updated."
 - "Added comment to PROJ-12345."
 - "Updated priority on [#95](url) to high."
+- "→ #1240 Status: In Progress" (workflow Status moves)
 
 ---
 

@@ -1,0 +1,22 @@
+---
+version: 1.0.0
+principles_version: 1.0.0
+last_updated: 2026-09-20
+updated_by: claude
+description: When starting, parking, or finishing ticket work, update workflow Status (HomeLab Project In Progress / Groomed / Done, or Jira transition) — not comments alone
+alwaysApply: true
+---
+
+# Ticket workflow Status
+
+When you **start**, **park**, or **finish** work on a GitHub/Jira ticket:
+
+1. Update **workflow Status** in the same pass (HomeLab Project Status, or Jira transition).
+2. Route mutations through the **issue-update** skill (do not only `gh issue comment`).
+3. Announce the Status change briefly (e.g. `→ #1240 Status: In Progress`).
+
+HomeLab Project 15 options: Icebox → Groomed → **In Progress** → Done. Focus view = `In Progress`.
+
+Leaving active coding on **Icebox** while Progress comments pile up is a process bug.
+
+Details: `issue-update` → `references/workflow-status.md`; homelab-infra `docs/homelab-project.md` § Agent duty.
