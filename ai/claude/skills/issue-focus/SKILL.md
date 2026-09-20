@@ -1,10 +1,10 @@
 ---
-version: 1.1.1
+version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-09-10
+last_updated: 2026-09-20
 updated_by: claude
 name: issue-focus
-description: Load a Jira ticket or GitHub Issue into a focused working session. Fetches the ticket, then branches on shape — a spec'd work ticket gets a structured brief (narrative summary, acceptance criteria checklist, current status, recent comments, linked epic) and asks which ACs are already done, then stays active so you can ask "what's next?", "am I done?", or "what did the last comment say?" throughout the session; an evaluation/decision-shaped ticket (title prefixed "Evaluate:"/"Spike:"/"Research:", or body asking "should we"/"worth adopting"/an "X vs Y" comparison) auto-routes to decision-council instead, with the routing decision announced and overridable. Use when starting work on a specific ticket, when you need a quick orientation before diving in, or when you want to stay on track mid-session. Triggers on: "focus on PROJ-12345", "load ticket #94", "start a session for PROJ-12345", "brief me on this ticket", a bare Jira key like PROJ-12345, or a GitHub issue URL.
+description: Load a Jira or GitHub ticket into a focused session — AC brief for work tickets, or auto-route evaluation/spike tickets to decision-council. Triggers: "focus on PROJ-123", "load ticket #94", "brief me on this ticket", bare Jira key or issue URL. On session open, set workflow Status to In Progress via issue-update (do not leave Focus work on Icebox).
 compatibility: Jira requires Atlassian MCP. GitHub requires gh CLI with GITHUB_PERSONAL_USER set.
 ---
 
@@ -131,6 +131,15 @@ Then open the session:
 
 > **Session open** — ask me anything about this ticket. Try: "what's next?", "am I done?", or "refresh from {system}".
 
+### Step 4.5 — Set workflow Status to In Progress
+
+Before treating the session as active implementation context, update workflow Status via `issue-update` _(global: ai-skills)_:
+
+- **HomeLab / GitHub Project:** Status → **In Progress** (and capability parent if this is a child). Commands in `issue-update` → [references/workflow-status.md](../issue-update/references/workflow-status.md).
+- **Jira:** transition to In Progress (fetch transitions first).
+
+Announce in the brief header or next line: `→ Status: In Progress`. Skipping this leaves Focus empty while you work — that is a process bug, not optional polish.
+
 ## Step 5 — Stay active
 
 For the rest of the conversation, treat the ticket as live context. Re-fetch only when the user explicitly asks for a refresh.
@@ -143,6 +152,6 @@ For the rest of the conversation, treat the ticket as live context. Re-fetch onl
 | "mark AC 2 done" / "done with 2" | Update `[ ]` → `[x]` for that item and confirm |
 | "what did [person] say?" | Pull from the recent activity summary |
 | "refresh" / "reload" | Re-fetch the ticket and rebuild the brief; re-ask which ACs are done |
-| "update status" / "transition" | For Jira: use `jira_transition_issue`. For GitHub: guide them to close or update labels |
+| "update status" / "transition" | Route through `issue-update` — Project Status (In Progress / Groomed / …) or Jira transition; not labels-only |
 | "add a comment" | Route through `issue-update` _(global: ai-skills)_ rather than calling the raw API tool or CLI directly |
 | "close session" / "done for now" | Summarize: which ACs were completed this session, any open items, and suggest next steps |
