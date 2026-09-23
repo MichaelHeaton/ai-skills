@@ -1,7 +1,7 @@
 ---
-version: 1.4.1
+version: 1.4.2
 principles_version: 1.0.0
-last_updated: 2026-09-14
+last_updated: 2026-09-23
 updated_by: claude
 name: vault-support
 description: "Analyze vault support content — Slack threads, Jira tickets, direct research questions, documentation gap sessions, or a batch/channel-wide sweep across many threads at once — to fact-check the team bot, identify documentation gaps, and generate knowledge-extraction questions. Use when the user pastes a Slack thread (including a bare Slack message URL with no other framing), references a vault ticket, asks a vault behavior/config question directly, wants to identify what's missing in the wiki, or wants a batch audit across many threads at once. Triggers on: vault questions, bot responses, AppRole, policy PRs, KV2, 403, permission denied, access denied, seal, onboarding pasted from Slack, vault ticket, vault runbook, vault restore procedure, vault behavior, researching vault, how does vault handle, look at this vault ticket, wiki gaps, documentation backlog, doc backlog, what's missing in the wiki, identify documentation gaps, audit our docs, build a doc backlog, find wiki gaps, what are we missing in the docs, audit the channel this week, how many times did the bot get this wrong, check the last N threads, sample recent threads, what pages is the bot drawing from."
@@ -109,6 +109,7 @@ Any claim about a PR's diff, a policy `.hcl` file's existence, or an `approvers.
 
 - **Stale local clone.** If checking a local git clone of `vault_policies`, `git fetch origin` (or otherwise hit live GitHub/API state) immediately before asserting a file, policy, or approver doesn't exist. A companion PR can merge between when you check and when you report the finding, and a clone's last-fetched state will silently disagree with what's actually on `main`/`master`.
 - **Coverage or state can resolve itself mid-thread.** If a Slack thread spans enough time for another PR to land, don't repeat an earlier finding without re-checking it first — especially if the other party disputes it with a link. Re-verify against fresh state before restating a blocker as still current.
+- **Combined-PR ALLOWED_PATHS + policy edits fail their first validation run.** A policy PR adding a path that isn't yet in the team's `mappings.yaml` ALLOWED_PATHS fails with "Path not allowed to be part of policy" even if the same PR also adds the missing entry — the validator checks against `master`'s state, not the PR's own. It does pass once CI re-runs against the PR's updated state, but that's a wasted cycle. Recommend splitting into two sequential PRs: merge the `mappings.yaml` ALLOWED_PATHS update first, then open the policy PR — passes on the first try.
 
 This bit a real triage on 2026-09-08 (PR #40028): an initial check against a stale local clone reported a missing policy file and an uncovered approver, both true at the time — but a companion PR (#40014) had already merged and closed the gap before the finding was even posted. See [[Wiki/Concepts/Vault-Policies-ALLOWED-PATHS-Grant-Dual-Approver-Coverage]] *(memex)* for the full case.
 

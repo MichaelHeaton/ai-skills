@@ -1,7 +1,7 @@
 ---
-version: 1.22.1
+version: 1.22.2
 principles_version: 1.0.0
-last_updated: 2026-09-14
+last_updated: 2026-09-23
 updated_by: claude
 name: session-close
 description: Safely close out a Claude Code session across all active repos. Checks repos in the active VS Code workspace (falls back to ~/Projects if no workspace file found) for uncommitted changes, unmerged worktree branches, and stale worktree dirs — then guides through commit, push, PR, and merge for each. Also updates any in-progress tickets touched this session and produces a session-end summary so the next session starts with full context. Trigger on: "wrap up", "close out this session", "end of session", "I'm done for today", "session close", "before I close", "session cleanup", "closing up", "wrap this up", "done for the day", "ending this chat", "finishing up", or any request to clean up repos or close out work before ending a Claude chat.
@@ -42,6 +42,8 @@ If absent, every `gh`-dependent step in this skill (the branch-hygiene PR checks
 If unset, ask the user for their personal GitHub username before any step needing `${GITHUB_PERSONAL_USER}`, rather than guessing or leaving it blank.
 
 **Context check before starting**: session-close runs at the tail of what's often an already-long session — the multi-repo scan and Step 6's skill review add real weight on top of that. If this has been a long conversation (many tool calls, multiple tasks), say so before beginning — as a user action, not something the agent can trigger, since `/compact` is a slash command only the user can run: *"This has been a long session — consider typing `/compact` now for a controlled compact before this checklist adds more weight, then say continue. Otherwise I'll proceed as-is."* Proceed with whatever they answer — don't block on it.
+
+**"Same day" means the session's start date, not the wall-clock date at time of write.** If the session spans a midnight rollover, use the pre-midnight-majority heuristic as tiebreaker: if most of the actual work happened before midnight, treat it as a continuation of the earlier day (comment on that day's ticket) rather than filing a new one. This definition applies everywhere "same day"/"today's date" is used below, including the same-day ticket search immediately below and Step 10's summary title.
 
 **Check the most recent same-day summary before starting.** Before Step 1, search for an existing today-dated session-summary ticket rather than assuming this is the day's first run — a second same-day run is common. Run `detect-context.sh` once now (Step 10 will reuse the same routing **when this session touched only one routing target** — see the multi-repo note below) and search that target for a `session-summary` ticket titled with today's date, e.g. for a GitHub target: `gh issue list --repo <owner/repo> --label session-summary --search "Session close summary — <today's date>" --state all --json number,title,url,body` (no `gh`? see the gh-availability note above). For a Jira target, `jira_search_issues(jql="project=<key> AND summary ~ \"Session close summary — <today's date>\" ORDER BY created DESC")`. If found, read it first: it may still have unresolved items (a declined decision, an unticketed bug, a scoping question) from earlier today that this run needs to carry forward — comment on the existing ticket in Step 10 instead of filing a duplicate.
 

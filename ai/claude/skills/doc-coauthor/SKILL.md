@@ -1,7 +1,7 @@
 ---
-version: 1.7.0
+version: 1.8.0
 principles_version: 1.0.0
-last_updated: 2026-09-10
+last_updated: 2026-09-23
 updated_by: claude
 name: doc-coauthor
 description: Co-author work team documentation directly to the live Confluence wiki. Handles the full workflow: doc-type selection, context gathering, section-by-section drafting, and delivery — plus a lighter-weight path for editing already-existing content that skips doc-type selection entirely. Use when writing or updating any team wiki page, runbook, how-to guide, customer guide, or architecture decision record. Triggers on: "write a runbook", "draft a how-to", "create a wiki page", "update the docs for X", "update the wiki", "write an ADR", "document this process", "new Confluence page", "doc for vault", "work team documentation", "update Confluence". A small, targeted correction to an existing page (fixing one fact, one link, one section) should go through the `confluence-section-edit` skill instead of this one; a new page or a significant rewrite goes through this skill.
@@ -31,6 +31,8 @@ Before gathering context or drafting, ask: *"Given what's changed, does this pag
 **Editing existing content?** If this is a straightforward edit to an already-existing page or section (not authoring something new), skip template selection and frontmatter generation entirely — jump to identifying what's stale vs. accurate in the existing content, then go straight to Stage 2 (Draft). Template selection and frontmatter are for new-page authoring; they add no value to correcting or extending a page that already exists.
 
 **Small enough to be one section?** If the edit is scoped to fixing or updating a single existing section (one fact, one link, one paragraph) rather than reworking multiple sections, use the `confluence-section-edit` skill instead of continuing here — it covers the section-scoped update call, the nested-list breakage gotcha, and the mandatory post-edit diff check that a quick edit needs but this skill's full Stage 0–4 flow doesn't spell out.
+
+**Already drafted and approved before this skill was invoked?** Treat Stage 1 (context gathering) as satisfied by definition and jump straight to Stage 2.3 (Consistency Audit, if the content has a narrative thesis) or Stage 2.4 (Audience Check, otherwise).
 
 Identify the document type:
 
