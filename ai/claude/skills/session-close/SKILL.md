@@ -308,14 +308,13 @@ Before running, ask with labeled options:
 
 After pruning, verify: `git -C <repo> worktree list` should show only the main worktree (plus any you intentionally kept open).
 
-**Local branch cleanup** — for each repo worked in this session, delete local branches whose remote tracking ref is gone (i.e., the remote branch was deleted after merge):
+**Local branch cleanup** — for each repo worked in this session, delegate to the `git-ops` branch-prune helper instead of re-deriving the confirm-and-delete flow here:
 
 ```bash
-git -C <repo> fetch --prune origin
-git -C <repo> branch -vv | grep ': gone]' | awk '{print $1}' | xargs -r git -C <repo> branch -d
+ai/claude/skills/git-ops/scripts/prune-branches.sh <repo>
 ```
 
-The `-d` flag only deletes fully-merged branches — unmerged ones are left alone. **A squash-merged branch is the far more common cause of "not fully merged" here**, not just a force-deleted remote: the branch's commits genuinely landed on `main`, but git doesn't recognize them as ancestors because the squash commit has a different hash. Before falling back to `-D`, verify the content actually landed rather than assuming — verification commands: [references/merged-branch-push-safety.md](references/merged-branch-push-safety.md).
+The helper identifies local branches whose remote tracking ref is gone, verifies each is actually safe to delete — including the squash-merge false-positive case (`git branch -d`'s ancestor check fails on a squash-merged branch even though its content genuinely landed on `main`, since the squash commit has a different hash; the helper falls back to a `git cherry` content check rather than assuming), prints the safe-to-delete list plus any excluded "NOT SAFE (unmerged commits found via git cherry)" branches, and deletes only after confirmation. Run it without `--yes` here so its own interactive confirm covers this step; pass `--yes` only when the labeled-options prompt below has already gotten explicit approval. Verification detail if the helper itself is being reviewed or debugged: [references/merged-branch-push-safety.md](references/merged-branch-push-safety.md).
 
 **A batch local-branch delete can trigger Auto-review's smart-mode gate** (same pattern as `issue-update`'s bulk-ops note) — this is a safety gate on high-velocity writes, not a failed cleanup. Request approval or continue once cleared rather than treating the block as an error.
 
