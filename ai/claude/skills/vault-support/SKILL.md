@@ -1,5 +1,5 @@
 ---
-version: 1.5.1
+version: 1.6.0
 principles_version: 1.0.0
 last_updated: 2026-09-23
 updated_by: claude
@@ -151,8 +151,11 @@ Compare the team member's reply to the support bot's response. If the support bo
 | Admin corrected or replaced the support bot's answer | `corrected` | `poor` — the support bot sent the user the wrong way |
 | No team reply | `no-reply` | Evaluate the support bot's answer directly against the docs |
 | No the support bot response | `na` | Score `na` |
+| Reaction only (agreement emoji: 👍, ✅, or similar) on the bot's answer, no text reply | `reacted-confirm` | `good` — clear agreement-style reactions default to confirming the bot's answer, same as an explicit `confirmed` text reply would |
 
 **Do not score a thread as `poor` or `partial` simply because a team member replied.** Team members often confirm correct the support bot answers to reassure users. The signal is whether their content *differed* from the support bot's, not whether they spoke at all.
+
+**Weight reactions by who reacted.** A reaction from a senior or owning team member for that specific subject area is a stronger stop-signal than the same reaction from an uninvolved teammate. When scoring a reaction-based row, note who reacted — treat a senior/owner's reaction as stronger confirmation than a general teammate's reaction. This doesn't require a separate numeric weighting scheme, just checking who reacted before treating all reactors as interchangeable.
 
 **What the team knew**
 Summarize the resolution in plain language. What was the actual answer?
