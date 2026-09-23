@@ -1,5 +1,5 @@
 ---
-version: 1.4.2
+version: 1.5.0
 principles_version: 1.0.0
 last_updated: 2026-09-23
 updated_by: claude
@@ -271,3 +271,25 @@ Good candidates: recurring gap pattern (3+ threads), team answer that resolves a
 Scannable headers. Bullets for lists. Blockquote for the suggested Slack response. Summarize long gap lists.
 
 **Never let the reply-now track and the file-later track run together unlabeled.** When a response includes both Step 4's Suggested Response and Step 5's Gap Analysis, keep them as two visually distinct blocks — the `💬 REPLY TO SEND NOW` header and the `📋 DOC FIXES TO FILE LATER` header (see Steps 4 and 5) — with a rule (`---`) between them. A reader should be able to tell at a glance which part is a draft they could copy into Slack right now versus which part is backlog work for later, without having to parse prose to find the boundary. This matters because nothing in this skill's output has actually been sent or filed by the time it's shown — both tracks are proposals awaiting the user's action.
+
+## Optional: automated reminder hook
+
+Two companion hooks nudge toward this skill when a pasted Slack thread + policy-PR/vault question comes in and this skill hasn't fired yet — this trigger shape (a bare Slack link, no explicit "vault-support" mention) is advisory to model judgment with no mechanical enforcement otherwise, mirroring `confluence-section-edit`'s own `confluence-section-edit-track.py`/`confluence-section-edit-reminder.py` pattern:
+
+- `hooks/vault-support-track.py` (`PostToolUse`, matcher `Skill`) — records that `vault-support` fired this session
+- `hooks/vault-support-reminder.py` (`UserPromptSubmit`, no matcher needed) — prints a one-line nudge on the next prompt if it contains a Slack thread URL plus a vault-adjacent keyword (`vault`, `kv2`, `approle`, `403`, `permission denied`, `access denied`, `policy pr`, `vault ticket`) and `vault-support` hasn't fired yet this session
+
+Both are advisory only (always exit 0) and never block the prompt. They aren't wired into any tracked `settings.json` by default — this repo has no mechanism to write to a user's live `~/.claude/settings.json` on their behalf, so making them default-on isn't something a PR here can actually deliver. This one is also scoped differently from `git-ops`'s Bash-matcher hooks (which only fire on commands run inside this repo): because it's a `UserPromptSubmit` hook, it fires on every prompt in every repo, not just here. Add it via the `update-config` skill to enable, and expect it to nudge outside this repo too.
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      { "matcher": "Skill", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/vault-support-track.py" }] }
+    ],
+    "UserPromptSubmit": [
+      { "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/vault-support-reminder.py" }] }
+    ]
+  }
+}
+```
