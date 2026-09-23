@@ -1,8 +1,8 @@
 ---
-version: 2.0.0
+version: 2.1.0
 principles_version: 1.0.0
-last_updated: 2026-08-15
-updated_by: human
+last_updated: 2026-09-23
+updated_by: claude
 ---
 
 # Issue routing rules
@@ -47,7 +47,9 @@ Domain tagging is independent of which system a ticket lives in — it's a label
 | `personal` | Life admin, misc, Minecraft modpack work |
 | `mtb` | Coaching, NICA, trails |
 
-**Default skill repo:** `ai-skills`.
+**Project-scoped skill exception — check this before the default below.** If the ticket concerns a skill that's documented as project-scoped (the pattern already used by, e.g., `epic-audit`'s own SKILL.md: *"a project-scoped skill; if this repo doesn't have it..."*) — meaning the skill's actual source lives in a specific project repo (`epic-workflow`/`argo-sync-verify` in `homelab-infra`, `site-change` in `Website`) rather than this global tree — file the ticket in that project's own repo, not here. This applies even when the idea surfaced during an `ai-skills` session (e.g. a session-close skill-review finding) — the surfacing context doesn't decide the filing repo, the skill's actual fix location does. Global skills (anything under `ai/claude/skills/` in this repo, or a proposal for a genuinely reusable new one) still default to `ai-skills` per the rule below.
+
+**Default skill repo:** `ai-skills` — for global skills only (see the project-scoped exception immediately above).
 
 ## Jira (work context)
 
