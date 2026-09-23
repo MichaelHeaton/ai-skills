@@ -161,13 +161,29 @@ if [[ "$ASSUME_YES" -eq 0 ]]; then
   esac
 fi
 
+DELETE_FAILED=0
+
 for branch in "${SAFE_ANCESTOR[@]}"; do
-  git -C "$TOPLEVEL" branch -d "$branch"
+  if ! git -C "$TOPLEVEL" branch -d "$branch"; then
+    echo "error: failed to delete '${branch}'" >&2
+    DELETE_FAILED=1
+  fi
 done
 for branch in "${SAFE_MERGE[@]}"; do
   # -d would refuse this branch (that's exactly the false positive being
   # rescued here) even though merge-tree already proved merging it in would
   # be a no-op against main, so -D is the correct, safe choice for this
   # bucket only.
-  git -C "$TOPLEVEL" branch -D "$branch"
+  if ! git -C "$TOPLEVEL" branch -D "$branch"; then
+    echo "error: failed to delete '${branch}'" >&2
+    DELETE_FAILED=1
+  fi
 done
+
+# Without `set -e` (deliberately off, see the MAIN_BRANCH note above), a
+# `git branch -d`/`-D` failure here — a locked ref from a concurrent git
+# process, a permissions issue — would otherwise print to stderr and the
+# script would still exit 0, hiding a real partial failure from any caller
+# checking `$?` (e.g. session-close). Track and propagate it explicitly.
+[[ "$DELETE_FAILED" -eq 1 ]] && exit 1
+exit 0
