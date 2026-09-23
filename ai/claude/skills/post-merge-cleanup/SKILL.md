@@ -1,7 +1,7 @@
 ---
-version: 1.1.0
+version: 1.1.1
 principles_version: 1.0.0
-last_updated: 2026-09-14
+last_updated: 2026-09-23
 updated_by: claude
 name: post-merge-cleanup
 description: Clean up after a PR merges — pull main, remove the worktree, delete the local (and remote-if-needed) feature branch, and run the repo's redeploy/build step — without requiring a full session-close run. Use whenever the user says "that PR merged", "merged, can you clean up", "PR's in, sync main", or right after confirming a merge via gh/glab, in any repo. For end-of-session hygiene across multiple repos, use session-close instead — this skill is the single-repo, single-PR version of the same sequence.
@@ -123,6 +123,8 @@ gh run list --branch <default-branch> --limit 1 --json status,conclusion,name,ur
 ```
 
 A failing latest run belongs in the cleanup summary itself (workflow name + URL), not as a buried optional aside — a clean-looking sync can mask a broken production deploy. Skip silently when `gh` is unavailable, the remote isn't GitHub, or there's no recent run — same spirit as step 4's redeploy detection.
+
+**Distinguish a `gh` network/timeout error from a real failed run before reporting anything.** `gh run list` (and `gh run watch` or a mid-poll `gh run view`, if either is used nearby) can exit non-zero on API i/o timeout — a `dial tcp ... i/o timeout`-style error connecting to `api.github.com` — even though the workflow it was checking already succeeded. That's a `gh`/network failure, not a workflow conclusion, and treating it at face value misreports a passing run as broken. If the `gh run list` call itself errors out this way, re-fetch once via `gh run view <run-id> --json conclusion,status,url` (or `gh run list --commit <sha>` if the run ID isn't known yet) before reporting anything. Treat a bare timeout as inconclusive, not red: don't print "✗ FAILED" in the Report section unless the retried call confirms a real failure. Report the retried result once it comes back — or, if the retry also times out, say so explicitly: "Actions check inconclusive (network timeout, not re-verified)".
 
 **Distinguish a failing bot-generated PR from a real main-branch break before flagging it as a blocker.** A failing run on a bot/automation branch (`bot/`, `auto/`, `chore/*-regenerate`, or similar) that finished in a second or two with effectively zero jobs run is more likely an empty-job race in the bot's own PR than a break in what actually landed on main — log it as bot-PR noise rather than a cleanup blocker, as long as the run *on the default branch itself* is green. Still surface any real main-branch workflow failure at face value; this only applies to the bot-PR case, not to a genuine post-merge failure on main.
 
