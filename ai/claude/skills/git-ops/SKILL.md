@@ -1,7 +1,7 @@
 ---
-version: 1.22.0
+version: 1.22.1
 principles_version: 1.0.0
-last_updated: 2026-09-15
+last_updated: 2026-09-23
 updated_by: claude
 name: git-ops
 description: Universal git hygiene guide — fires on the *first* git commit, push, PR, or MR operation in a session and every one after, not only retroactively at session-close. Covers branching rules, commit message format, PR/MR description format, and pre-commit checks scoped to modified files (including terraform fmt). Applies regardless of which other skills are active. Trigger on: any request to commit, push, open a PR or MR, "git commit", "create a PR", "push this", "open a pull request", "submit a MR", "ready to merge", or any variation of committing or sharing code changes.
@@ -471,6 +471,8 @@ The rule "invoke git-ops on the first git commit/push/PR and every one after" (f
 - `hooks/git-ops-reminder.py` (`PreToolUse`, matcher `Bash`) — prints a one-line nudge before a `git commit` / `git push` / `gh pr create` / `glab mr create` if git-ops hasn't fired yet this session
 
 Both are advisory only (always exit 0, confirmed by reading both scripts) and never block a command.
+
+**⚠️ If you're working in a repo other than `ai-skills`, this reminder does not exist there by default.** A direct Bash `git commit` / `git push` / `gh pr create` in an unrelated repo, with git-ops never invoked and no hook to catch it, is the expected outcome — not a bug — unless you've separately wired the hooks below into that repo via `update-config` (see the JSON snippet in "Installed by default in this repo" just below).
 
 **⚠️ Wiring order when adding a new `matcher: Bash` hook here.** A `matcher: Bash` PreToolUse hook fires on _every_ Bash call, not just the one it's meant for — so adding its `settings.json` entry before the hook file itself exists at the deployed path (`~/.claude/hooks/<name>.py`) breaks every Bash tool call in the current session with a Python file-not-found error until the file exists there, since a non-zero hook process exit reads as a hard block, not an advisory. Create/verify the deployed file first (or via `Write`, which isn't gated by this hook), confirm it with a harmless Bash command, and only then add the `settings.json` entry.
 
