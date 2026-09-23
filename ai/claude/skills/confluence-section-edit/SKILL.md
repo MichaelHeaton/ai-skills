@@ -1,7 +1,7 @@
 ---
 version: 1.2.0
 principles_version: 1.0.0
-last_updated: 2026-09-10
+last_updated: 2026-09-23
 updated_by: claude
 name: confluence-section-edit
 description: Make a small, targeted edit to one section of an existing Confluence page — fix a fact, update a link, correct a paragraph — without doc-coauthor's full template/frontmatter overhead or the risk of a full-page rewrite breaking content outside the section touched. Covers locating the target heading, scoping the edit to that section instead of round-tripping the page through markdown, avoiding nested markdown lists inside numbered/bulleted items (a known list-collapse bug), and verifying via re-fetch/diff immediately after every edit (images need live-page verification instead — the read tool always flattens them). Use for "fix this on the wiki page", "quick Confluence correction", "update this section of <page>", "small correction to an existing page", "that fact is wrong on the runbook", "fix one row in a table on an existing page", "update this table row on the wiki", "correct one entry in this table", or any one-section edit to an existing page. Complements doc-coauthor (new pages/rewrites) and ticket-write-verify's confluence-large-restructuring reference (full reorgs) — this skill covers the lighter single-section case.
@@ -25,6 +25,8 @@ Fetch the page in raw storage format — not markdown, see the round-trip warnin
 **Oversized page (~50KB+ storage-format body exceeds the fetch's token limit):** let the fetch auto-save to a file instead of trying to inline the full body, then use `python`/`jq` to extract just the target section from the saved file. Apply the edit locally per Step 2, then submit via `content_file` rather than an inline content string.
 
 **Determining a heading's real anchor ID** (for a deep link, not the edit itself): don't guess the `ac:anchor` fragment from the heading text — Confluence's generated anchor doesn't reliably match a predictable transform. Fetch the page's rendered view (not storage format) and look for the actual `id=` attribute Confluence assigned near that heading in the rendered HTML. Only fall back to linking the page without a fragment if the rendered view isn't available.
+
+**⚠️ If the target section contains an `<img>` tag, treat it as a possibly-flattened macro, not literal content** — `confluence_get_page` always flattens `ac:image`/`ri:attachment` macros into a bare `<img>` tag regardless of what's actually stored. See Step 5 before editing anything in that section.
 
 ## 2. Scope the edit to that section, not the whole page
 
@@ -77,6 +79,28 @@ Never leave a section edit unverified:
 3. If the render is broken (a list collapsed, a macro dropped, a link stripped), fix and re-verify before considering the edit done — don't leave a page live in a broken state on a plan to check later.
 
 **⚠️ Exception: if the edit touched an image macro, step 1's re-fetch is not valid evidence.** `confluence_get_page` always shows a flattened `<img>` tag for images whether or not the macro is actually correct — verify via the live rendered page (screenshot/browser) instead.
+
+## Optional: automated reminder hook
+
+Two companion hooks nudge toward this skill before a direct Confluence write, mirroring `ticket-write-verify`'s own `ticket-write-verify-track.py`/`ticket-write-verify-reminder.py` pattern:
+
+- `hooks/confluence-section-edit-track.py` (`PostToolUse`, matcher `Skill`) — records that `confluence-section-edit` or `doc-coauthor` fired this session (either covers the full-page vs. section-scoped case)
+- `hooks/confluence-section-edit-reminder.py` (`PreToolUse`, matcher on tool name) — prints a one-line nudge before a direct `confluence_update_page` / `confluence_add_label` call if neither skill has fired yet this session
+
+Both are advisory only (always exit 0) and never block a call. They aren't wired into any tracked `settings.json` by default — this repo has no mechanism to write to a user's live `~/.claude/settings.json` on their behalf, so making them default-on isn't something a PR here can actually deliver. Add them via the `update-config` skill to enable.
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      { "matcher": "Skill", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/confluence-section-edit-track.py" }] }
+    ],
+    "PreToolUse": [
+      { "matcher": "mcp__.*(confluence_update_page|confluence_add_label)", "hooks": [{ "type": "command", "command": "python3 ~/.claude/hooks/confluence-section-edit-reminder.py" }] }
+    ]
+  }
+}
+```
 
 ## What this skill doesn't do
 
