@@ -1,5 +1,5 @@
 ---
-version: 1.22.3
+version: 1.22.4
 principles_version: 1.0.0
 last_updated: 2026-09-23
 updated_by: claude
@@ -276,8 +276,16 @@ For each repo where `BRANCH != main` and `BRANCH != master` and `WORKTREES == 0`
 1. Show what's on the branch vs main: `git -C <repo> log main..HEAD --oneline`
 2. **Check merged-PR state before pushing** any unpushed commits — the `AHEAD_BRANCHES` count from Step 1 may be stale, and pushing to an already-merged branch orphans commits (per git-ops's "Before pushing to an existing branch" rule). Same check and recovery as Step 3: [references/merged-branch-push-safety.md](references/merged-branch-push-safety.md).
 3. If it's a feature branch: check whether a PR already exists (`gh pr list --head <branch> --state all`) before creating one
-4. If it's a capture branch (e.g. `captures-2026-05-15`): this is expected for Memex — but verify commits are pushed
-5. If the branch should be on main: guide through merge or PR creation
+4. **No PR exists yet (stale-branch recovery case)** — before pushing and opening a PR, check whether the branch is stale relative to `origin/main`: `git merge-base --is-ancestor origin/main <branch>` (a non-zero exit means the branch is behind). If stale, merge current main forward into the branch and resolve any conflicts before pushing:
+
+   ```bash
+   git -C <repo> fetch origin
+   git -C <repo> merge origin/main
+   ```
+
+   Then sanity-check the diff before opening the PR: `git -C <repo> diff origin/main..<branch> --stat`. If the diffstat still shows files or line counts unrelated to the branch's actual ticket, the merge-forward didn't fully resolve the staleness — investigate further before proceeding rather than opening the PR. Only once the diffstat looks like just the branch's own intended content should you push and run `gh pr create`.
+5. If it's a capture branch (e.g. `captures-2026-05-15`): this is expected for Memex — but verify commits are pushed
+6. If the branch should be on main: guide through merge or PR creation
 
 ---
 
