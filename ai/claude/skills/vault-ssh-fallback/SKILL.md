@@ -1,7 +1,7 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-09-11
+last_updated: 2026-09-23
 updated_by: claude
 name: vault-ssh-fallback
 description: Recover a stalled host-forensics investigation when Vault SSH secrets-engine signing fails — the sign response is missing the expected `data`/signed-key field, the signing endpoint itself errors, or a wrapper script around it (e.g. `pve-ssh`) fails. Surfaces the failure explicitly, switches to operator-pasted evidence (journalctl output, log tails) in place of live SSH access, and resumes the original investigation instead of stalling it. Trigger on: `vault write ssh/sign/<role>` failing, a signed SSH cert missing from the response, `pve-ssh` (or similar wrapper) erroring out, "Vault SSH signing failed", "can't get a signed cert", "SSH CA sign request failed". Not for general Vault KB/doc questions or auth-method migrations — see `vault-support` for those.
@@ -12,6 +12,15 @@ compatibility: Requires an active host-forensics or diagnostic investigation alr
 
 When Vault's SSH secrets engine fails to sign a certificate, the agent has no way to SSH into the target host. This skill keeps the underlying investigation moving by switching to operator-pasted evidence instead of live shell access — it does not attempt to work around, retry silently, or otherwise route past the signing failure.
 
+## Proactive check — near-expiry cert (before this skill's fallback would even trigger)
+
+Before SSHing via an ansible/Vault-signed cert, check whether it's about to age out — short-lived certs (e.g. ~5-minute TTL) can expire mid-session, and a stale cert fails SSH with `Permission denied (publickey)` even though signing itself worked fine.
+
+- **Check the validity window first.** Run `ssh-keygen -L -f ~/.ssh/ansible_ed25519-cert.pub` (or the actual cert path in use) and parse the `Valid:` line's end timestamp.
+- **If remaining TTL is under ~60 seconds, or the cert has already expired**, run the repo/workstation's sign helper (e.g. `scripts/sign-vault-ssh-cert.sh` — the exact path is workstation-specific) to re-sign before retrying the SSH attempt. This is a routine refresh, not a sign failure — don't ask the operator to paste a key for this case.
+- **If remaining TTL is comfortably above the threshold, don't re-sign.** This is a preventive check, not a blanket re-sign-every-time policy — only act when the cert is actually near expiry or already expired.
+- **If the re-sign attempt itself fails** (the sign call errors, or the wrapper script fails), that's not this check's job to handle further — fall through to the existing "When this triggers" / Step 1–3 fallback flow below. The near-expiry check is a pre-check that can hand off into the existing failure path; it isn't a separate skill.
+
 ## When this triggers
 
 Any of the following, encountered mid-investigation:
@@ -19,6 +28,7 @@ Any of the following, encountered mid-investigation:
 - `vault write ssh/sign/<role> ...` (or equivalent Vault SSH secrets-engine sign call) returns a response with no `data` field or no signed-key field where one is expected.
 - The signing endpoint itself errors (permission denied, sealed vault, expired token, connection failure).
 - A wrapper script around the sign flow (referred to in this org as `pve-ssh`, but treat any such wrapper equivalently) exits non-zero or fails to produce a usable cert.
+- The proactive near-expiry re-sign above was attempted and itself failed.
 
 ## Step 1 — Surface the failure explicitly
 
