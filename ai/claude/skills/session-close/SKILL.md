@@ -1,5 +1,5 @@
 ---
-version: 1.22.2
+version: 1.22.3
 principles_version: 1.0.0
 last_updated: 2026-09-23
 updated_by: claude
@@ -105,11 +105,13 @@ GH_AUTH_BROKEN=$?
 
 Use `gh api user`, not `gh pr list`, for this probe — `gh pr list` fails with a repo/remote-detection error when run outside a `gh`-recognized GitHub repo, which is unrelated to keyring health and would false-positive this whole check if the session's current directory isn't one of the repos being scanned. `gh api user` only tests auth, independent of `$PWD`.
 
-If `GH_AUTH_BROKEN != 0`, don't silently skip branch hygiene — print the failure explicitly with a recovery hint, then fall back to a pure-git check per repo instead of the `gh pr list` flow below:
+If `GH_AUTH_BROKEN != 0`, don't jump straight to a broken-keyring verdict — a sandboxed shell denying network calls produces the same `GraphQL: Forbidden` / non-zero exit as an actually broken keyring, and only the latter is real. Retry once via the same probe the mid-run case below uses (`issue-create`'s Step 0.5 sandbox probe *(global: ai-skills)*, `required_permissions: ["all"]` or its REST fallback) before setting `GH_AUTH_BROKEN` for good. Only if that retry also fails, print the failure explicitly with a recovery hint and fall back to a pure-git check per repo instead of the `gh pr list` flow below:
 
 > ⚠️ `gh auth token` / `gh pr list` failed — the `gh` keyring may be broken. Try `gh auth refresh`, or see the `gh-account-routing` skill for account/keyring recovery.
 
-**Mid-run `GraphQL: Forbidden` (the upfront check above passed, but a later `gh` call in the loop fails anyway).** `gh` working earlier in the session and then failing intermittently is not the same failure as the upfront check catching a broken keyring — don't jump straight to "keyring is broken" and fall back to the pure-git path. Run `issue-create`'s Step 0.5 sandbox probe *(global: ai-skills)* first: it distinguishes a token/account mismatch from the sandboxed shell scoping network calls, and only the former is an actual keyring problem. Keep true keyring failure (Step 0.5's probe fails outright, or its REST fallback also fails) as the last branch — retry via `required_permissions: ["all"]` or the REST fallback before setting `GH_AUTH_BROKEN` this late in the run.
+See #859 for the related case of an invalid keyring discovered mid-checklist rather than at this upfront probe.
+
+**Mid-run `GraphQL: Forbidden` (the upfront check above passed, but a later `gh` call in the loop fails anyway).** `gh` working earlier in the session and then failing intermittently is not the same failure as the upfront check catching a broken keyring — don't jump straight to "keyring is broken" and fall back to the pure-git path. Run the same Step 0.5 sandbox probe as above: it distinguishes a token/account mismatch from the sandboxed shell scoping network calls, and only the former is an actual keyring problem. Keep true keyring failure (Step 0.5's probe fails outright, or its REST fallback also fails) as the last branch — retry via `required_permissions: ["all"]` or the REST fallback before setting `GH_AUTH_BROKEN` this late in the run.
 
 Pure-git fallback, run for each repo in scope (no `gh` calls):
 
