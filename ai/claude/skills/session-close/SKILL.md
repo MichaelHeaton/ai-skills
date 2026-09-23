@@ -1,5 +1,5 @@
 ---
-version: 1.22.4
+version: 1.23.0
 principles_version: 1.0.0
 last_updated: 2026-09-23
 updated_by: claude
@@ -41,7 +41,10 @@ If absent, every `gh`-dependent step in this skill (the branch-hygiene PR checks
 
 If unset, ask the user for their personal GitHub username before any step needing `${GITHUB_PERSONAL_USER}`, rather than guessing or leaving it blank.
 
-**Context check before starting**: session-close runs at the tail of what's often an already-long session — the multi-repo scan and Step 6's skill review add real weight on top of that. If this has been a long conversation (many tool calls, multiple tasks), say so before beginning — as a user action, not something the agent can trigger, since `/compact` is a slash command only the user can run: *"This has been a long session — consider typing `/compact` now for a controlled compact before this checklist adds more weight, then say continue. Otherwise I'll proceed as-is."* Proceed with whatever they answer — don't block on it.
+**Context check before starting**: session-close runs at the tail of what's often an already-long session — the multi-repo scan and Step 6's skill review add real weight on top of that. If this has been a long conversation (many tool calls, multiple tasks), say so before beginning — as a user action, not something the agent can trigger, since `/compact` is a slash command only the user can run. **Whether that gets said as a single nudge or an escalation depends on the prior-day-summary check below** (see "Also check the most recent prior-day summary..." later in this section) — run that check first, then branch:
+
+- **First occurrence** (the prior-day summary has no matching observation, or it's absent entirely): use the single advisory as before — *"This has been a long session — consider typing `/compact` now for a controlled compact before this checklist adds more weight, then say continue. Otherwise I'll proceed as-is."* Proceed with whatever they answer — don't block on it.
+- **Repeat occurrence** (the prior-day summary already records this same "long session, /compact declined" pattern — a close paraphrase of that wording counts, not just an exact match): repeating the identical nudge has already been shown not to work, so escalate instead of re-printing it. Proactively recommend splitting the *remaining* work in this session into a fresh session rather than continuing to grow this one — e.g. *"This is the second session in a row hitting this same long-session pattern — last time's `/compact` nudge didn't change anything, so repeating it again isn't likely to either. Rather than pushing further into this session, consider wrapping up what's essential now and moving the rest of the remaining work to a fresh session."* Still proceed with whatever they answer — don't block on it.
 
 **"Same day" means the session's start date, not the wall-clock date at time of write.** If the session spans a midnight rollover, use the pre-midnight-majority heuristic as tiebreaker: if most of the actual work happened before midnight, treat it as a continuation of the earlier day (comment on that day's ticket) rather than filing a new one. This definition applies everywhere "same day"/"today's date" is used below, including the same-day ticket search immediately below and Step 10's summary title.
 
@@ -53,7 +56,7 @@ If unset, ask the user for their personal GitHub username before any step needin
 
 **If two sessions independently file same-day summary tickets** — a race under concurrent sessions, since the check above is a snapshot — don't just let both stand. Once noticed (the freshness re-check most issue-create paths already run before confirming, or a later session's own same-day search), diff the two: if one is a strict subset of the other, close it as a duplicate with a comment pointing to the other; if they diverge, comment the missing content onto the ticket you keep, then close the other as a duplicate — never leave both open silently.
 
-**Also check the most recent prior-day summary for known-pending blockers scoped to the repos in this session.** Fetch it (via `gh issue view`/`jira_get_issue`, not a file read) and read its "Pending" / "needs attention" section for items matching repos this session will touch, and surface any matches up front — don't make the user (or yourself) re-diagnose a blocker that was already solved and documented one session ago.
+**Also check the most recent prior-day summary for known-pending blockers scoped to the repos in this session.** Fetch it (via `gh issue view`/`jira_get_issue`, not a file read) and read its "Pending" / "needs attention" section for items matching repos this session will touch, and surface any matches up front — don't make the user (or yourself) re-diagnose a blocker that was already solved and documented one session ago. **This same fetch also feeds the Context-check escalation decision above** — while reading it, also check whether it already contains a "long session, `/compact` declined" observation (or a close paraphrase, e.g. "same pattern noted in the prior session's summary"); if so, this session's Context check escalates instead of repeating the identical nudge.
 
 ## Step 1 — Discover repos with open work
 
