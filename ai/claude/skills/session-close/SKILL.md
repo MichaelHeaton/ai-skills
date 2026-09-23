@@ -1,5 +1,5 @@
 ---
-version: 1.23.0
+version: 1.24.0
 principles_version: 1.0.0
 last_updated: 2026-09-23
 updated_by: claude
@@ -424,7 +424,26 @@ fi
 
 **The close-out report is always filed as a labeled ticket via `issue-create` — never written to `Outputs/Session/*.md`.** This applies in every session, not only vault-less ones: a remote/web session scoped to a single repo has no memex access to write a file into, and even on a full workstation `Outputs/` is documented as ephemeral (`Outputs/README.md`) while a per-session file accumulating there indefinitely contradicts that. Filing a ticket gives every session — local or cloud — a durable, always-reachable home for the close-out record.
 
-**If `GH_AUTH_BROKEN` was set during Step 1's branch hygiene check**, record it under "⚠️ Pending" in this summary — e.g. *"`gh` keyring broken this session (`gh auth token`/`gh pr list` failed) — branch hygiene ran on the pure-git fallback only; run `gh auth refresh` before the next session and re-verify branch/PR state normally."* This is a session-boundary fact the next session needs, not just a mid-run print — don't let it be printed once during Step 1 and then dropped.
+**If `GH_AUTH_BROKEN` was set during Step 1's branch hygiene check, hard-gate here before filing** — attempt recovery and re-verify it actually worked, rather than silently defaulting to the pure-git fallback and just mentioning the auth was broken (#859).
+
+**1. Print a copy-paste-ready recovery block:**
+
+```bash
+gh auth refresh --hostname github.com
+```
+
+If that doesn't resolve it, point to the `gh-keyring-repair` skill *(global: ai-skills)* by name — confirm it's present first (`ls ai/claude/skills/gh-keyring-repair/`) before referencing it. It diagnoses a broken macOS Keychain-backed `gh` credential store specifically (distinct from a stale `GH_TOKEN` env var or a mismatched active account), walks through `gh auth refresh` — falling back to `gh auth login` if refresh fails — and verifies the fix by re-running `gh auth token` before declaring it resolved.
+
+**2. Re-probe before filing**, same probe shape as Step 1's original check:
+
+```bash
+gh auth token >/dev/null 2>&1 && gh api user >/dev/null 2>&1
+GH_AUTH_STILL_BROKEN=$?
+```
+
+**3. Re-probe succeeds (`GH_AUTH_STILL_BROKEN = 0`)** — auth is fixed. Proceed with the normal `gh`/`issue-create` filing path below exactly as if `GH_AUTH_BROKEN` had never been set; no reason to stay on the pure-git fallback for the rest of this run.
+
+**4. Re-probe still fails** — only then fall through to the pure-git fallback path that already exists elsewhere in this skill (Step 1's branch-hygiene degraded path), as the last resort rather than the first response. Record it under "⚠️ Pending" in this summary — e.g. *"`gh` keyring broken this session (`gh auth token`/`gh api user` failed); ran `gh auth refresh` and re-probed before filing, but it did not resolve — branch hygiene ran on the pure-git fallback only; run `gh auth refresh` or the `gh-keyring-repair` skill before the next session and re-verify branch/PR state normally."* This is a session-boundary fact the next session needs, not just a mid-run print — don't let it be printed once during Step 1 and then dropped.
 
 By the time this step runs, Step 6's findings, Step 8's context note, and Step 9's git/PR-derived ticket list are all known, so this is the one point in the run with everything the record needs.
 
