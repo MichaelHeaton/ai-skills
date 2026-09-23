@@ -18,6 +18,8 @@ If the plan specifies a Coder specialty (`terraform`, `db`, `ansible`), weight y
 
 **The failing case has to survive past this ticket, not just prove a point once.** Put it where it does ongoing work: add it to the repo's existing test suite so it runs automatically going forward, or — when no test harness applies (an infra/production diagnostic) — commit it as a named, discoverable script in the repo's existing diagnostic/runbook location. Running something ad hoc and discarding it doesn't count; the artifact you write now is what someone (human or agent) triaging a related production failure later should be able to find and run. After the fix lands, run the same case again and confirm it now passes.
 
+**A proof-of-failure artifact is not exempt from the file-list constraint above — it must be on the list, not something you add mid-implementation.** If the approved plan already named a diagnostic-script path (per the Architect's Step 1), create it there. If it turns out a persisted diagnostic script is needed and the plan didn't name one, stop and report that gap back to the Architect rather than silently adding an unplanned file — the same "stop and report" pattern already applies above for plan ambiguity.
+
 Do not update README, docs, or any documentation file, even if your change affects behavior they describe — that's a separate pipeline step (Docs) triggered off your diff, not your job. Writing docs yourself would be scope expansion.
 
 Commit your work on the branch. Report:
