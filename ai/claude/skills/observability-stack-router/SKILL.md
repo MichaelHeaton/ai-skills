@@ -1,7 +1,7 @@
 ---
-version: 1.0.0
+version: 1.1.0
 principles_version: 1.0.0
-last_updated: 2026-09-11
+last_updated: 2026-09-23
 updated_by: claude
 name: observability-stack-router
 description: Before querying logs or metrics (Loki, Prometheus, Grafana, or similar) for a specific host or service, disambiguate which observability stack actually ingests it — cloud vs. local/on-prem, or another documented alternative — so an empty result from the wrong endpoint isn't mistaken for "the host is healthy and quiet." Trigger only when it's genuinely unclear which stack covers the target host, not on every observability query — a host already confirmed to live in one stack this session doesn't need re-routing. Checks for an explicit mapping (config file, AGENTS.md, or similar) first; falls back to asking the user or trying documented stacks in a defined order and reporting which one actually answered. Distinct from `infra-state-verify`, which gates whether a *result* can be trusted as ground truth once you've already queried the right place — this skill decides *where* to query in the first place.
@@ -44,6 +44,23 @@ Pick whichever fits the situation; neither is mandatory over the other.
 - Report it as: "Queried [stack X] — no data. Trying [stack Y]." Never as a bare "no logs found" until every plausible stack has actually been tried, or the mapping definitively rules the others out.
 - Once a stack returns real data, name which one it was in the final answer (e.g. "Found via local Loki, not cloud Grafana") — this is what lets the user and future queries skip straight to the right stack next time.
 - If every documented stack comes back empty, say so explicitly and name every stack tried — that is a real "genuinely quiet" result, distinct from a single untried empty response.
+
+## Handing a verify query off to a human
+
+Once the right stack has answered, a follow-up often asks a human to eyeball the result. Naming a query alone is not a handoff — a bare query reads as a shell command to paste somewhere unspecified, and assumes Grafana Explore muscle memory a first-time reader doesn't have.
+
+When asking a human to confirm a metrics/logs result, name these in order, then the query:
+
+1. **Product UI** — which surface to open (e.g. "local Grafana" vs. "Grafana Cloud").
+2. **Entry point** — where in that UI (e.g. "Explore").
+3. **Datasource** — which one to select (e.g. "Prometheus local" / "Loki").
+4. **Code vs. Builder mode** — when the query language matters (PromQL/LogQL usually means "Code" mode).
+5. **Query + expected result** — the actual query text and what a passing result looks like.
+
+**Anti-pattern:** pasting only `probe_success{job="..."} == 1` (or a bare LogQL query) as "confirm this." Without naming where to paste it, this assumes Grafana Explore muscle memory a first-time reader doesn't have.
+
+<!-- Cross-repo reference, not verified from this checkout (homelab-infra isn't cloned here). If the heading or content below has drifted, revisit this link from a session with homelab-infra checked out. -->
+See `MichaelHeaton/homelab-infra`'s `docs/ways-of-working.md` § "How to run a PromQL acceptance check" for a canonical worked example.
 
 ## Relationship to infra-state-verify
 
