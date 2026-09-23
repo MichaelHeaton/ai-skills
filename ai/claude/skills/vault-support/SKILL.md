@@ -1,5 +1,5 @@
 ---
-version: 1.5.0
+version: 1.5.1
 principles_version: 1.0.0
 last_updated: 2026-09-23
 updated_by: claude
@@ -256,7 +256,9 @@ For all cases, end with:
 
 For each item, draft the entry using the Sr SRE format in [references/gap-analysis.md](references/gap-analysis.md) and include it directly in your response — share your research and propose an answer the team can validate. There's no persisted question log; the user brings the list to the team as needed.
 
-**Offer to file confirmed gaps, regardless of which case produced this list.** After presenting the gap analysis, ask: "Want me to create GitHub Issues for any of these gaps?" A real, confirmed gap surfaced in Case A/B/C triage is exactly as worth filing as one from a Case D broad audit — don't let it go unticketed just because the conversation moves on to something else before this checkpoint is reached. The list feeds directly into `issue-create`.
+**Before offering to file, check per-gap whether a senior/owning team member already claimed it in-thread.** For each item in the gap list, check whether a senior/owning team member has already explicitly claimed ownership of following up on that specific gap, in-thread. This is a per-gap check, not all-or-nothing — a gap list can have some items already claimed and others not. For any gap with an in-thread claim, skip the filing offer for that item and instead note it as "owned and tracked in-thread by \<person>" rather than routing it through the standard file-ticket prompt below.
+
+**Offer to file confirmed gaps, regardless of which case produced this list.** After presenting the gap analysis, ask: "Want me to create GitHub Issues for any of these gaps?" — scoped to the gaps that weren't already flagged as owned-and-tracked above. A real, confirmed gap surfaced in Case A/B/C triage is exactly as worth filing as one from a Case D broad audit — don't let it go unticketed just because the conversation moves on to something else before this checkpoint is reached. The list feeds directly into `issue-create`.
 
 ---
 
