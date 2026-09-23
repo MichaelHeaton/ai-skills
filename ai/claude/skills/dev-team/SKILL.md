@@ -1,7 +1,7 @@
 ---
-version: 1.11.0
+version: 1.12.0
 principles_version: 1.0.0
-last_updated: 2026-09-15
+last_updated: 2026-09-23
 updated_by: claude
 name: dev-team
 description: Run a ticket through a lightweight multi-agent build pipeline — Architect plans and asks clarifying questions, Coder implements, Tester adversarially checks the diff, Docs updates stale documentation, and a conditional Manager gates on risk. Use when working a ticket end-to-end and you want plan approval before code gets written, or when you say "run this through dev-team", "spin up the dev team on this ticket", "architect this ticket", "build this with the team" — or open with plain ticket-start phrasing like "start #NNN", "let's work #NNN", "pick up #NNN", or "work on #NNN". Offer or invoke on that phrasing instead of defaulting to in-session coding — triggering only surfaces the Architect plan; Coder never runs until you approve it. Complements decision-council (which resolves opinions/tradeoffs, not builds) and reuses model-route for per-role model selection. Do NOT use for a quick one-line fix — the Architect step exists to catch ambiguity on real work, not to gate trivial changes.
@@ -145,6 +145,8 @@ Once Manager clears (or Manager was skipped and Tester found nothing), open the 
 
 No role in this pipeline owns AGENT.md staleness directly — not Coder, not Docs, not Manager. It's `git-ops`'s job, enforced at PR time, on every PR regardless of which skill produced the diff. Don't duplicate that check into Manager; just don't skip the `git-ops` handoff to get there.
 
+After the `git-ops` handoff, verify a PR actually exists for the branch before treating the ticket as done or handed off: run `gh pr list --head <branch> --state all --json number,state`. A ticket can be fully committed and pushed with no PR ever opened — none of Coder/Tester/Manager/git-ops's own steps catch that on their own, so this check is the deterministic backstop. If the result is empty, don't silently move on to the next ticket — either retry the `git-ops` handoff or surface the gap explicitly (see Batch mode below for what to do when the session ends before this check can run).
+
 ## Batch mode
 
 When working through several tickets in one session, this opt-in mode cuts down on interruptions without skipping any real gate:
@@ -152,6 +154,8 @@ When working through several tickets in one session, this opt-in mode cuts down 
 - **Batch plan approval** — present 2-4 ticket plans together in one turn instead of one at a time, then get a single approval covering all of them before spawning anything for any of them.
 - **Self-poll for PR merge state** — after a PR is opened, check `gh pr view <n> --json state,mergedAt` yourself on a reasonable cadence instead of waiting for the user to say "merged." Still never merge a PR yourself; only poll for state.
 - **Mandatory direct diff verification per ticket** — before moving a ticket to Tester or trusting Coder's report, read the actual diff yourself (`git diff`, or the changed files directly) rather than only the Coder's self-report — this is the same discipline Step 2's completion check above requires, applied per-ticket across the whole batch, not just once.
+
+- **Flag interrupted PR verification explicitly** — if the Architect session ends (interruption, context limit, or batch mode advancing to the next ticket) before Step 6's PR-existence check completes for a given ticket, that ticket must be flagged explicitly as "diff approved, PR pending" in the batch summary — never silently reported as done, and never silently dropped.
 
 Batch mode changes the interaction cadence, not the pipeline's gates — every step above still runs for every ticket.
 
