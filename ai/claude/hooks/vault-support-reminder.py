@@ -15,13 +15,17 @@ from pathlib import Path
 
 SLACK_URL_RE = re.compile(r"slack\.com/archives/", re.IGNORECASE)
 VAULT_KEYWORD_RE = re.compile(
-    r"policy pr|vault ticket|vault|kv2|approle|403|permission denied|access denied",
+    r"policy pr|vault ticket|vault|kv2|approle|permission denied|access denied|"
+    r"\b403\b.{0,40}\b(vault|policy|kv2|approle)\b|\b(vault|policy|kv2|approle)\b.{0,40}\b403\b",
     re.IGNORECASE,
 )
 
 try:
     data = json.load(sys.stdin)
 except Exception:
+    sys.exit(0)
+
+if not isinstance(data, dict):
     sys.exit(0)
 
 prompt = data.get("prompt", "")

@@ -14,6 +14,9 @@ try:
 except Exception:
     sys.exit(0)
 
+if not isinstance(data, dict):
+    sys.exit(0)
+
 tool_input = data.get("tool_input", {})
 if not isinstance(tool_input, dict):
     tool_input = {}
