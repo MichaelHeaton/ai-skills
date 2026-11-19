@@ -7,7 +7,13 @@ updated_by: human
 
 # Provenance
 
-Adapted from <https://github.com/mattpocock/skills> on 2026-11-19.
+Adapted on 2026-11-19 from the author's work:
+
+- **Source repository** — <https://github.com/mattpocock/skills>
+- **Author's documentation** — <https://www.aihero.dev/skills-grill-me>
+
+`metadata.adapted_from` names the repository because that is the file source a later
+review diffs; the documentation page explains intended behavior.
 
 ## Kept
 
@@ -30,10 +36,12 @@ preserving the upstream method. Changes are editorial, not behavioral.
 
 ## Relationship to upstream
 
-As of 2026-11-19, upstream `skills/productivity/grill-me/SKILL.md` is a thin wrapper
-that delegates to a separate `grilling` skill, which runs the interview in rounds over
-a design tree and dispatches sub-agents to look up facts. This copy still uses the
-earlier single-question-at-a-time approach, so it is a deliberate divergence from the
-current upstream rather than a match to it. Re-check upstream `grill-me` and
-`grilling` before pulling changes; if the frontier-and-rounds approach is preferable,
-adopt it deliberately and update `metadata.adapted_ref` in `SKILL.md`.
+As of 2026-11-19, upstream `grill-me` is a thin, user-invoked wrapper that delegates to
+a separate `grilling` skill, which runs the interview in rounds over a design tree and
+dispatches sub-agents to look up facts. The one-question-at-a-time style this copy uses
+is not obsolete upstream: the author's documentation lists it as a supported option
+(set by adding "When grilling, ask one question at a time" to the agent's global
+instructions). So this is a deliberate choice among upstream-sanctioned styles. Re-read
+the documentation and diff against upstream `grill-me` and `grilling` before pulling
+changes; if the rounds-and-frontier default is preferable, adopt it deliberately and
+add `adapted_ref` to `SKILL.md`.
